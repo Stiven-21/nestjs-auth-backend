@@ -1,0 +1,8 @@
+{
+    "name": "name",
+    "lastname": "lastname",
+    "documentType": "document type",
+    "document": "document",
+    "email": "email",
+    "password": "password"
+}

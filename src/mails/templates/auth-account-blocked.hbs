@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notificación de Bloqueo de Cuenta</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f4f4f4;">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="table-layout: fixed;">
+        <tr>
+            <td align="center" style="padding: 40px 0 30px 0;">
+                <table border="0" cellpadding="0" cellspacing="0" width="600" style="border-collapse: collapse; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
+                    <tr>
+                        <td style="padding: 40px 30px 40px 30px;">
+                            <h1 style="color: #D32F2F; font-size: 26px; margin: 0 0 15px 0;">🔴 Notificación Urgente: Cuenta Bloqueada</h1>
+                            
+                            <p style="color: #555555; font-size: 16px; line-height: 24px; margin: 0 0 20px 0;">
+                                Estimado usuario,
+                            </p>
+                            
+                            <p style="color: #555555; font-size: 16px; line-height: 24px; margin: 0 0 25px 0;">
+                                Te escribimos para notificarte que tu cuenta en **[Nombre de tu Plataforma]** ha sido **suspendida temporalmente** (o **bloqueada permanentemente**) por el siguiente motivo:
+                            </p>
+
+                            <div style="background-color: #fce4e4; border: 1px solid #D32F2F; border-left: 5px solid #D32F2F; padding: 15px 20px; border-radius: 4px; margin: 25px 0;">
+                                <p style="color: #D32F2F; font-size: 16px; font-weight: bold; margin: 0 0 5px 0;">
+                                    Motivo del Bloqueo:
+                                </p>
+                                <p style="color: #333333; font-size: 15px; margin: 0;">
+                                    {{blockReason}} 
+                                    </p>
+                                <p style="color: #777777; font-size: 12px; margin-top: 10px;">
+                                    Fecha de la acción: {{blockDate}}
+                                </p>
+                            </div>
+                            
+                            <h3 style="color: #333333; font-size: 18px; margin: 30px 0 10px 0;">
+                                Pasos a seguir:
+                            </h3>
+                            <ol style="color: #555555; font-size: 16px; line-height: 24px; padding-left: 20px;">
+                                <li>Revisa nuestros <a href="{{termsOfServiceLink}}" style="color: #1976D2;">Términos de Servicio</a> para entender la infracción.</li>
+                                <li>Si crees que esto es un error, por favor, inicia un proceso de apelación.</li>
+                            </ol>
+                            
+                            <table border="0" cellpadding="0" cellspacing="0" style="margin: 25px auto 0 auto; width: auto;">
+                                <tr>
+                                    <td align="center" style="border-radius: 4px; background-color: #1976D2; padding: 12px 30px;">
+                                        <a href="{{appealLink}}" target="_blank" style="color: #ffffff; text-decoration: none; font-size: 17px; font-weight: bold; display: block; white-space: nowrap;">
+                                            Iniciar Proceso de Apelación
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 20px 30px; background-color: #f9f9f9; border-radius: 0 0 8px 8px;">
+                            <p style="color: #999999; font-size: 12px; line-height: 18px; margin: 0; text-align: center;">
+                                Para asistencia inmediata, contacta a nuestro equipo de soporte.
+                                <br>
+                                El equipo de **[Nombre de tu Plataforma]**.
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

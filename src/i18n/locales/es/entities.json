@@ -1,0 +1,18 @@
+{
+    "identityTypes": {
+        "singular": "Tipo de identidad",
+        "plural": "Tipos de identidad"
+    },
+    "roles": {
+        "singular": "Rol",
+        "plural": "Roles"
+    },
+    "users": {
+        "singular": "Usuario",
+        "plural": "Usuarios"
+    },
+    "token": {
+        "singular": "Token",
+        "plural": "Tokens"
+    }
+}

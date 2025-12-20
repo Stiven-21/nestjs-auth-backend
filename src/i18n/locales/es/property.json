@@ -1,0 +1,8 @@
+{
+    "name": "Nombre",
+    "lastname": "Apellido",
+    "documentType": "Tipo de documento",
+    "document": "Documento",
+    "email": "Correo electr&oacute;nico",
+    "password": "Contrase&ntilde;"
+}

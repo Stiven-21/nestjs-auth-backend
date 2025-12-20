@@ -1,0 +1,29 @@
+{
+    "auth": {
+        "error": {
+            "passwordsDontMatch": "Las contrase\u00f1as no coinciden",
+            "wrongPassword": "La contrase\u00f1a no es correcta",
+            "pendingUser": "El usuario aun no ha verificado su correo",
+            "suspendedUser": "El usuario se encuentra suspendido",
+            "inactiveUser": "El usuario se encuentra inactivo",
+            "userEmailAlreadyExists": "Ya existe un usuario con el email {email}",
+            "documentAlreadyExists": "Ya existe un usuario con el documento {document}"
+        },
+        "success": {
+            "register": "Se ha enviado un correo con las instrucciones para verificar el correo",
+            "resetPassword": "Se ha enviado un correo con las instrucciones para restablecer la contrase\u00f1a",
+            "verifyEmail": "Su correo ha sido verificado correctamente",
+            "updatePassword": "Se ha actualizado la contrase\u00f1a correctamente"
+        },
+        "guard": {
+            "noActiveSession": "No se ha encontrado una sesión activa, por favor inicie sesión",
+            "sessionLost": "Se ha perdido la sesión, por favor inicie sesión",
+            "unauthorized": "Acceso no autorizado",
+            "deniedForPermission": "No tienes permiso para acceder a este recurso",
+            "deniedOnlyAdmin": "No tienes permiso para acceder a este recurso, solamente los supera dministradores tienen acceso"
+        }
+    },
+    "common": {
+        "notFound": "El recurso {entity} no ha sido encontrado"
+    }
+}

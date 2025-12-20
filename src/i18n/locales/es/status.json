@@ -1,0 +1,234 @@
+{
+  "100": {
+    "message": "Continuar",
+    "description": "El servidor ha recibido los encabezados y el cliente puede proceder con el cuerpo de la solicitud."
+  },
+  "101": {
+    "message": "Cambiando Protocolos",
+    "description": "El servidor acepta cambiar a un protocolo diferente solicitado por el cliente."
+  },
+  "102": {
+    "message": "Procesando",
+    "description": "El servidor ha recibido la solicitud y la está procesando, pero aún no hay respuesta disponible."
+  },
+
+  "200": {
+    "message": "Éxito",
+    "description": "La solicitud se ha completado con éxito."
+  },
+  "201": {
+    "message": "Creado",
+    "description": "La solicitud se completó y se creó un nuevo recurso."
+  },
+  "202": {
+    "message": "Aceptado",
+    "description": "La solicitud ha sido aceptada pero aún no procesada."
+  },
+  "203": {
+    "message": "Información no autorizada",
+    "description": "La respuesta no es definitiva y puede que provenga de una copia local o intermedia."
+  },
+  "204": {
+    "message": "Sin contenido",
+    "description": "La solicitud se completó correctamente pero no se devuelve contenido."
+  },
+  "205": {
+    "message": "Restablecer contenido",
+    "description": "El cliente debe restablecer la vista del documento."
+  },
+  "206": {
+    "message": "Contenido parcial",
+    "description": "El servidor devuelve solo una parte del recurso solicitado."
+  },
+
+  "300": {
+    "message": "Opciones múltiples",
+    "description": "Hay varias opciones y el cliente debe elegir una."
+  },
+  "301": {
+    "message": "Movido permanentemente",
+    "description": "El recurso solicitado se ha movido permanentemente a una nueva URL."
+  },
+  "302": {
+    "message": "Encontrado",
+    "description": "El recurso se ha movido temporalmente a una URL diferente."
+  },
+  "303": {
+    "message": "Ver otro",
+    "description": "El cliente debe usar una petición GET a otra URL."
+  },
+  "304": {
+    "message": "No modificado",
+    "description": "El recurso no ha cambiado desde la última solicitud."
+  },
+  "305": {
+    "message": "Usar proxy",
+    "description": "El recurso solicitado debe accederse mediante un proxy."
+  },
+  "307": {
+    "message": "Redirección temporal",
+    "description": "El recurso se encuentra temporalmente en otra URL sin cambiar el método HTTP."
+  },
+  "308": {
+    "message": "Redirección permanente",
+    "description": "El recurso se encuentra permanentemente en otra URL sin cambiar el método HTTP."
+  },
+
+  "400": {
+    "message": "Solicitud incorrecta",
+    "description": "La solicitud contiene sintaxis errónea o no puede procesarse."
+  },
+  "401": {
+    "message": "No autorizado",
+    "description": "El cliente debe autenticarse para obtener la respuesta."
+  },
+  "402": {
+    "message": "Pago requerido",
+    "description": "Código reservado para usos futuros relacionados con pagos."
+  },
+  "403": {
+    "message": "Prohibido",
+    "description": "El servidor entiende la solicitud pero se niega a autorizarla."
+  },
+  "404": {
+    "message": "No encontrado",
+    "description": "El servidor no encuentra el recurso solicitado."
+  },
+  "405": {
+    "message": "Método no permitido",
+    "description": "El método HTTP usado no está permitido para este recurso."
+  },
+  "406": {
+    "message": "No aceptable",
+    "description": "El servidor no puede producir una respuesta con el formato solicitado."
+  },
+  "407": {
+    "message": "Autenticación de proxy requerida",
+    "description": "El cliente debe autenticarse con el proxy."
+  },
+  "408": {
+    "message": "Tiempo de solicitud agotado",
+    "description": "El cliente tardó demasiado en enviar la solicitud."
+  },
+  "409": {
+    "message": "Conflicto",
+    "description": "La solicitud genera un conflicto en el recurso actual."
+  },
+  "410": {
+    "message": "Gone",
+    "description": "El recurso ya no está disponible y no regresará."
+  },
+  "411": {
+    "message": "Longitud requerida",
+    "description": "Se requiere especificar la longitud del contenido."
+  },
+  "412": {
+    "message": "Precondición fallida",
+    "description": "Las condiciones dadas en los encabezados no se cumplen."
+  },
+  "413": {
+    "message": "Entidad demasiado grande",
+    "description": "La solicitud es demasiado grande para que el servidor la procese."
+  },
+  "414": {
+    "message": "URI demasiado largo",
+    "description": "La URL enviada es demasiado larga."
+  },
+  "415": {
+    "message": "Tipo de medio no soportado",
+    "description": "El tipo de contenido no es compatible con el servidor."
+  },
+  "416": {
+    "message": "Rango no satisfactorio",
+    "description": "El rango solicitado no puede satisfacerse."
+  },
+  "417": {
+    "message": "Expectativa fallida",
+    "description": "La cabecera Expect no puede cumplirse."
+  },
+  "418": {
+    "message": "Soy una tetera",
+    "description": "Código de broma definido en RFC 2324."
+  },
+  "422": {
+    "message": "Entidad no procesable",
+    "description": "La solicitud está bien formada pero no puede procesarse."
+  },
+  "423": {
+    "message": "Bloqueado",
+    "description": "El recurso está bloqueado."
+  },
+  "424": {
+    "message": "Dependencia fallida",
+    "description": "La solicitud falló debido a otra solicitud fallida."
+  },
+  "425": {
+    "message": "Demasiado temprano",
+    "description": "El servidor no está dispuesto a procesar una solicitud que podría repetirse."
+  },
+  "426": {
+    "message": "Actualización requerida",
+    "description": "El cliente debe actualizar a un protocolo diferente."
+  },
+  "428": {
+    "message": "Precondición requerida",
+    "description": "El servidor exige que la solicitud incluya condiciones previas."
+  },
+  "429": {
+    "message": "Demasiadas solicitudes",
+    "description": "El cliente ha enviado demasiadas solicitudes en poco tiempo."
+  },
+  "431": {
+    "message": "Encabezados demasiado grandes",
+    "description": "Los encabezados de la solicitud son demasiado grandes para ser procesados."
+  },
+  "451": {
+    "message": "No disponible por razones legales",
+    "description": "El recurso está bloqueado por motivos legales."
+  },
+
+  "500": {
+    "message": "Error interno del servidor",
+    "description": "El servidor encontró una condición inesperada."
+  },
+  "501": {
+    "message": "No implementado",
+    "description": "El servidor no reconoce o no soporta el método requerido."
+  },
+  "502": {
+    "message": "Mala pasarela",
+    "description": "El servidor recibió una respuesta inválida desde un servidor ascendente."
+  },
+  "503": {
+    "message": "Servicio no disponible",
+    "description": "El servidor no puede manejar la solicitud por mantenimiento o sobrecarga."
+  },
+  "504": {
+    "message": "Tiempo de espera de la pasarela",
+    "description": "El servidor no recibió una respuesta a tiempo desde otro servidor."
+  },
+  "505": {
+    "message": "Versión HTTP no soportada",
+    "description": "El servidor no soporta la versión de HTTP usada."
+  },
+  "506": {
+    "message": "Variante también negocia",
+    "description": "Un error de configuración hace que el recurso participe incorrectamente en negociación de contenido."
+  },
+  "507": {
+    "message": "Almacenamiento insuficiente",
+    "description": "El servidor no puede almacenar la representación necesaria para completar la solicitud."
+  },
+  "508": {
+    "message": "Bucle detectado",
+    "description": "El servidor detectó un bucle en el procesamiento de la solicitud."
+  },
+  "510": {
+    "message": "No extendido",
+    "description": "Se requieren extensiones adicionales para procesar la solicitud."
+  },
+  "511": {
+    "message": "Autenticación de red requerida",
+    "description": "El cliente debe autenticarse para obtener acceso a la red."
+  }
+}

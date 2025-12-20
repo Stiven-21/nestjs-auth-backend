@@ -1,0 +1,234 @@
+{
+  "100": {
+    "message": "Continue",
+    "description": "The server has received the request headers and the client may proceed with the request body."
+  },
+  "101": {
+    "message": "Switching Protocols",
+    "description": "The server agrees to switch to the protocol requested by the client."
+  },
+  "102": {
+    "message": "Processing",
+    "description": "The server has received the request and is processing it, but no response is available yet."
+  },
+
+  "200": {
+    "message": "Success",
+    "description": "The request has been successfully completed."
+  },
+  "201": {
+    "message": "Created",
+    "description": "The request has succeeded and a new resource has been created."
+  },
+  "202": {
+    "message": "Accepted",
+    "description": "The request has been accepted but not yet processed."
+  },
+  "203": {
+    "message": "Non-Authoritative Information",
+    "description": "The response is not authoritative and may have been obtained from a local or third-party copy."
+  },
+  "204": {
+    "message": "No Content",
+    "description": "The request was successful but there is no content to return."
+  },
+  "205": {
+    "message": "Reset Content",
+    "description": "The client should reset the view of the document."
+  },
+  "206": {
+    "message": "Partial Content",
+    "description": "The server is delivering only part of the resource requested."
+  },
+
+  "300": {
+    "message": "Multiple Choices",
+    "description": "There are multiple options available, and the client must choose one."
+  },
+  "301": {
+    "message": "Moved Permanently",
+    "description": "The requested resource has been permanently moved to a new URL."
+  },
+  "302": {
+    "message": "Found",
+    "description": "The resource has been temporarily moved to another URL."
+  },
+  "303": {
+    "message": "See Other",
+    "description": "The client should use a GET request to another URL."
+  },
+  "304": {
+    "message": "Not Modified",
+    "description": "The resource has not changed since the last request."
+  },
+  "305": {
+    "message": "Use Proxy",
+    "description": "The requested resource must be accessed through a proxy."
+  },
+  "307": {
+    "message": "Temporary Redirect",
+    "description": "The resource is temporarily located at another URL without changing the HTTP method."
+  },
+  "308": {
+    "message": "Permanent Redirect",
+    "description": "The resource is permanently located at another URL without changing the HTTP method."
+  },
+
+  "400": {
+    "message": "Bad Request",
+    "description": "The request contains incorrect syntax or cannot be processed."
+  },
+  "401": {
+    "message": "Unauthorized",
+    "description": "Authentication is required to access the resource."
+  },
+  "402": {
+    "message": "Payment Required",
+    "description": "Reserved for future use related to digital payments."
+  },
+  "403": {
+    "message": "Forbidden",
+    "description": "The server understands the request but refuses to authorize it."
+  },
+  "404": {
+    "message": "Not Found",
+    "description": "The server cannot find the requested resource."
+  },
+  "405": {
+    "message": "Method Not Allowed",
+    "description": "The HTTP method used is not allowed for this resource."
+  },
+  "406": {
+    "message": "Not Acceptable",
+    "description": "The server cannot produce a response matching the request's acceptable formats."
+  },
+  "407": {
+    "message": "Proxy Authentication Required",
+    "description": "The client must authenticate with the proxy."
+  },
+  "408": {
+    "message": "Request Timeout",
+    "description": "The client took too long to send the request."
+  },
+  "409": {
+    "message": "Conflict",
+    "description": "The request conflicts with the current state of the resource."
+  },
+  "410": {
+    "message": "Gone",
+    "description": "The resource is no longer available and will not return."
+  },
+  "411": {
+    "message": "Length Required",
+    "description": "The request must specify the content length."
+  },
+  "412": {
+    "message": "Precondition Failed",
+    "description": "The server does not meet one or more conditions in the request headers."
+  },
+  "413": {
+    "message": "Payload Too Large",
+    "description": "The request payload is too large for the server to process."
+  },
+  "414": {
+    "message": "URI Too Long",
+    "description": "The URL provided is too long to be processed."
+  },
+  "415": {
+    "message": "Unsupported Media Type",
+    "description": "The media type is not supported by the server."
+  },
+  "416": {
+    "message": "Range Not Satisfiable",
+    "description": "The requested range cannot be fulfilled."
+  },
+  "417": {
+    "message": "Expectation Failed",
+    "description": "The expectation in the request headers cannot be met."
+  },
+  "418": {
+    "message": "I'm a Teapot",
+    "description": "A humorous code defined in RFC 2324."
+  },
+  "422": {
+    "message": "Unprocessable Entity",
+    "description": "The request is well-formed but cannot be processed."
+  },
+  "423": {
+    "message": "Locked",
+    "description": "The resource is locked."
+  },
+  "424": {
+    "message": "Failed Dependency",
+    "description": "The request failed due to a dependency on another failed request."
+  },
+  "425": {
+    "message": "Too Early",
+    "description": "The server is unwilling to process a request that might be replayed."
+  },
+  "426": {
+    "message": "Upgrade Required",
+    "description": "The client must upgrade to a different protocol."
+  },
+  "428": {
+    "message": "Precondition Required",
+    "description": "The server requires conditions to be included in the request."
+  },
+  "429": {
+    "message": "Too Many Requests",
+    "description": "The client has sent too many requests in a short period."
+  },
+  "431": {
+    "message": "Request Header Fields Too Large",
+    "description": "The request headers are too large for the server to process."
+  },
+  "451": {
+    "message": "Unavailable For Legal Reasons",
+    "description": "The requested resource is blocked for legal reasons."
+  },
+
+  "500": {
+    "message": "Internal Server Error",
+    "description": "The server encountered an unexpected condition."
+  },
+  "501": {
+    "message": "Not Implemented",
+    "description": "The server does not recognize or support the requested method."
+  },
+  "502": {
+    "message": "Bad Gateway",
+    "description": "The server received an invalid response from an upstream server."
+  },
+  "503": {
+    "message": "Service Unavailable",
+    "description": "The server is currently unable to handle the request due to maintenance or overload."
+  },
+  "504": {
+    "message": "Gateway Timeout",
+    "description": "The server did not receive a timely response from another server."
+  },
+  "505": {
+    "message": "HTTP Version Not Supported",
+    "description": "The server does not support the HTTP version used in the request."
+  },
+  "506": {
+    "message": "Variant Also Negotiates",
+    "description": "A configuration error causes the resource to engage in inappropriate content negotiation."
+  },
+  "507": {
+    "message": "Insufficient Storage",
+    "description": "The server cannot store the necessary representation to complete the request."
+  },
+  "508": {
+    "message": "Loop Detected",
+    "description": "The server detected an infinite loop while processing the request."
+  },
+  "510": {
+    "message": "Not Extended",
+    "description": "Additional extensions are required for the request to be fulfilled."
+  },
+  "511": {
+    "message": "Network Authentication Required",
+    "description": "The client must authenticate to access the network."
+  }
+}

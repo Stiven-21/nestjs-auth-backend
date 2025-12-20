@@ -1,0 +1,4 @@
+{
+    "pageInvalid": "The page number must be an integer greater than 0.",
+    "limitInvalid": "The number of results per page must be an integer greater than 10."
+}

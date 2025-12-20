@@ -1,0 +1,17 @@
+{
+    "isNotEmpty": "El campo {property} no puede estar vacio",
+    "isString": "El campo {property} debe ser una cadena",
+    "isNumber": "El campo {property} debe ser un numero",
+    "isPositive": "El campo {property} debe ser un numero positivo",
+    "isMaxLength": "El campo {property} debe tener un maximo de {max} caracteres",
+    "isMinLength": "El campo {property} debe tener un minimo de {min} caracteres",
+    "isNumberString": "El campo {property} debe ser un numero",
+    "isEmail": "El campo {property} debe ser un email",
+    "matches": {
+        "lowercase": "El campo {property} debe contener al menos una letra minuscula",
+        "uppercase": "El campo {property} debe contener al menos una letra mayuscula",
+        "number": "El campo {property} debe contener al menos un numero",
+        "spacial": "El campo {property} debe contener al menos un caracter especial"
+    }
+    
+}

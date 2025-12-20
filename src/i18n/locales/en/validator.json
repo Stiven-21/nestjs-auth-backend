@@ -1,0 +1,16 @@
+{
+    "isNotEmpty": "The {property} field cannot be empty",
+    "isString": "The {property} field must be a string",
+    "isNumber": "The {property} field must be a number",
+    "isPositive": "The {property} field must be a positive number",
+    "isMaxLength": "The {property} field must have a maximum of {max} characters",
+    "isMinLength": "The {property} field must have a minimum of {min} characters",
+    "isNumberString": "The {property} field must be a number",
+    "isEmail": "The {property} field must be an email",
+    "matches": {
+        "lowercase": "The {property} field must contain at least one lowercase letter",
+        "uppercase": "The {property} field must contain at least one uppercase letter",
+        "number": "The {property} field must contain at least one number",
+        "spacial": "The {property} field must contain at least one special character"
+    }
+}

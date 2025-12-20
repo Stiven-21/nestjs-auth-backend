@@ -1,0 +1,4 @@
+{
+    "pageInvalid": "El número de página debe ser un número entero positivo mayor a 0.",
+    "limitInvalid": "El número de resultados por página debe ser un número entero positivo mayor a 10."
+}       

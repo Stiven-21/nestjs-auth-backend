@@ -1,0 +1,29 @@
+{
+    "auth": {
+        "error": {
+            "passwordsDontMatch": "Passwords don't match",
+            "wrongPassword": "The password is incorrect",
+            "pendingUser": "The user has not verified their email",
+            "suspendedUser": "The user is suspended",
+            "inactiveUser": "The user is inactive",
+            "userEmailAlreadyExists": "A user already exists with the email {email}",
+            "documentAlreadyExists": "A user already exists with the document {document}"
+        },
+        "success": {
+            "register": "An email has been sent with instructions to verify your email",
+            "resetPassword": "An email has been sent with instructions to reset your password",
+            "verifyEmail": "Your email has been verified successfully",
+            "updatePassword": "Your password has been updated successfully"
+        },
+        "guard": {
+            "noActiveSession": "No active session found, please log in",
+            "sessionLost": "Your session has been lost, please log in",
+            "unauthorized": "Unauthorized access",
+            "deniedForPermission": "You do not have permission to access this resource",
+            "deniedOnlyAdmin": "You do not have permission to access this resource, only administrators have access"
+        }
+    },
+    "common": {
+        "notFound": "The resource {entity} has not been found"
+    }
+}
