@@ -1,73 +1,125 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+# NEXTCOMMERCE - Backend (NestJS)
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+backend construido con NestJS que provee autenticación, gestión de usuarios, roles, sesiones y plantillas de correo con i18n (inglés/español).
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+**Prefix base:** `api/v1` (definido en `src/main.ts`)
 
-## Description
+# NEXTCOMMERCE - Backend (NestJS)
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+**Versión:** v0.1.0-beta
 
-## Installation
+## Descripción
+
+Backend construido con NestJS que sirve como API para la plataforma Nextcommerce. Proporciona módulos modulares para autenticación, gestión de usuarios y roles, gestión de sesiones, envío de correos con plantillas Handlebars, soporte de internacionalización (es/en), validación, y documentación con Swagger. Está diseñado como una base extensible para un eCommerce.
+
+## Estado de versionado
+
+- Versión liberada inicialmente: **v0.1.0-beta**
+- Notas: versión beta; varios endpoints y pruebas e2e pueden estar en progreso.
+
+## Funcionalidades principales
+
+- Autenticación JWT (access + refresh) usando `@nestjs/jwt`. El access token se firma combinando `JWT_SECRET` con un `user_secret` por usuario.
+- Sistema de permisos y guards (`roles`, `permissions`, `superadmin`) para control de acceso.
+- Gestión de usuarios: registro, inicio de sesión, actualización, listado con filtros/paginación (soporta `DynamicQueryDto`).
+- Gestión de roles y tipos de identidad (`identity-types`).
+- Gestión de sesiones por usuario y endpoints relacionados.
+- Envío de correos con `@nestjs-modules/mailer` + Handlebars (`src/mails/templates`) para plantillas: registro, verificación, restablecimiento de contraseña, alertas de inicio de sesión, etc.
+- Internacionalización con `nestjs-i18n` (locales en `src/i18n/locales/en` y `es`), con resolución por encabezado `x-custom-lang` o `Accept-Language`.
+- Persistencia con TypeORM + PostgreSQL (configurable vía `.env`).
+- Validación global con `class-validator` e integración i18n para mensajes de validación.
+- Documentación automática con Swagger en `/api/docs`.
+
+## Endpoints resumidos
+
+Prefijo global: `/api/v1` (configurado en `src/main.ts`).
+
+- Autenticación (`src/modules/auth`):
+  - `POST /api/v1/auth/register` — Registrar usuario
+  - `POST /api/v1/auth/sign-in` — Login (retorna `access_token` y `refresh_token`)
+  - `GET /api/v1/auth/verify-email/:token` — Verificar email
+  - Endpoints para reset de contraseña y refresh token
+
+- Usuarios (`src/modules/users`):
+  - `GET /api/v1/users` — Listar usuarios (filtros/paginación)
+  - `GET /api/v1/users/:id`, `PATCH /api/v1/users/:id`, `DELETE /api/v1/users/:id`
+
+- Roles (`src/modules/roles`):
+  - `GET /api/v1/roles`, `GET /api/v1/roles/:id`
+
+Ver el código en `src/modules/*` para endpoints completos y permisos requeridos.
+
+## Instalación rápida
+
+Requisitos: Node.js (>=18 recomendado) y `pnpm`.
 
 ```bash
-$ pnpm install
+pnpm install
 ```
 
-## Running the app
+## Scripts principales
 
 ```bash
-# development
-$ pnpm run start
-
-# watch mode
-$ pnpm run start:dev
-
-# production mode
-$ pnpm run start:prod
+pnpm run start       # arrancar
+pnpm run start:dev   # desarrollo con watch
+pnpm run build       # compilar
+pnpm run start:prod  # ejecutar dist
+pnpm run test        # tests
 ```
 
-## Test
+## Variables de entorno esenciales
 
-```bash
-# unit tests
-$ pnpm run test
+Crear un `.env` en la raíz con al menos estas variables (ejemplo):
 
-# e2e tests
-$ pnpm run test:e2e
+```ini
+APP_PORT=8080
+NAME_APP=Nextcommerce
 
-# test coverage
-$ pnpm run test:cov
+# Database (TypeORM)
+DB_TYPE=postgres
+DB_HOST=localhost
+DB_PORT=5432
+DB_USERNAME=postgres
+DB_PASSWORD=postgres
+DB_DATABASE=nextcommerce
+DB_SSL=false
+
+# JWT
+JWT_SECRET=change_this_secret
+JWT_REFRESH_SECRET=change_this_refresh_secret
+
+# Mailer (SMTP)
+MAIL_HOST=smtp.example.com
+MAIL_PORT=587
+MAIL_SECURE=false
+MAIL_USER=your-smtp-user
+MAIL_PASSWORD=your-smtp-password
+DEFAULT_REMITTER_MAIL=no-reply@example.com
+
+# Otros
+DEFAULT_LOCALE=en
 ```
 
-## Support
+## Notas para desarrolladores
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+- Prefijo global de API: `app.setGlobalPrefix('api/v1')` en `src/main.ts`.
+- Validación global con `CustomValidationPipe` en `src/config/validation.config.ts`.
+- Revisa `src/config/mails.config.ts` y `src/mails/mail.service.ts` para personalizar envíos.
+- `synchronize: true` en TypeORM (`src/app.module.ts`) está activado para desarrollo; desactívalo en producción.
 
-## Stay in touch
+## Documentación
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+- Swagger UI: `/api/docs`.
 
-## License
+## Changelog (breve)
 
-Nest is [MIT licensed](LICENSE).
+- v0.1.0-beta — Versión inicial beta con módulos de autenticación, usuarios, roles, i18n y plantillas de correo.
+
+## Próximos pasos sugeridos
+
+- Completar endpoints pendientes en `tokens` y añadir pruebas e2e.
+- Preparar release estable (v0.1.0) tras pruebas y revisión de seguridad.
+
+## LICENSE
+
+Licencia en `LICENSE` (MIT).
