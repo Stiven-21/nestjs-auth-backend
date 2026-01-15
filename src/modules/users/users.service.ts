@@ -20,6 +20,10 @@ import { TokensService } from './tokens/tokens.service';
 import { RolesService } from '../roles/roles.service';
 import { UserStatusEnum } from 'src/common/enum/user-status.enum';
 import { MailService } from 'src/mails/mail.service';
+import { GoogleProfileDto } from 'src/modules/users/dto/create-google-user.dto';
+import { OAuthService } from 'src/modules/users/oauth/oauth.service';
+import { FacebookProfileDto } from 'src/modules/users/dto/create-facebook-user.dto';
+import { OAuthProviderEnum } from 'src/common/enum/user-oauth-providers.enum';
 
 @Injectable()
 export class UsersService {
@@ -32,6 +36,7 @@ export class UsersService {
     private readonly tokensService: TokensService,
     private readonly rolesService: RolesService,
     private readonly mailService: MailService,
+    private readonly oauthService: OAuthService,
   ) {}
 
   async create(createUserDto: CreateUserDto, i18n: I18nContext) {
@@ -204,6 +209,52 @@ export class UsersService {
       internalServerError({ i18n, lang: i18n.lang });
     }
     await this.tokensService.updateTokenIsUsed(token, i18n);
+  }
+
+  async validateGoogleUser(googleUser: GoogleProfileDto, i18n?: I18nContext) {
+    const { googleId, ...rest } = googleUser;
+    const user = await this.oauthService.getUserWithProviderAndProviderId(
+      googleId,
+      OAuthProviderEnum.GOOGLE,
+    );
+    if (user) return user;
+
+    const i18nCont = i18n ?? I18nContext.current();
+    const role = await this.rolesService.findOne(3, i18nCont);
+    const user_secret = uuidv7();
+    return await this.usersRepository.save({
+      ...rest,
+      role: role.data,
+      user_secret,
+      status: UserStatusEnum.ACTIVE,
+    });
+  }
+
+  async validateFacebookUser(
+    facebookUser: FacebookProfileDto,
+    i18n?: I18nContext,
+  ) {
+    const { facebookId, ...rest } = facebookUser;
+    const user = await this.oauthService.getUserWithProviderAndProviderId(
+      facebookId,
+      OAuthProviderEnum.FACEBOOK,
+    );
+    if (user) return user;
+
+    const i18nCont = i18n ?? I18nContext.current();
+    const role = await this.rolesService.findOne(3, i18nCont);
+    const user_secret = uuidv7();
+    return await this.usersRepository.save({
+      ...rest,
+      role: role.data,
+      user_secret,
+      status: UserStatusEnum.ACTIVE,
+    });
+  }
+
+  async findById(id: number, i18n: I18nContext) {
+    const user = await this.findOne(id, i18n);
+    return user.data;
   }
 
   private async __ValidateChangeEmail(

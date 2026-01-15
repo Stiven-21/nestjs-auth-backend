@@ -14,10 +14,18 @@ import { SessionService } from 'src/modules/users/session/session.service';
 import { SessionController } from 'src/modules/users/session/session.controller';
 import { UserSession } from 'src/modules/users/entities/user-session.entity';
 import { AuthModule } from 'src/modules/auth/auth.module';
+import { UserAccountOAuth } from 'src/modules/users/entities/user-account-oauth.entity';
+import { OAuthService } from 'src/modules/users/oauth/oauth.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, IdentityType, UserToken, UserSession]),
+    TypeOrmModule.forFeature([
+      User,
+      IdentityType,
+      UserToken,
+      UserSession,
+      UserAccountOAuth,
+    ]),
     forwardRef(() => AuthModule),
     RolesModule,
   ],
@@ -32,7 +40,14 @@ import { AuthModule } from 'src/modules/auth/auth.module';
     IdentityTypesService,
     TokensService,
     SessionService,
+    OAuthService,
   ],
-  exports: [TypeOrmModule, UsersService, TokensService, SessionService],
+  exports: [
+    TypeOrmModule,
+    UsersService,
+    TokensService,
+    SessionService,
+    OAuthService,
+  ],
 })
 export class UsersModule {}

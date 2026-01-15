@@ -309,6 +309,8 @@ export type I18nTranslations = {
             "number": string;
             "spacial": string;
         };
+        "isEnum": string;
+        "isBoolean": string;
     };
 };
 /* prettier-ignore */

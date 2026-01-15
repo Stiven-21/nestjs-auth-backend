@@ -20,7 +20,8 @@ import { JwtService } from '@nestjs/jwt';
 import { MailService } from 'src/mails/mail.service';
 import { getClientInfo } from 'src/common/helpers/request-info.helper';
 import { Request } from 'express';
-import { SessionService } from '../users/session/session.service';
+import { SessionService } from 'src/modules/users/session/session.service';
+import { User } from 'src/modules/users/entities/user.entity';
 
 @Injectable()
 export class AuthService {
@@ -123,6 +124,59 @@ export class AuthService {
         }),
       });
 
+    return await this.__generatedTokenAndRefreshToken(req, user, i18n);
+  }
+
+  async loginById(req: Request, id: number, i18n: I18nContext) {
+    const user = await this.usersService.findById(id, i18n);
+    return await this.__generatedTokenAndRefreshToken(req, user.data, i18n);
+  }
+
+  async refreshToken(refreshToken: string, i18n: I18nContext) {
+    try {
+      this.jwtService.verify(refreshToken, {
+        secret: process.env.JWT_REFRESH_SECRET,
+      });
+    } catch (error) {
+      internalServerError({ i18n, lang: i18n.lang });
+    }
+
+    const { sub } = this.jwtService.decode(refreshToken);
+    const { data: user } = await this.usersService.findOne(sub, i18n);
+
+    const payload = {
+      sub: user.id,
+      email: user.email,
+      role: {
+        name: user.role.name,
+        permissions: user.role.permissions,
+      },
+    };
+
+    return okResponse({
+      i18n,
+      lang: i18n.lang,
+      data: {
+        data: {
+          access_token: this.jwtService.sign(payload, {
+            secret: process.env.JWT_SECRET + user.user_secret,
+            expiresIn: '30m',
+          }),
+          refresh_token: this.jwtService.sign(payload, {
+            secret: process.env.JWT_REFRESH_SECRET,
+            expiresIn: '2d',
+          }),
+        },
+        total: 1,
+      },
+    });
+  }
+
+  private async __generatedTokenAndRefreshToken(
+    req: Request,
+    user: User,
+    i18n: I18nContext,
+  ) {
     if (user.status === UserStatusEnum.PENDING)
       badRequestError({
         i18n,
@@ -180,6 +234,8 @@ export class AuthService {
         loginIp: ip,
         loginBrowser: browser,
         loginOs: os,
+        changePasswordUrl: '', // url de cambio de contraseña
+        // changePasswordUrl: process.env.CHANGE_PASSWORD_URL,
       },
     );
 
@@ -200,46 +256,6 @@ export class AuthService {
           user: user.name + ' ' + user.lastname,
           role: user.role.name,
           permissions: user.role.permissions,
-        },
-        total: 1,
-      },
-    });
-  }
-
-  async refreshToken(refreshToken: string, i18n: I18nContext) {
-    try {
-      this.jwtService.verify(refreshToken, {
-        secret: process.env.JWT_REFRESH_SECRET,
-      });
-    } catch (error) {
-      internalServerError({ i18n, lang: i18n.lang });
-    }
-
-    const { sub } = this.jwtService.decode(refreshToken);
-    const { data: user } = await this.usersService.findOne(sub, i18n);
-
-    const payload = {
-      sub: user.id,
-      email: user.email,
-      role: {
-        name: user.role.name,
-        permissions: user.role.permissions,
-      },
-    };
-
-    return okResponse({
-      i18n,
-      lang: i18n.lang,
-      data: {
-        data: {
-          access_token: this.jwtService.sign(payload, {
-            secret: process.env.JWT_SECRET + user.user_secret,
-            expiresIn: '30m',
-          }),
-          refresh_token: this.jwtService.sign(payload, {
-            secret: process.env.JWT_REFRESH_SECRET,
-            expiresIn: '2d',
-          }),
         },
         total: 1,
       },

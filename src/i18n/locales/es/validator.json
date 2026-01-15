@@ -12,6 +12,7 @@
         "uppercase": "El campo {property} debe contener al menos una letra mayuscula",
         "number": "El campo {property} debe contener al menos un numero",
         "spacial": "El campo {property} debe contener al menos un caracter especial"
-    }
-    
+    },
+    "isEnum": "El campo {property} debe ser uno de los siguientes valores: {enumValues}",
+    "isBoolean": "El campo {property} debe ser un booleano"
 }

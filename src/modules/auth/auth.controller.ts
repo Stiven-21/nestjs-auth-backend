@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Post, Req } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { I18n, I18nContext } from 'nestjs-i18n';
@@ -8,6 +16,8 @@ import {
 } from './dto/reset-password.dto';
 import { LoginDto } from './dto/login.dto';
 import { Request } from 'express';
+import { GoogleAuthGuard } from './guards/google-auth/google-auth.guard';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('auth')
 export class AuthController {
@@ -56,5 +66,29 @@ export class AuthController {
   @Get('refresh-token')
   async refreshToken(@Param('token') token: string, @I18n() i18n: I18nContext) {
     return await this.authService.refreshToken(token, i18n);
+  }
+
+  // Oauth Google
+  @Get('google')
+  @UseGuards(GoogleAuthGuard)
+  google() {}
+
+  @Get('google/callback')
+  @UseGuards(GoogleAuthGuard)
+  async googleCallback(@Req() req, @I18n() i18n: I18nContext) {
+    const id: number = req.user.id;
+    return await this.authService.loginById(req, id, i18n);
+  }
+
+  //  Oauth Facebook
+  @Get('facebook')
+  @UseGuards(AuthGuard('facebook'))
+  facebook() {}
+
+  @Get('facebook/callback')
+  @UseGuards(AuthGuard('facebook'))
+  async facebookCallback(@Req() req, @I18n() i18n: I18nContext) {
+    const id: number = req.user.id;
+    return await this.authService.loginById(req, id, i18n);
   }
 }

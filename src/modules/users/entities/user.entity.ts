@@ -13,6 +13,7 @@ import { UserToken } from './user-tokens.entity';
 import { Role } from 'src/modules/roles/entities/role.entity';
 import { UserStatusEnum } from 'src/common/enum/user-status.enum';
 import { UserSession } from './user-session.entity';
+import { UserAccountOAuth } from './user-account-oauth.entity';
 
 @Entity({ name: 'users' })
 export class User {
@@ -22,25 +23,29 @@ export class User {
   @Column({ nullable: true, type: 'varchar', length: 255 })
   avatar: string;
 
-  @Column({ unique: true, nullable: false, length: 20, type: 'varchar' })
+  @Column({ nullable: false, length: 20, type: 'varchar' })
   name: string;
 
-  @Column({ unique: true, nullable: false, length: 20, type: 'varchar' })
+  @Column({ nullable: false, length: 20, type: 'varchar' })
   lastname: string;
 
-  @ManyToOne(() => IdentityType, (identityType) => identityType.id)
+  @ManyToOne(() => IdentityType, (identityType) => identityType.id, {
+    eager: true,
+    nullable: true,
+  })
   identityType: IdentityType;
 
-  @Column({ unique: true, nullable: false, length: 20, type: 'varchar' })
+  @Column({ unique: true, nullable: true, length: 20, type: 'varchar' })
   document: string;
 
   @Column({ unique: true, nullable: false, length: 100, type: 'varchar' })
   email: string;
 
-  @Column({ unique: true, nullable: false, type: 'text', select: false })
+  // Proximamente será removido
+  @Column({ unique: true, nullable: true, type: 'text', select: false })
   password: string;
 
-  @ManyToOne(() => Role, (role) => role.id)
+  @ManyToOne(() => Role, (role) => role.id, { eager: true })
   role: Role;
 
   @Column({
@@ -73,4 +78,10 @@ export class User {
 
   @OneToMany(() => UserSession, (userSession) => userSession.user)
   userSessions: UserSession[];
+
+  @OneToMany(
+    () => UserAccountOAuth,
+    (userAccountOAuth) => userAccountOAuth.user,
+  )
+  userAccountOauths: UserAccountOAuth[];
 }
