@@ -16,7 +16,7 @@ import {
 } from './dto/reset-password.dto';
 import { LoginDto } from './dto/login.dto';
 import { Request } from 'express';
-import { GoogleAuthGuard } from './guards/google-auth/google-auth.guard';
+import { GoogleAuthGuard } from './guards/oauth/google-auth.guard';
 import { AuthGuard } from '@nestjs/passport';
 
 @Controller('auth')
@@ -88,6 +88,18 @@ export class AuthController {
   @Get('facebook/callback')
   @UseGuards(AuthGuard('facebook'))
   async facebookCallback(@Req() req, @I18n() i18n: I18nContext) {
+    const id: number = req.user.id;
+    return await this.authService.loginById(req, id, i18n);
+  }
+
+  // Oauth Github
+  @Get('github')
+  @UseGuards(AuthGuard('github'))
+  github() {}
+
+  @Get('github/callback')
+  @UseGuards(AuthGuard('github'))
+  async githubCallback(@Req() req, @I18n() i18n: I18nContext) {
     const id: number = req.user.id;
     return await this.authService.loginById(req, id, i18n);
   }

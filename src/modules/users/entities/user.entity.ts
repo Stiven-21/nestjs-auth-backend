@@ -26,7 +26,7 @@ export class User {
   @Column({ nullable: false, length: 20, type: 'varchar' })
   name: string;
 
-  @Column({ nullable: false, length: 20, type: 'varchar' })
+  @Column({ nullable: true, length: 20, type: 'varchar' })
   lastname: string;
 
   @ManyToOne(() => IdentityType, (identityType) => identityType.id, {

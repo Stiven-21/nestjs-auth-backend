@@ -24,6 +24,7 @@ import { GoogleProfileDto } from 'src/modules/users/dto/create-google-user.dto';
 import { OAuthService } from 'src/modules/users/oauth/oauth.service';
 import { FacebookProfileDto } from 'src/modules/users/dto/create-facebook-user.dto';
 import { OAuthProviderEnum } from 'src/common/enum/user-oauth-providers.enum';
+import { CreateGithubProfileDto } from 'src/modules/users/dto/create-github-user.dto';
 
 @Injectable()
 export class UsersService {
@@ -238,6 +239,28 @@ export class UsersService {
     const user = await this.oauthService.getUserWithProviderAndProviderId(
       facebookId,
       OAuthProviderEnum.FACEBOOK,
+    );
+    if (user) return user;
+
+    const i18nCont = i18n ?? I18nContext.current();
+    const role = await this.rolesService.findOne(3, i18nCont);
+    const user_secret = uuidv7();
+    return await this.usersRepository.save({
+      ...rest,
+      role: role.data,
+      user_secret,
+      status: UserStatusEnum.ACTIVE,
+    });
+  }
+
+  async validateGithubUser(
+    githubUser: CreateGithubProfileDto,
+    i18n?: I18nContext,
+  ) {
+    const { githubId, ...rest } = githubUser;
+    const user = await this.oauthService.getUserWithProviderAndProviderId(
+      githubId,
+      OAuthProviderEnum.GITHUB,
     );
     if (user) return user;
 

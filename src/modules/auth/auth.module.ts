@@ -8,6 +8,8 @@ import googleOauthConfig from 'src/config/google-oauth.config';
 import { GoogleStrategy } from './strategies/google.strategy';
 import facebookOauthConfig from 'src/config/facebook-oauth.config';
 import { FaceebookStrategy } from './strategies/faceebook.strategy';
+import githubOauthConfig from 'src/config/github-oauth.config';
+import { GithubStrategy } from './strategies/github.strategy';
 
 @Module({
   imports: [
@@ -20,10 +22,11 @@ import { FaceebookStrategy } from './strategies/faceebook.strategy';
     }),
     ConfigModule.forFeature(googleOauthConfig),
     ConfigModule.forFeature(facebookOauthConfig),
+    ConfigModule.forFeature(githubOauthConfig),
     forwardRef(() => UsersModule),
   ],
   controllers: [AuthController],
-  providers: [AuthService, GoogleStrategy, FaceebookStrategy],
+  providers: [AuthService, GoogleStrategy, FaceebookStrategy, GithubStrategy],
   exports: [JwtModule, AuthService],
 })
 export class AuthModule {}
