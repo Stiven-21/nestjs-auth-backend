@@ -3,12 +3,10 @@ import { I18nModule } from 'src/shared/i18n/i18n.module';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { MailsModule } from 'src/mails/mail.module';
-import { AuthService } from './modules/auth/auth.service';
-import { AuthController } from './modules/auth/auth.controller';
-import { AuthModule } from './modules/auth/auth.module';
-import { UsersModule } from './modules/users/users.module';
-import { CommonModule } from './shared/common/common.module';
-import { RolesModule } from './modules/roles/roles.module';
+import { AuthModule } from 'src/modules/auth/auth.module';
+import { UsersModule } from 'src/modules/users/users.module';
+import { CommonModule } from 'src/shared/common/common.module';
+import { RolesModule } from 'src/modules/roles/roles.module';
 
 @Module({
   imports: [
@@ -41,7 +39,7 @@ import { RolesModule } from './modules/roles/roles.module';
     UsersModule,
     RolesModule,
   ],
-  controllers: [AuthController],
-  providers: [AuthService],
+  controllers: [],
+  providers: [],
 })
 export class AppModule {}

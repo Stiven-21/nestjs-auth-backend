@@ -1,7 +1,8 @@
 {
     "auth": {
         "error": {
-            "passwordsDontMatch": "Las contrase\u00f1as no coinciden",
+            "userHasCredentials": "El usuario ya tiene una contrase\u00f1a registrada",
+            "passwordsDoesNotMatch": "Las contrase\u00f1as no coinciden",
             "wrongPassword": "La contrase\u00f1a no es correcta",
             "pendingUser": "El usuario aun no ha verificado su correo",
             "suspendedUser": "El usuario se encuentra suspendido",

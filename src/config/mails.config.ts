@@ -6,7 +6,7 @@ export const mailsConfig = {
   useFactory: (configService: ConfigService) => {
     const mailConfig = {
       transport: {
-        // service: configService.get('MAIL_SERVICE'),
+        service: configService.get('MAIL_SERVICE'),
         host: configService.get('MAIL_HOST'),
         port: Number(configService.get('MAIL_PORT')),
         secure: configService.get('MAIL_SECURE') === 'true',
@@ -19,14 +19,14 @@ export const mailsConfig = {
         },
       },
       defaults: {
-        from: `"Soporte "${configService.get('NAME_APP')}  <${configService.get(
+        from: `"Soporteㅤ"${configService.get('NAME_APP')} " | No Reply" <${configService.get(
           'DEFAULT_REMITTER_MAIL',
         )}>`,
       },
       // preview: true,
       template: {
         dir: join(__dirname, '../mails/templates'),
-        adapter: new HandlebarsAdapter(/*{ t: i18n.hbsHelper }*/),
+        adapter: new HandlebarsAdapter(),
         options: {
           strict: true,
         },

@@ -1,0 +1,42 @@
+name: Crear Release Automático
+
+on:
+  push:
+    tags:
+      - 'nestjs-auth-backend-v*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Obtener el código
+        uses: actions/checkout@v3
+
+      - name: Preparar git
+        run: git fetch --tags
+
+      - name: Generar notas del release
+        id: changelog
+        run: |
+          ULTIMO_TAG=$(git describe --tags --abbrev=0 $(git rev-list --tags --skip=1 --max-count=1))
+
+          if [ -z "$ULTIMO_TAG" ]; then
+            NOTAS=$(git log -1 --pretty=format:'- %s')
+          else
+            NOTAS=$(git log $ULTIMO_TAG..${GITHUB_REF_NAME} --pretty=format:'- %s')
+          fi
+
+          echo "notas<<EOF" >> $GITHUB_OUTPUT
+          echo "$NOTAS" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Crear release en GitHub
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          body: ${{ steps.changelog.outputs.notas }}
+          prerelease: ${{ contains(github.ref_name, '-beta') || contains(github.ref_name, '-rc') }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,12 +1,10 @@
-# NEXTCOMMERCE - Backend (NestJS)
+# OpenAuth — Servidor de Autenticación (NestJS)
 
-backend construido con NestJS que provee autenticación, gestión de usuarios, roles, sesiones y plantillas de correo con i18n (inglés/español).
+Proyecto open-source que provee un sistema de autenticación modular y reutilizable, implementado con NestJS. Está pensado como una referencia y base para que otros proyectos integren funcionalidades de autenticación segura: login local (email/password), OAuth (Google, Facebook, GitHub), gestión de usuarios, permisos, sesiones y envío de correos con plantillas. El proyecto incluye i18n (es/en), validación estandarizada y respuestas uniformes para facilitar su consumo por frontends.
 
 **Prefix base:** `api/v1` (definido en `src/main.ts`)
 
-# NEXTCOMMERCE - Backend (NestJS)
-
-**Versión:** v0.1.0-beta
+**Versión:** v0.2.0-beta
 
 ## Descripción
 
@@ -14,8 +12,9 @@ Backend construido con NestJS que sirve como API para la plataforma Nextcommerce
 
 ## Estado de versionado
 
-- Versión liberada inicialmente: **v0.1.0-beta**
-- Notas: versión beta; varios endpoints y pruebas e2e pueden estar en progreso.
+- Historial de versiones:
+  - **v0.1.0-beta** — Versión inicial beta con módulos de autenticación, usuarios, roles, i18n y plantillas de correo.
+  - **v0.2.0-beta** — Añadido OAuth (Google, Facebook, GitHub) y separación de credenciales/OAuth para permitir múltiples formas de inicio de sesión vinculadas a una cuenta.
 
 ## Funcionalidades principales
 
@@ -30,6 +29,71 @@ Backend construido con NestJS que sirve como API para la plataforma Nextcommerce
 - Validación global con `class-validator` e integración i18n para mensajes de validación.
 - Documentación automática con Swagger en `/api/docs`.
 
+## OAuth y modelo de credenciales (v0.2.0-beta)
+
+En la versión `v0.2.0-beta` se añadió soporte para autenticación vía OAuth providers: Google, Facebook y GitHub. Además, las credenciales locales (email/contraseña) y las credenciales OAuth se almacenan en tablas separadas para permitir que una misma cuenta de usuario tenga vinculadas múltiples formas de inicio de sesión.
+
+Estructura general (conceptual):
+
+- Tabla `credentials`: almacena credenciales locales (hash de contraseña, tipo 'local').
+- Tabla `oauth_credentials`: almacena registros de proveedores OAuth (provider, provider_user_id, access_token, refresh_token opcional).
+- Ambas tablas se relacionan con la entidad `users` para permitir vinculación multi-proveedor.
+
+Flujo OAuth resumido:
+
+1. El cliente redirige al endpoint de autorización del backend: `GET /api/v1/auth/google` (o `/facebook`, `/github`).
+2. El backend usa el guard OAuth correspondiente (`GoogleOauthGuard`, `FacebookOauthGuard`, `GithubOauthGuard`) para iniciar el flujo con el proveedor.
+3. Tras autenticarse en el proveedor, el callback (`/api/v1/auth/google/callback`, etc.) invoca `authService.loginById(req, id, i18n)` que genera `access_token` y `refresh_token` (mismo formato que login local).
+4. Si el proveedor devuelve un email ya existente, se vincula el `oauth_credentials` al mismo `user.id`. Si no existe, se crea el usuario y se vincula.
+
+Endpoints OAuth:
+
+- `GET /api/v1/auth/google` — Inicia flujo Google OAuth
+- `GET /api/v1/auth/google/callback` — Callback Google
+- `GET /api/v1/auth/facebook` — Inicia flujo Facebook OAuth
+- `GET /api/v1/auth/facebook/callback` — Callback Facebook
+- `GET /api/v1/auth/github` — Inicia flujo Github OAuth
+- `GET /api/v1/auth/github/callback` — Callback Github
+
+Credenciales y configuración (env)
+
+Separar credenciales en `.env` en dos bloques: credenciales de SMTP/JWT/DB y credenciales OAuth por proveedor. Ejemplo:
+
+```ini
+# Bloque general
+JWT_SECRET=...
+JWT_REFRESH_SECRET=...
+
+# OAuth Google
+OAUTH_GOOGLE_CLIENT_ID=your-google-client-id
+OAUTH_GOOGLE_CLIENT_SECRET=your-google-client-secret
+OAUTH_GOOGLE_CALLBACK_URL=https://your-backend.example.com/api/v1/auth/google/callback
+
+# OAuth Facebook
+OAUTH_FACEBOOK_CLIENT_ID=...
+OAUTH_FACEBOOK_CLIENT_SECRET=...
+OAUTH_FACEBOOK_CALLBACK_URL=https://your-backend.example.com/api/v1/auth/facebook/callback
+
+# OAuth Github
+OAUTH_GITHUB_CLIENT_ID=...
+OAUTH_GITHUB_CLIENT_SECRET=...
+OAUTH_GITHUB_CALLBACK_URL=https://your-backend.example.com/api/v1/auth/github/callback
+```
+
+Nota: el proyecto incluye guards y estrategias OAuth en `src/modules/auth/guards/oauth/*` y la gestión de credenciales en `src/modules/users/credentials`.
+
+Ejemplo de tabla (conceptual)
+
+| Tipo                | Campo clave                               | Descripción                                      |
+| ------------------- | ----------------------------------------- | ------------------------------------------------ |
+| `credentials`       | `user_id`, `type='local'`                 | Hash de contraseña, salt, fecha de creación      |
+| `oauth_credentials` | `user_id`, `provider`, `provider_user_id` | Token del proveedor, datos para refrescar sesión |
+
+Cómo vincular múltiples métodos de inicio de sesión
+
+- Si el usuario inicia sesión con OAuth y ya existe un `user.email` igual, el sistema vincula automáticamente el `oauth_credentials` a ese `user`.
+- Es posible implementar endpoints para listar y desvincular proveedores conectados desde `src/modules/users/credentials`.
+
 ## Endpoints resumidos
 
 Prefijo global: `/api/v1` (configurado en `src/main.ts`).
@@ -39,6 +103,7 @@ Prefijo global: `/api/v1` (configurado en `src/main.ts`).
   - `POST /api/v1/auth/sign-in` — Login (retorna `access_token` y `refresh_token`)
   - `GET /api/v1/auth/verify-email/:token` — Verificar email
   - Endpoints para reset de contraseña y refresh token
+  - OAuth: `GET /api/v1/auth/{google,facebook,github}` y sus callbacks que devuelven `access_token` / `refresh_token`.
 
 - Usuarios (`src/modules/users`):
   - `GET /api/v1/users` — Listar usuarios (filtros/paginación)
@@ -107,6 +172,98 @@ DEFAULT_LOCALE=en
 - Revisa `src/config/mails.config.ts` y `src/mails/mail.service.ts` para personalizar envíos.
 - `synchronize: true` en TypeORM (`src/app.module.ts`) está activado para desarrollo; desactívalo en producción.
 
+## Respuestas estandarizadas y manejo de excepciones
+
+El proyecto usa una fábrica de respuestas que estandariza el formato de respuestas exitosas y de error. Esto facilita el consumo desde clientes frontend y la internacionalización de mensajes.
+
+Formato de respuesta exitosa (ejemplo 200):
+
+```json
+{
+  "statusCode": 200,
+  "message": "OK",
+  "description": "La operación se completó correctamente.",
+  "data": {
+    "data": {
+      /* payload específico */
+    },
+    "total": 1
+  }
+}
+```
+
+Nota: la fábrica usa `i18n.t('status.<code>.message')` y `i18n.t('status.<code>.description')` para poblar `message` y `description`.
+
+Formato de error estándar (ejemplo 400):
+
+```json
+HTTP/1.1 400 Bad Request
+{
+  "statusCode": 400,
+  "message": "Bad Request",
+  "description": "Descripción detallada del error (i18n)."
+}
+```
+
+Los helpers disponibles generan errores específicos via `ResponseFactory.error(...)` y lanzan `HttpException` con la estructura anterior. Helpers comunes:
+
+- `notFoundError(...)` — 404
+- `conflictError(...)` — 409
+- `badRequestError(...)` — 400
+- `unauthorizedError(...)` — 401
+- `forbiddenError(...)` — 403
+- `internalServerError(...)` — 500
+
+Ejemplo práctico: login exitoso (cURL)
+
+```bash
+curl -X POST http://localhost:8080/api/v1/auth/sign-in \
+  -H "Content-Type: application/json" \
+  -d '{"email":"user@example.com","password":"Pass1234"}'
+```
+
+Respuesta esperada (200):
+
+```json
+{
+  "statusCode": 200,
+  "message": "OK",
+  "description": "Operación exitosa.",
+  "data": {
+    "data": {
+      "access_token": "eyJ...",
+      "refresh_token": "eyJ...",
+      "email": "user@example.com",
+      "user": "Nombre Apellido",
+      "role": "admin",
+      "permissions": ["users:read", "users:update:id"]
+    },
+    "total": 1
+  }
+}
+```
+
+Ejemplo de error (contraseña incorrecta):
+
+```json
+HTTP/1.1 400 Bad Request
+{
+  "statusCode": 400,
+  "message": "Bad Request",
+  "description": "Contraseña incorrecta."
+}
+```
+
+Ejemplo flujo OAuth (Google)
+
+1. Cliente navega a: `GET https://your-backend.example.com/api/v1/auth/google` — redirección al provider.
+2. Provider redirige a: `GET https://your-backend.example.com/api/v1/auth/google/callback?code=...`.
+3. Callback devuelve la respuesta estándar con tokens (igual formato que login local).
+
+Cabe destacar que la respuesta final provista por `authService.loginById` usa `okResponse(...)` y por tanto sigue el esquema estandarizado.
+
+## Changelog (breve)
+
 ## Documentación
 
 - Swagger UI: `/api/docs`.
@@ -114,6 +271,7 @@ DEFAULT_LOCALE=en
 ## Changelog (breve)
 
 - v0.1.0-beta — Versión inicial beta con módulos de autenticación, usuarios, roles, i18n y plantillas de correo.
+- v0.2.0-beta — Añadido OAuth (Google, Facebook, Github) y separación de credenciales/OAuth.
 
 ## Próximos pasos sugeridos
 

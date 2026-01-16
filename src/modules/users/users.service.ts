@@ -1,8 +1,8 @@
-import { Injectable, Logger, Param } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, Logger, Param } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdatePasswordDto, UpdateUserDto } from './dto/update-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
-import { Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import { I18nContext } from 'nestjs-i18n';
 import {
   conflictError,
@@ -14,7 +14,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { DynamicQueryDto } from 'src/common/services/query/dto/dynamic.dto';
 import { DynamicQueryService } from 'src/common/services/query/dynamic.service';
 import { IdentityTypesService } from 'src/modules/users/identity-types/identity-types.service';
-import * as bcrypt from 'bcryptjs';
 import { v7 as uuidv7 } from 'uuid';
 import { TokensService } from './tokens/tokens.service';
 import { RolesService } from '../roles/roles.service';
@@ -34,19 +33,25 @@ export class UsersService {
     private readonly usersRepository: Repository<User>,
     private readonly identityTypesService: IdentityTypesService,
     private readonly dynamicQueryService: DynamicQueryService,
-    private readonly tokensService: TokensService,
     private readonly rolesService: RolesService,
     private readonly mailService: MailService,
     private readonly oauthService: OAuthService,
+    @Inject(forwardRef(() => TokensService))
+    private readonly tokensService: TokensService,
   ) {}
 
-  async create(createUserDto: CreateUserDto, i18n: I18nContext) {
+  async create(
+    createUserDto: CreateUserDto,
+    i18n: I18nContext,
+    manager?: EntityManager,
+  ) {
+    const repo = manager ? manager.getRepository(User) : this.usersRepository;
     const create = await this.__ValidateAndCreateUser(createUserDto, i18n);
     const user_secret = uuidv7();
     let user = null;
     const role = await this.rolesService.findOne(3, i18n);
     try {
-      user = await this.usersRepository.save({
+      user = await repo.save({
         user_secret,
         role: role.data,
         ...create,
@@ -56,7 +61,7 @@ export class UsersService {
       internalServerError({ i18n, lang: i18n.lang });
     }
 
-    return this.tokensService.createTokenEmailVerification({ user }, i18n);
+    return user;
   }
 
   async findAll(query: DynamicQueryDto, i18n: I18nContext) {
@@ -116,19 +121,16 @@ export class UsersService {
   async findOneByEmail(email: string, i18n: I18nContext) {
     let user = null;
     try {
-      user = await this.usersRepository.findOne({
-        where: { email },
-        select: [
-          'id',
-          'email',
-          'password',
-          'status',
-          'user_secret',
-          'name',
-          'lastname',
-        ],
-        relations: ['role'],
-      });
+      user = await this.usersRepository
+        .createQueryBuilder('user')
+        .leftJoinAndSelect(
+          'user.userAccountCredentials',
+          'userAccountCredentials',
+        )
+        .leftJoinAndSelect('user.role', 'role')
+        .addSelect('userAccountCredentials.password') // 👈 CLAVE
+        .where('user.email = :email', { email })
+        .getOne();
     } catch (error) {
       this.logger.error(error);
       internalServerError({ i18n, lang: i18n.lang });
@@ -142,7 +144,8 @@ export class UsersService {
           args: { entity: i18n.t('entities.users.singular') },
         }),
       });
-    return user;
+    const { userAccountCredentials, ...rest } = user;
+    return { ...rest, password: userAccountCredentials.password };
   }
 
   async update(id: number, updateUserDto: UpdateUserDto, i18n: I18nContext) {
@@ -160,25 +163,10 @@ export class UsersService {
     }
   }
 
-  async updatePassword(
-    id: number,
-    updatePasswordDto: UpdatePasswordDto,
-    i18n: I18nContext,
-  ) {
-    const { password, password_confirm } = updatePasswordDto;
-    if (password !== password_confirm)
-      return conflictError({
-        i18n,
-        lang: i18n.lang,
-        description: i18n.translate(
-          'messages.auth.error.passwordsDoesNotMatch',
-        ),
-      });
+  async updatePassword(id: number, i18n: I18nContext) {
     const user_secret = uuidv7();
-    const hash = await bcrypt.hash(password, 10);
     try {
       return await this.usersRepository.update(id, {
-        password: hash,
         user_secret,
       });
     } catch (error) {
@@ -200,7 +188,7 @@ export class UsersService {
   async verifyEmail(@Param('token') token: string, i18n: I18nContext) {
     const userToken = await this.tokensService.findOneByToken(token, i18n);
 
-    const userId = userToken.data.id;
+    const userId = userToken.data.user.id;
     try {
       await this.usersRepository.update(userId, {
         status: UserStatusEnum.ACTIVE,
@@ -210,15 +198,46 @@ export class UsersService {
       internalServerError({ i18n, lang: i18n.lang });
     }
     await this.tokensService.updateTokenIsUsed(token, i18n);
+    return userToken.data.user.email;
+  }
+
+  private async __findOneByEmail(email: string, i18n: I18nContext) {
+    try {
+      return await this.usersRepository.findOneBy({ email });
+    } catch (error) {
+      this.logger.error(error);
+      internalServerError({ i18n, lang: i18n.lang });
+    }
+  }
+
+  private async __ValidateProviderUser(
+    providerId: string,
+    provider: OAuthProviderEnum,
+    email: string,
+    i18n: I18nContext,
+  ) {
+    const userProviders =
+      await this.oauthService.getUserWithProviderAndProviderId(
+        providerId,
+        provider,
+      );
+    if (userProviders) return userProviders;
+
+    const user = await this.__findOneByEmail(email, i18n);
+    if (user) return user;
+
+    return null;
   }
 
   async validateGoogleUser(googleUser: GoogleProfileDto, i18n?: I18nContext) {
     const { googleId, ...rest } = googleUser;
-    const user = await this.oauthService.getUserWithProviderAndProviderId(
+    const validateUser = await this.__ValidateProviderUser(
       googleId,
       OAuthProviderEnum.GOOGLE,
+      googleUser.email,
+      i18n,
     );
-    if (user) return user;
+    if (validateUser) return validateUser;
 
     const i18nCont = i18n ?? I18nContext.current();
     const role = await this.rolesService.findOne(3, i18nCont);
@@ -236,11 +255,13 @@ export class UsersService {
     i18n?: I18nContext,
   ) {
     const { facebookId, ...rest } = facebookUser;
-    const user = await this.oauthService.getUserWithProviderAndProviderId(
+    const validateUser = await this.__ValidateProviderUser(
       facebookId,
       OAuthProviderEnum.FACEBOOK,
+      facebookUser.email,
+      i18n,
     );
-    if (user) return user;
+    if (validateUser) return validateUser;
 
     const i18nCont = i18n ?? I18nContext.current();
     const role = await this.rolesService.findOne(3, i18nCont);
@@ -258,11 +279,13 @@ export class UsersService {
     i18n?: I18nContext,
   ) {
     const { githubId, ...rest } = githubUser;
-    const user = await this.oauthService.getUserWithProviderAndProviderId(
+    const validateUser = await this.__ValidateProviderUser(
       githubId,
       OAuthProviderEnum.GITHUB,
+      githubUser.email,
+      i18n,
     );
-    if (user) return user;
+    if (validateUser) return validateUser;
 
     const i18nCont = i18n ?? I18nContext.current();
     const role = await this.rolesService.findOne(3, i18nCont);
@@ -306,6 +329,7 @@ export class UsersService {
         oldEmail: user.email,
         newEmail: newEmail,
       },
+      i18n,
     );
   }
 
@@ -316,7 +340,7 @@ export class UsersService {
   ) {
     if (id) this.findOne(id, i18n);
 
-    const { documentTypeId, document, email, password, ...rest } = dto;
+    const { documentTypeId, document, email, ...rest } = dto;
 
     const identitiyType = await this.identityTypesService.findOne(
       documentTypeId,
@@ -345,14 +369,11 @@ export class UsersService {
         }),
       });
 
-    const password_hash = await bcrypt.hash(password, 15);
-
     return {
       ...rest,
       identitiyType: identitiyType.data,
       document,
       email,
-      password: password_hash,
     };
   }
 }

@@ -26,7 +26,8 @@ export type I18nTranslations = {
     "messages": {
         "auth": {
             "error": {
-                "passwordsDontMatch": string;
+                "userHasCredentials": string;
+                "passwordsDoesNotMatch": string;
                 "wrongPassword": string;
                 "pendingUser": string;
                 "suspendedUser": string;

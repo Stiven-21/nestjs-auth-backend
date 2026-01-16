@@ -1,7 +1,8 @@
 {
     "auth": {
         "error": {
-            "passwordsDontMatch": "Passwords don't match",
+            "userHasCredentials": "The user already has a password registered",
+            "passwordsDoesNotMatch": "Passwords don't match",
             "wrongPassword": "The password is incorrect",
             "pendingUser": "The user has not verified their email",
             "suspendedUser": "The user is suspended",

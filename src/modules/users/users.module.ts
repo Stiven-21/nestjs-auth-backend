@@ -16,6 +16,9 @@ import { UserSession } from 'src/modules/users/entities/user-session.entity';
 import { AuthModule } from 'src/modules/auth/auth.module';
 import { UserAccountOAuth } from 'src/modules/users/entities/user-account-oauth.entity';
 import { OAuthService } from 'src/modules/users/oauth/oauth.service';
+import { UserAccountCredentials } from './entities/user-account-credentials.entity';
+import { CredentialsController } from './credentials/credentials.controller';
+import { CredentialsService } from './credentials/credentials.service';
 
 @Module({
   imports: [
@@ -25,6 +28,7 @@ import { OAuthService } from 'src/modules/users/oauth/oauth.service';
       UserToken,
       UserSession,
       UserAccountOAuth,
+      UserAccountCredentials,
     ]),
     forwardRef(() => AuthModule),
     RolesModule,
@@ -34,6 +38,7 @@ import { OAuthService } from 'src/modules/users/oauth/oauth.service';
     IdentityTypesController,
     TokensController,
     SessionController,
+    CredentialsController,
   ],
   providers: [
     UsersService,
@@ -41,6 +46,7 @@ import { OAuthService } from 'src/modules/users/oauth/oauth.service';
     TokensService,
     SessionService,
     OAuthService,
+    CredentialsService,
   ],
   exports: [
     TypeOrmModule,
@@ -48,6 +54,7 @@ import { OAuthService } from 'src/modules/users/oauth/oauth.service';
     TokensService,
     SessionService,
     OAuthService,
+    CredentialsService,
   ],
 })
 export class UsersModule {}

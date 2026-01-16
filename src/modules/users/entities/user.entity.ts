@@ -6,6 +6,7 @@ import {
   Entity,
   ManyToOne,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -14,6 +15,7 @@ import { Role } from 'src/modules/roles/entities/role.entity';
 import { UserStatusEnum } from 'src/common/enum/user-status.enum';
 import { UserSession } from './user-session.entity';
 import { UserAccountOAuth } from './user-account-oauth.entity';
+import { UserAccountCredentials } from './user-account-credentials.entity';
 
 @Entity({ name: 'users' })
 export class User {
@@ -40,10 +42,6 @@ export class User {
 
   @Column({ unique: true, nullable: false, length: 100, type: 'varchar' })
   email: string;
-
-  // Proximamente será removido
-  @Column({ unique: true, nullable: true, type: 'text', select: false })
-  password: string;
 
   @ManyToOne(() => Role, (role) => role.id, { eager: true })
   role: Role;
@@ -84,4 +82,7 @@ export class User {
     (userAccountOAuth) => userAccountOAuth.user,
   )
   userAccountOauths: UserAccountOAuth[];
+
+  @OneToOne(() => UserAccountCredentials, (user) => user.user)
+  userAccountCredentials: UserAccountCredentials;
 }

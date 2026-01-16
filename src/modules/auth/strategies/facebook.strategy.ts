@@ -8,7 +8,7 @@ import { OAuthService } from 'src/modules/users/oauth/oauth.service';
 import { UsersService } from 'src/modules/users/users.service';
 
 @Injectable()
-export class FaceebookStrategy extends PassportStrategy(Strategy) {
+export class FacebookStrategy extends PassportStrategy(Strategy) {
   constructor(
     @Inject(facebookOauthConfig.KEY)
     private facebookConfig: ConfigType<typeof facebookOauthConfig>,

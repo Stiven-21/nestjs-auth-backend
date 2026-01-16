@@ -7,17 +7,18 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { AuthService } from './auth.service';
-import { RegisterDto } from './dto/register.dto';
+import { AuthService } from 'src/modules/auth/auth.service';
+import { RegisterDto } from 'src/modules/auth/dto/register.dto';
 import { I18n, I18nContext } from 'nestjs-i18n';
 import {
   ResetPasswordDto,
   ResetPasswordTokenDto,
 } from './dto/reset-password.dto';
-import { LoginDto } from './dto/login.dto';
+import { LoginDto } from 'src/modules/auth/dto/login.dto';
 import { Request } from 'express';
-import { GoogleAuthGuard } from './guards/oauth/google-auth.guard';
-import { AuthGuard } from '@nestjs/passport';
+import { GoogleOauthGuard } from 'src/modules/auth/guards/oauth/google-oauth.guard';
+import { FacebookOauthGuard } from 'src/modules/auth/guards/oauth/facebook-oauth.guard';
+import { GithubOauthGuard } from 'src/modules/auth/guards/oauth/github-oauth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -70,11 +71,11 @@ export class AuthController {
 
   // Oauth Google
   @Get('google')
-  @UseGuards(GoogleAuthGuard)
+  @UseGuards(GoogleOauthGuard)
   google() {}
 
   @Get('google/callback')
-  @UseGuards(GoogleAuthGuard)
+  @UseGuards(GoogleOauthGuard)
   async googleCallback(@Req() req, @I18n() i18n: I18nContext) {
     const id: number = req.user.id;
     return await this.authService.loginById(req, id, i18n);
@@ -82,11 +83,11 @@ export class AuthController {
 
   //  Oauth Facebook
   @Get('facebook')
-  @UseGuards(AuthGuard('facebook'))
+  @UseGuards(FacebookOauthGuard)
   facebook() {}
 
   @Get('facebook/callback')
-  @UseGuards(AuthGuard('facebook'))
+  @UseGuards(FacebookOauthGuard)
   async facebookCallback(@Req() req, @I18n() i18n: I18nContext) {
     const id: number = req.user.id;
     return await this.authService.loginById(req, id, i18n);
@@ -94,11 +95,11 @@ export class AuthController {
 
   // Oauth Github
   @Get('github')
-  @UseGuards(AuthGuard('github'))
+  @UseGuards(GithubOauthGuard)
   github() {}
 
   @Get('github/callback')
-  @UseGuards(AuthGuard('github'))
+  @UseGuards(GithubOauthGuard)
   async githubCallback(@Req() req, @I18n() i18n: I18nContext) {
     const id: number = req.user.id;
     return await this.authService.loginById(req, id, i18n);

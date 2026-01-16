@@ -19,7 +19,6 @@ import { DefaultLanguage } from 'src/common/types/languages.types';
   imports: [
     NestI18nModule.forRoot({
       fallbackLanguage: DefaultLanguage,
-      // formatter: (template: string, ...arg: any) => template,
       loader: I18nJsonLoader,
       loaderOptions: {
         path: path.join(process.cwd(), 'src', 'i18n', 'locales'),

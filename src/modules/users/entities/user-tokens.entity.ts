@@ -13,7 +13,9 @@ export class UserToken {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => User, (user) => user.userTokens)
+  @ManyToOne(() => User, (user) => user.userTokens, {
+    eager: true,
+  })
   user: User;
 
   @Column({ nullable: false, type: 'varchar', length: 255 })

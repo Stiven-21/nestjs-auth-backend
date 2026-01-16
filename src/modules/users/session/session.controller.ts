@@ -4,7 +4,7 @@ import { I18n, I18nContext } from 'nestjs-i18n';
 import { DynamicQueryDto } from 'src/common/services/query/dto/dynamic.dto';
 import { Auth } from 'src/modules/auth/decorators/auth.decorator';
 
-@Controller('session')
+@Controller('sessions')
 export class SessionController {
   constructor(private readonly sessionService: SessionService) {}
 

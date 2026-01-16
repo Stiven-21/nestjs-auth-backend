@@ -8,11 +8,10 @@ import { UsersService } from 'src/modules/users/users.service';
 import {
   ResetPasswordDto,
   ResetPasswordTokenDto,
-} from './dto/reset-password.dto';
+} from 'src/modules/auth/dto/reset-password.dto';
 import {
   badRequestError,
   internalServerError,
-  notFoundError,
   okResponse,
 } from 'src/common/exceptions';
 import * as bcrypt from 'bcryptjs';
@@ -22,6 +21,8 @@ import { getClientInfo } from 'src/common/helpers/request-info.helper';
 import { Request } from 'express';
 import { SessionService } from 'src/modules/users/session/session.service';
 import { User } from 'src/modules/users/entities/user.entity';
+import { CredentialsService } from 'src/modules/users/credentials/credentials.service';
+import { DataSource } from 'typeorm';
 
 @Injectable()
 export class AuthService {
@@ -31,22 +32,46 @@ export class AuthService {
     private readonly sessionService: SessionService,
     private readonly mailService: MailService,
     private readonly jwtService: JwtService,
+    private readonly credentialsService: CredentialsService,
+    private readonly dataSource: DataSource,
   ) {}
 
   async register(registerDto: RegisterDto, i18n: I18nContext) {
-    const user = await this.usersService.create(registerDto, i18n);
+    return this.dataSource.transaction(async (manager) => {
+      const user = await this.usersService.create(registerDto, i18n, manager);
 
-    if (!user) return notFoundError({ i18n, lang: i18n.lang });
+      await this.credentialsService.create(
+        { password: registerDto.password, user },
+        i18n,
+        manager,
+      );
 
-    return okResponse({
-      i18n,
-      lang: i18n.lang,
-      data: { data: user.user.createdAt, total: 1 },
+      await this.tokensService.createTokenEmailVerification(
+        { user },
+        i18n,
+        manager,
+      );
+
+      return okResponse({
+        i18n,
+        lang: i18n.lang,
+        data: { data: user.createdAt, total: 1 },
+      });
     });
   }
 
   async verifyEmail(@Param('token') token: string, i18n: I18nContext) {
-    await this.usersService.verifyEmail(token, i18n);
+    const email = await this.usersService.verifyEmail(token, i18n);
+    const loginUrl = process.env.URL_FRONTEND + '/auth/login';
+    await this.mailService.sendMail(
+      email,
+      'Restablecimiento de contraseña exitoso', // Subject o asunto
+      'auth-activation-success', // Plantilla o template
+      {
+        loginUrl,
+      },
+      i18n,
+    );
 
     return okResponse({
       i18n,
@@ -60,7 +85,6 @@ export class AuthService {
 
   async resetPassword(resetPasswordDto: ResetPasswordDto, i18n: I18nContext) {
     const { email } = resetPasswordDto;
-    await this.usersService.findOneByEmail(email, i18n);
     await this.tokensService.createTokenPasswordReset(email, i18n);
     return okResponse({
       i18n,
@@ -80,32 +104,35 @@ export class AuthService {
     i18n: I18nContext,
   ) {
     const userToken = await this.tokensService.findOneByToken(token, i18n);
-    await this.usersService.updatePassword(
-      userToken.data.id,
+    await this.credentialsService.updatePassword(
+      userToken.data.user.email,
       resetPasswordTokenDto,
       i18n,
     );
+    await this.usersService.updatePassword(userToken.data.user.id, i18n);
+    await this.tokensService.updateTokenIsUsed(token, i18n);
+    const loginUrl = process.env.URL_FRONTEND + '/auth/login';
     await this.mailService.sendMail(
-      userToken.data.email,
+      userToken.data.user.email,
       'Restablecimiento de contraseña exitoso', // Subject o asunto
       'auth-password-success', // Plantilla o template
       {
+        loginUrl,
         updateDate: new Date().toLocaleString(),
         updateTime: new Date().toLocaleTimeString(),
       },
+      i18n,
     );
-
-    // await this.mailService.sendMail(
-    //   user.email,
-    //   'Alerta de inicio de sesión',
-    //   'auth-login-alert',
-    //   {
-    //     loginDate: new Date().toLocaleString(),
-    //     loginIp: ip,
-    //     loginBrowser: browser,
-    //     loginOs: os,
-    //   },
-    // );
+    return okResponse({
+      i18n,
+      lang: i18n.lang,
+      data: {
+        data: i18n.t('messages.auth.success.updatePassword', {
+          lang: i18n.lang,
+        }),
+        total: 0,
+      },
+    });
   }
 
   async login(req: Request, loginDto: LoginDto, i18n: I18nContext) {
@@ -237,6 +264,7 @@ export class AuthService {
         changePasswordUrl: '', // url de cambio de contraseña
         // changePasswordUrl: process.env.CHANGE_PASSWORD_URL,
       },
+      i18n,
     );
 
     return okResponse({

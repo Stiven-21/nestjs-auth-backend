@@ -7,7 +7,7 @@ import { UsersModule } from 'src/modules/users/users.module';
 import googleOauthConfig from 'src/config/google-oauth.config';
 import { GoogleStrategy } from './strategies/google.strategy';
 import facebookOauthConfig from 'src/config/facebook-oauth.config';
-import { FaceebookStrategy } from './strategies/faceebook.strategy';
+import { FacebookStrategy } from './strategies/facebook.strategy';
 import githubOauthConfig from 'src/config/github-oauth.config';
 import { GithubStrategy } from './strategies/github.strategy';
 
@@ -26,7 +26,7 @@ import { GithubStrategy } from './strategies/github.strategy';
     forwardRef(() => UsersModule),
   ],
   controllers: [AuthController],
-  providers: [AuthService, GoogleStrategy, FaceebookStrategy, GithubStrategy],
+  providers: [AuthService, GoogleStrategy, FacebookStrategy, GithubStrategy],
   exports: [JwtModule, AuthService],
 })
 export class AuthModule {}
