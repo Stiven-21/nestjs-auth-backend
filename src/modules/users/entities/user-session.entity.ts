@@ -12,7 +12,10 @@ export class UserSession {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => User, (user) => user.userSessions, { eager: true })
+  @ManyToOne(() => User, (user) => user.userSessions, {
+    eager: true,
+    onDelete: 'CASCADE',
+  })
   user: User;
 
   @Column({ nullable: false, type: 'varchar', length: 50 })

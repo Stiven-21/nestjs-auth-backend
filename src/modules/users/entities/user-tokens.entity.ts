@@ -15,6 +15,7 @@ export class UserToken {
 
   @ManyToOne(() => User, (user) => user.userTokens, {
     eager: true,
+    onDelete: 'CASCADE',
   })
   user: User;
 

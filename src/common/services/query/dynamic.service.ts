@@ -116,6 +116,25 @@ export class DynamicQueryService {
   }
 
   /**
+   * Extrae relaciones desde paths (solo primer nivel)
+   */
+  private extractRelationsFromPaths(
+    paths: string[],
+    validRelations: Set<string>,
+  ): Set<string> {
+    const relations = new Set<string>();
+
+    for (const path of paths) {
+      const root = path.split('.')[0];
+      if (validRelations.has(root)) {
+        relations.add(root);
+      }
+    }
+
+    return relations;
+  }
+
+  /**
    * Realiza una consulta dinámica con paginación, filtros de búsqueda parcial (ILike)
    * y ordenamiento, incluyendo automáticamente las relaciones detectadas.
    *
@@ -133,6 +152,7 @@ export class DynamicQueryService {
     limit: number,
     i18n: I18nContext,
     sort?: string,
+    select?: (keyof T)[],
   ): Promise<{ data: T[]; total: number } | any> {
     page = Number(page); //|| 1;
     limit = Number(limit); //|| 10;
@@ -171,8 +191,7 @@ export class DynamicQueryService {
             // where.push(condition); y luego usar un solo objeto where
             // Sin embargo, para mantener el mismo comportamiento (múltiples condiciones de búsqueda)
             // en el 'where' principal, se construye como un solo objeto si solo hay una condición
-            // o como un array para el caso de OR si hubieran múltiples raíces de filtro
-            // Dado que el código original usaba where.push(condition), mantenemos la lógica de OR.
+            // o como un array para el caso de OR si hubieran múltiples raíces de filtros
             where.push(condition);
           }
         }
@@ -180,7 +199,7 @@ export class DynamicQueryService {
 
       // Se usa un solo objeto 'where' si solo se tiene una condición, para evitar un WHERE (c1 OR c2)
       // que podría ser innecesario si la intención es AND. Dado que el original usa un array
-      // para cada filtro, lo mantendremos así por coherencia con tu código.
+      // para cada filtro, lo mantendremos así por coherencia
 
       // 2. Construcción de 'order'
       const order: FindOptionsOrder<T> = {};
@@ -209,9 +228,50 @@ export class DynamicQueryService {
       // como en tu código, pero se recomienda pasar un objeto `relations` explícito desde el controlador.
 
       // Convertir el Set de relaciones a un objeto de FindOptionsRelations<T>
-      const relations: FindOptionsRelations<T> = Object.fromEntries(
-        Array.from(validRelations).map((rel) => [rel, true]),
-      ) as FindOptionsRelations<T>;
+      let relations: FindOptionsRelations<T> | undefined;
+
+      if (select && select.length > 0) {
+        const relationSet = new Set<string>();
+
+        // Desde select
+        this.extractRelationsFromPaths(
+          select as string[],
+          validRelations,
+        ).forEach((r) => relationSet.add(r));
+
+        // Desde filtros
+        this.extractRelationsFromPaths(
+          Object.keys(filters),
+          validRelations,
+        ).forEach((r) => relationSet.add(r));
+
+        // Desde order
+        if (sort) {
+          const sortFields = sort
+            .split(',')
+            .map((s) => s.trim().split(/\s+/)[0]);
+
+          this.extractRelationsFromPaths(sortFields, validRelations).forEach(
+            (r) => relationSet.add(r),
+          );
+        }
+
+        relations =
+          relationSet.size > 0
+            ? (Object.fromEntries(
+                Array.from(relationSet).map((r) => [r, true]),
+              ) as FindOptionsRelations<T>)
+            : undefined;
+      } else {
+        // Sin select → cargar todas las relaciones
+        relations = Object.fromEntries(
+          Array.from(validRelations).map((r) => [r, true]),
+        ) as FindOptionsRelations<T>;
+      }
+
+      // const relations: FindOptionsRelations<T> = Object.fromEntries(
+      //   Array.from(validRelations).map((rel) => [rel, true]),
+      // ) as FindOptionsRelations<T>;
 
       // 4. Ejecución de la consulta
       const [data, total] = await repository.findAndCount({
@@ -220,12 +280,12 @@ export class DynamicQueryService {
         order,
         relations, // Se cargan todas las relaciones
         skip: Math.max(0, (page - 1) * limit), // Asegura skip >= 0
-        take: Math.max(1, limit), // Asegura take >= 1
+        take: Math.max(1, limit), // Asegura take >= 1,
+        select: select && select.length > 0 ? select : undefined, // Se pasa el select si se especifica
       });
 
       return { data, total };
     } catch (error) {
-      // Mejor práctica: Usar el logger de NestJS
       this.logger.error(error);
       internalServerError({ i18n, lang: i18n.lang });
     }

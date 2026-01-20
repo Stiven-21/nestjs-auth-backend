@@ -24,6 +24,7 @@ import { OAuthService } from 'src/modules/users/oauth/oauth.service';
 import { FacebookProfileDto } from 'src/modules/users/dto/create-facebook-user.dto';
 import { OAuthProviderEnum } from 'src/common/enum/user-oauth-providers.enum';
 import { CreateGithubProfileDto } from 'src/modules/users/dto/create-github-user.dto';
+import { getSafeSelect } from 'src/common/utils/typeorm.utils';
 
 @Injectable()
 export class UsersService {
@@ -66,6 +67,20 @@ export class UsersService {
 
   async findAll(query: DynamicQueryDto, i18n: I18nContext) {
     const { page, limit, sort, ...filters } = query;
+    const select = getSafeSelect(this.usersRepository, [
+      'id',
+      'avatar',
+      'name',
+      'lastname',
+      'document',
+      'email',
+      'role',
+      'status',
+      'createdAt',
+      'updatedAt',
+      'role',
+      'identityType',
+    ]);
     const { data: users, total } = await this.dynamicQueryService.findAndCount(
       this.usersRepository,
       filters,
@@ -73,6 +88,7 @@ export class UsersService {
       limit,
       i18n,
       sort,
+      select,
     );
     return okResponse({
       i18n,
@@ -97,7 +113,25 @@ export class UsersService {
   async findOne(id: number, i18n: I18nContext) {
     let user: User;
     try {
-      user = await this.usersRepository.findOneBy({ id });
+      user = await this.usersRepository.findOne({
+        where: { id },
+        select: [
+          'id',
+          'avatar',
+          'name',
+          'lastname',
+          'document',
+          'email',
+          'role',
+          'status',
+          'createdAt',
+          'updatedAt',
+          'user_secret',
+          'role',
+          'identityType',
+          'userSessions',
+        ],
+      });
     } catch (error) {
       this.logger.error(error);
       internalServerError({ i18n, lang: i18n.lang });
@@ -343,7 +377,7 @@ export class UsersService {
 
     const { documentTypeId, document, email, ...rest } = dto;
 
-    const identitiyType = await this.identityTypesService.findOne(
+    const { data: identityType } = await this.identityTypesService.findOne(
       documentTypeId,
       i18n,
     );
@@ -372,7 +406,7 @@ export class UsersService {
 
     return {
       ...rest,
-      identitiyType: identitiyType.data,
+      identityType,
       document,
       email,
     };
