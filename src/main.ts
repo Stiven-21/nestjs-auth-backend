@@ -24,9 +24,9 @@ async function bootstrap() {
 
   // Swagger
   const config = new DocumentBuilder()
-    .setTitle('API NEXTCOMMERCE')
-    .setDescription('Documentaction API NEXTCOMMERCE')
-    .setVersion('1.0')
+    .setTitle(process.env.NAME_APP ?? 'API')
+    .setDescription(process.env.DESCRIPTION_APP ?? 'API description')
+    .setVersion(process.env.VERSION_APP ?? '1.0')
     .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, config);

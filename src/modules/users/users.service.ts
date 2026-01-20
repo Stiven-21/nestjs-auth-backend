@@ -2,7 +2,7 @@ import { forwardRef, Inject, Injectable, Logger, Param } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
-import { EntityManager, Repository } from 'typeorm';
+import { EntityManager, IsNull, Repository } from 'typeorm';
 import { I18nContext } from 'nestjs-i18n';
 import {
   conflictError,
@@ -81,16 +81,16 @@ export class UsersService {
     });
   }
 
-  async getUserSecret(id: number) {
+  async getUserSecret(id: number, i18n: I18nContext) {
     try {
       const { user_secret } = await this.usersRepository.findOne({
-        where: { id },
-        select: ['user_secret'],
+        where: { id, status: UserStatusEnum.ACTIVE, deletedAt: IsNull() },
+        select: ['id', 'user_secret', 'status'],
       });
       return user_secret;
     } catch (error) {
       this.logger.error(error);
-      return null;
+      internalServerError({ i18n, lang: i18n.lang });
     }
   }
 
@@ -128,7 +128,8 @@ export class UsersService {
           'userAccountCredentials',
         )
         .leftJoinAndSelect('user.role', 'role')
-        .addSelect('userAccountCredentials.password') // 👈 CLAVE
+        .addSelect('userAccountCredentials.password')
+        .addSelect('user.user_secret')
         .where('user.email = :email', { email })
         .getOne();
     } catch (error) {

@@ -1,7 +1,7 @@
 import { LoginDto } from 'src/modules/auth/dto/login.dto';
 import { TokensService } from 'src/modules/users/tokens/tokens.service';
 import { UserStatusEnum } from 'src/common/enum/user-status.enum';
-import { Injectable, Param } from '@nestjs/common';
+import { Injectable, Logger, Param } from '@nestjs/common';
 import { I18nContext } from 'nestjs-i18n';
 import { RegisterDto } from 'src/modules/auth/dto/register.dto';
 import { UsersService } from 'src/modules/users/users.service';
@@ -13,6 +13,7 @@ import {
   badRequestError,
   internalServerError,
   okResponse,
+  unauthorizedError,
 } from 'src/common/exceptions';
 import * as bcrypt from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
@@ -26,6 +27,8 @@ import { DataSource } from 'typeorm';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private readonly usersService: UsersService,
     private readonly tokensService: TokensService,
@@ -160,16 +163,28 @@ export class AuthService {
   }
 
   async refreshToken(refreshToken: string, i18n: I18nContext) {
+    if (!refreshToken) return badRequestError({ i18n, lang: i18n.lang });
     try {
       this.jwtService.verify(refreshToken, {
         secret: process.env.JWT_REFRESH_SECRET,
       });
     } catch (error) {
+      this.logger.error(error);
       internalServerError({ i18n, lang: i18n.lang });
     }
 
-    const { sub } = this.jwtService.decode(refreshToken);
-    const { data: user } = await this.usersService.findOne(sub, i18n);
+    const session = this.jwtService.decode(refreshToken);
+    if (!session)
+      unauthorizedError({
+        i18n,
+        lang: i18n.lang,
+        description: i18n.t('messages.auth.error.unauthorized', {
+          lang: i18n.lang,
+        }),
+      });
+    const { sub } = session;
+    const data = await this.usersService.findOne(sub, i18n);
+    const user = data.data.data;
 
     const payload = {
       sub: user.id,

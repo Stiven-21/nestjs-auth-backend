@@ -64,7 +64,7 @@ export class AuthController {
     return await this.authService.login(req, loginDto, i18n);
   }
 
-  @Get('refresh-token')
+  @Get('refresh-token/:token')
   async refreshToken(@Param('token') token: string, @I18n() i18n: I18nContext) {
     return await this.authService.refreshToken(token, i18n);
   }

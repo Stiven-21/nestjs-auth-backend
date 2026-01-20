@@ -8,7 +8,8 @@
             "suspendedUser": "El usuario se encuentra suspendido",
             "inactiveUser": "El usuario se encuentra inactivo",
             "userEmailAlreadyExists": "Ya existe un usuario con el email {email}",
-            "documentAlreadyExists": "Ya existe un usuario con el documento {document}"
+            "documentAlreadyExists": "Ya existe un usuario con el documento {document}",
+            "userNotFound": "El usuario no ha sido encontrado"
         },
         "success": {
             "register": "Se ha enviado un correo con las instrucciones para verificar el correo",

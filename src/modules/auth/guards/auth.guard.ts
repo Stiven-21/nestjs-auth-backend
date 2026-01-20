@@ -1,4 +1,9 @@
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import {
+  CanActivate,
+  ExecutionContext,
+  Injectable,
+  Logger,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import { I18nContext } from 'nestjs-i18n';
@@ -8,6 +13,7 @@ import { UsersService } from 'src/modules/users/users.service';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
+  private readonly logger = new Logger(AuthGuard.name);
   constructor(
     private readonly jwtService: JwtService,
     private readonly usersService: UsersService,
@@ -35,7 +41,19 @@ export class AuthGuard implements CanActivate {
       });
 
     const payload = this.jwtService.decode(token);
-    const user_secret = await this.usersService.getUserSecret(payload.sub);
+    if (!payload || !payload.sub)
+      unauthorizedError({
+        i18n,
+        lang,
+        description: i18n.t('messages.auth.guard.unauthorized', {
+          lang,
+        }),
+      });
+    const user_secret = await this.usersService.getUserSecret(
+      payload.sub,
+      i18n,
+    );
+
     if (!user_secret)
       unauthorizedError({
         i18n,
@@ -51,6 +69,7 @@ export class AuthGuard implements CanActivate {
       });
       request.user = payload;
     } catch (error) {
+      this.logger.error(error);
       unauthorizedError({
         i18n,
         lang,

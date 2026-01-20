@@ -7,7 +7,7 @@ import { SuperadminGuard } from '../guards/superadmin.guard';
 
 export function Auth(permission?: string) {
   return applyDecorators(
-    Permissions(permission),
+    permission ? Permissions(permission) : Permissions(),
     UseGuards(AuthGuard, PermissionGuard),
     ApiBearerAuth(),
   );

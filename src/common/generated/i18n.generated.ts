@@ -34,6 +34,7 @@ export type I18nTranslations = {
                 "inactiveUser": string;
                 "userEmailAlreadyExists": string;
                 "documentAlreadyExists": string;
+                "userNotFound": string;
             };
             "success": {
                 "register": string;
