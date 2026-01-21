@@ -186,9 +186,10 @@ export class UsersService {
   async update(id: number, updateUserDto: UpdateUserDto, i18n: I18nContext) {
     const update = await this.__ValidateAndCreateUser(updateUserDto, i18n, id);
     await this.__ValidateChangeEmail(
-      (await this.findOne(id, i18n)).data,
+      (await this.findOne(id, i18n)).data.data,
       i18n,
       update.email,
+      id,
     );
     try {
       return await this.usersRepository.update(id, { ...update });
@@ -351,9 +352,10 @@ export class UsersService {
     user: User,
     i18n: I18nContext,
     newEmail: string,
+    id?: number,
   ) {
-    const valUser = await this.findOneByEmail(newEmail, i18n);
-    if (valUser)
+    const valUser = await this.usersRepository.findOneBy({ email: newEmail });
+    if (valUser && (!id || valUser.id !== id))
       conflictError({
         i18n,
         lang: i18n.lang,
@@ -365,13 +367,17 @@ export class UsersService {
 
     if (user.email === newEmail) return;
 
-    this.mailService.sendMail(
+    // revertLink = `${process.env.FRONTEND_URL}/auth/revert-email/${user.user_secret}`;
+    const revertLink = '';
+
+    await this.mailService.sendMail(
       user.email,
       'Cambio de correo electrónico',
       'auth-email-update',
       {
         oldEmail: user.email,
         newEmail: newEmail,
+        revertLink,
       },
       i18n,
     );
@@ -392,7 +398,7 @@ export class UsersService {
     );
 
     const user = await this.usersRepository.findOneBy({ email });
-    if (user)
+    if (user && (!id || user.id !== id))
       conflictError({
         i18n,
         lang: i18n.lang,
@@ -403,7 +409,7 @@ export class UsersService {
       });
 
     const userDocument = await this.usersRepository.findOneBy({ document });
-    if (userDocument)
+    if (userDocument && (!id || userDocument.id !== id))
       conflictError({
         i18n,
         lang: i18n.lang,

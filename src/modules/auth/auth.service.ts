@@ -111,6 +111,8 @@ export class AuthService {
     i18n: I18nContext,
   ) {
     const userToken = await this.tokensService.findOneByToken(token, i18n);
+
+    // ! Se debe hacer una database transaction
     await this.credentialsService.updatePassword(
       userToken.data.user.email,
       resetPasswordTokenDto,

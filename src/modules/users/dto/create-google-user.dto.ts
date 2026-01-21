@@ -4,7 +4,7 @@ import { IsNotEmpty, IsString, MaxLength } from 'class-validator';
 import { tm } from 'src/common/helpers/i18n.helper';
 
 export class GoogleProfileDto extends PartialType(
-  OmitType(CreateUserDto, ['documentTypeId', 'document']),
+  OmitType(CreateUserDto, ['documentTypeId', 'document'] as const),
 ) {
   @IsNotEmpty({
     message: tm('validator.isNotEmpty'),
