@@ -24,6 +24,7 @@ import { SessionService } from 'src/modules/users/session/session.service';
 import { User } from 'src/modules/users/entities/user.entity';
 import { CredentialsService } from 'src/modules/users/credentials/credentials.service';
 import { DataSource } from 'typeorm';
+import { SecurityService } from 'src/modules/users/security/security.service';
 
 @Injectable()
 export class AuthService {
@@ -31,6 +32,7 @@ export class AuthService {
 
   constructor(
     private readonly usersService: UsersService,
+    private readonly securityService: SecurityService,
     private readonly tokensService: TokensService,
     private readonly sessionService: SessionService,
     private readonly mailService: MailService,
@@ -54,6 +56,8 @@ export class AuthService {
         i18n,
         manager,
       );
+
+      await this.securityService.create(user, i18n, manager);
 
       return okResponse({
         i18n,

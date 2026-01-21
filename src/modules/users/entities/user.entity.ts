@@ -16,6 +16,7 @@ import { UserStatusEnum } from 'src/common/enum/user-status.enum';
 import { UserSession } from './user-session.entity';
 import { UserAccountOAuth } from './user-account-oauth.entity';
 import { UserAccountCredentials } from './user-account-credentials.entity';
+import { UserSecurity } from './user-security.entity';
 
 @Entity({ name: 'users' })
 export class User {
@@ -85,4 +86,7 @@ export class User {
 
   @OneToOne(() => UserAccountCredentials, (user) => user.user)
   userAccountCredentials: UserAccountCredentials;
+
+  @OneToOne(() => UserSecurity, (user) => user.user)
+  security: UserSecurity;
 }

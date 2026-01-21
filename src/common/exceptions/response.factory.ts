@@ -1,10 +1,12 @@
-import { HttpException } from '@nestjs/common';
+import { HttpException, Logger } from '@nestjs/common';
 import {
   SuccessResponseOptions,
   ErrorResponseOptions,
-} from '../interfaces/response.interfaces';
+} from 'src/common/interfaces/response.interfaces';
 
 export class ResponseFactory {
+  private static readonly logger = new Logger(ResponseFactory.name);
+
   static success({
     i18n,
     lang,
@@ -29,10 +31,10 @@ export class ResponseFactory {
     args = {},
     description,
   }: ErrorResponseOptions) {
+    this.logger.error({ code, description, args });
     const message = i18n.t(`status.${code}.message`, { lang, args });
     const desc =
       description || i18n.t(`status.${code}.description`, { lang, args });
-
     throw new HttpException(
       {
         statusCode: code,

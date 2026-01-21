@@ -1,7 +1,7 @@
 import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserAccountOAuth } from 'src/modules/users/entities/user-account-oauth.entity';
-import { Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import { CreateOAuthDto } from 'src/modules/users/dto/create-oauth.dto';
 import { I18nContext } from 'nestjs-i18n';
 import { internalServerError } from 'src/common/exceptions';
@@ -18,8 +18,12 @@ export class OAuthService {
     private readonly userService: UsersService,
   ) {}
 
-  async create(createOAuthDto: CreateOAuthDto) {
-    const { userId, ...rest } = createOAuthDto;
+  async create(createOAuthDto: CreateOAuthDto, manager?: EntityManager) {
+    const repo = manager
+      ? manager.getRepository(UserAccountOAuth)
+      : this.oauthRepository;
+    this.logger.log('Create OAuth');
+
     const oath = await this.oauthRepository.findOne({
       where: {
         providerId: createOAuthDto.providerId,
@@ -29,10 +33,8 @@ export class OAuthService {
 
     if (oath) return;
     const i18n = I18nContext.current();
-    const { data: user } = await this.userService.findById(userId, i18n);
-
     try {
-      await this.oauthRepository.save({ ...rest, user });
+      await repo.save(createOAuthDto);
       return;
     } catch (error) {
       this.logger.error(error);

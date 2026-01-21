@@ -16,9 +16,12 @@ import { UserSession } from 'src/modules/users/entities/user-session.entity';
 import { AuthModule } from 'src/modules/auth/auth.module';
 import { UserAccountOAuth } from 'src/modules/users/entities/user-account-oauth.entity';
 import { OAuthService } from 'src/modules/users/oauth/oauth.service';
-import { UserAccountCredentials } from './entities/user-account-credentials.entity';
-import { CredentialsController } from './credentials/credentials.controller';
-import { CredentialsService } from './credentials/credentials.service';
+import { UserAccountCredentials } from 'src/modules/users/entities/user-account-credentials.entity';
+import { CredentialsController } from 'src/modules/users/credentials/credentials.controller';
+import { CredentialsService } from 'src/modules/users/credentials/credentials.service';
+import { UserSecurity } from 'src/modules/users/entities/user-security.entity';
+import { SecurityController } from 'src/modules/users/security/security.controller';
+import { SecurityService } from 'src/modules/users/security/security.service';
 
 @Module({
   imports: [
@@ -29,6 +32,7 @@ import { CredentialsService } from './credentials/credentials.service';
       UserSession,
       UserAccountOAuth,
       UserAccountCredentials,
+      UserSecurity,
     ]),
     forwardRef(() => AuthModule),
     RolesModule,
@@ -39,6 +43,7 @@ import { CredentialsService } from './credentials/credentials.service';
     TokensController,
     SessionController,
     CredentialsController,
+    SecurityController,
   ],
   providers: [
     UsersService,
@@ -47,6 +52,7 @@ import { CredentialsService } from './credentials/credentials.service';
     SessionService,
     OAuthService,
     CredentialsService,
+    SecurityService,
   ],
   exports: [
     TypeOrmModule,
@@ -55,6 +61,7 @@ import { CredentialsService } from './credentials/credentials.service';
     SessionService,
     OAuthService,
     CredentialsService,
+    SecurityService,
   ],
 })
 export class UsersModule {}

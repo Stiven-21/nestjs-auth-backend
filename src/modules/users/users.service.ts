@@ -264,7 +264,12 @@ export class UsersService {
     return null;
   }
 
-  async validateGoogleUser(googleUser: GoogleProfileDto, i18n?: I18nContext) {
+  async validateGoogleUser(
+    googleUser: GoogleProfileDto,
+    i18n?: I18nContext,
+    manager?: EntityManager,
+  ) {
+    const repo = manager ? manager.getRepository(User) : this.usersRepository;
     const { googleId, ...rest } = googleUser;
     const validateUser = await this.__ValidateProviderUser(
       googleId,
@@ -277,7 +282,7 @@ export class UsersService {
     const i18nCont = i18n ?? I18nContext.current();
     const role = await this.rolesService.findOne(3, i18nCont);
     const user_secret = uuidv7();
-    return await this.usersRepository.save({
+    return await repo.save({
       ...rest,
       role: role.data,
       user_secret,
@@ -288,7 +293,9 @@ export class UsersService {
   async validateFacebookUser(
     facebookUser: FacebookProfileDto,
     i18n?: I18nContext,
+    manager?: EntityManager,
   ) {
+    const repo = manager ? manager.getRepository(User) : this.usersRepository;
     const { facebookId, ...rest } = facebookUser;
     const validateUser = await this.__ValidateProviderUser(
       facebookId,
@@ -301,7 +308,7 @@ export class UsersService {
     const i18nCont = i18n ?? I18nContext.current();
     const role = await this.rolesService.findOne(3, i18nCont);
     const user_secret = uuidv7();
-    return await this.usersRepository.save({
+    return await repo.save({
       ...rest,
       role: role.data,
       user_secret,
@@ -312,7 +319,9 @@ export class UsersService {
   async validateGithubUser(
     githubUser: CreateGithubProfileDto,
     i18n?: I18nContext,
+    manager?: EntityManager,
   ) {
+    const repo = manager ? manager.getRepository(User) : this.usersRepository;
     const { githubId, ...rest } = githubUser;
     const validateUser = await this.__ValidateProviderUser(
       githubId,
@@ -325,7 +334,7 @@ export class UsersService {
     const i18nCont = i18n ?? I18nContext.current();
     const role = await this.rolesService.findOne(3, i18nCont);
     const user_secret = uuidv7();
-    return await this.usersRepository.save({
+    return await repo.save({
       ...rest,
       role: role.data,
       user_secret,

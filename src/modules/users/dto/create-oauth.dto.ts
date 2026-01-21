@@ -9,12 +9,13 @@ import {
 } from 'class-validator';
 import { OAuthProviderEnum } from 'src/common/enum/user-oauth-providers.enum';
 import { tm } from 'src/common/helpers/i18n.helper';
+import { User } from 'src/modules/users/entities/user.entity';
 
 export class CreateOAuthDto {
   @IsNotEmpty({ message: tm('validator.isNotEmpty') })
   @IsNumber({}, { message: tm('validator.isNumber') })
   @IsPositive({ message: tm('validator.isPositive') })
-  userId: number;
+  user: User;
 
   @IsEnum(OAuthProviderEnum, {
     message: tm('validator.isEnum', { enumValues: OAuthProviderEnum }),
