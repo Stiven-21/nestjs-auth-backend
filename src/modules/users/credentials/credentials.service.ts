@@ -58,7 +58,11 @@ export class CredentialsService {
     email: string,
     updatePasswordDto: UpdatePasswordDto,
     i18n: I18nContext,
+    manager?: EntityManager,
   ) {
+    const repo = manager
+      ? manager.getRepository(UserAccountCredentials)
+      : this.credentialsRepository;
     const { id } = await this.credentialsRepository.findOneBy({
       user: { email },
     });
@@ -74,7 +78,7 @@ export class CredentialsService {
       });
     const password_hash = await bcrypt.hash(password, 10);
     try {
-      return await this.credentialsRepository.update(id, {
+      return await repo.update(id, {
         password: password_hash,
       });
     } catch (error) {

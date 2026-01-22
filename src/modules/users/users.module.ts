@@ -22,6 +22,9 @@ import { CredentialsService } from 'src/modules/users/credentials/credentials.se
 import { UserSecurity } from 'src/modules/users/entities/user-security.entity';
 import { SecurityController } from 'src/modules/users/security/security.controller';
 import { SecurityService } from 'src/modules/users/security/security.service';
+import { UserEmailChangeLog } from './entities/user-email-change-log.entity';
+import { EmailLogChangesService } from './email-log-changes/email-log-changes.service';
+import { EmailLogChangesController } from './email-log-changes/email-log-changes.controller';
 
 @Module({
   imports: [
@@ -33,6 +36,7 @@ import { SecurityService } from 'src/modules/users/security/security.service';
       UserAccountOAuth,
       UserAccountCredentials,
       UserSecurity,
+      UserEmailChangeLog,
     ]),
     forwardRef(() => AuthModule),
     RolesModule,
@@ -44,6 +48,7 @@ import { SecurityService } from 'src/modules/users/security/security.service';
     SessionController,
     CredentialsController,
     SecurityController,
+    EmailLogChangesController,
   ],
   providers: [
     UsersService,
@@ -53,6 +58,7 @@ import { SecurityService } from 'src/modules/users/security/security.service';
     OAuthService,
     CredentialsService,
     SecurityService,
+    EmailLogChangesService,
   ],
   exports: [
     TypeOrmModule,
@@ -62,6 +68,7 @@ import { SecurityService } from 'src/modules/users/security/security.service';
     OAuthService,
     CredentialsService,
     SecurityService,
+    EmailLogChangesService,
   ],
 })
 export class UsersModule {}

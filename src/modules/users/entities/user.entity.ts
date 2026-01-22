@@ -13,10 +13,11 @@ import {
 import { UserToken } from './user-tokens.entity';
 import { Role } from 'src/modules/roles/entities/role.entity';
 import { UserStatusEnum } from 'src/common/enum/user-status.enum';
-import { UserSession } from './user-session.entity';
-import { UserAccountOAuth } from './user-account-oauth.entity';
-import { UserAccountCredentials } from './user-account-credentials.entity';
-import { UserSecurity } from './user-security.entity';
+import { UserSession } from 'src/modules/users/entities/user-session.entity';
+import { UserAccountOAuth } from 'src/modules/users/entities/user-account-oauth.entity';
+import { UserAccountCredentials } from 'src/modules/users/entities/user-account-credentials.entity';
+import { UserSecurity } from 'src/modules/users/entities/user-security.entity';
+import { UserEmailChangeLog } from './user-email-change-log.entity';
 
 @Entity({ name: 'users' })
 export class User {
@@ -89,4 +90,7 @@ export class User {
 
   @OneToOne(() => UserSecurity, (user) => user.user)
   security: UserSecurity;
+
+  @OneToMany(() => UserEmailChangeLog, (user) => user.user)
+  emailChangeLogs: UserEmailChangeLog[];
 }

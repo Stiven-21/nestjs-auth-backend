@@ -2,7 +2,7 @@ import { forwardRef, Inject, Injectable, Logger, Param } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
-import { EntityManager, IsNull, Repository } from 'typeorm';
+import { DataSource, EntityManager, IsNull, Repository } from 'typeorm';
 import { I18nContext } from 'nestjs-i18n';
 import {
   conflictError,
@@ -25,6 +25,7 @@ import { FacebookProfileDto } from 'src/modules/users/dto/create-facebook-user.d
 import { OAuthProviderEnum } from 'src/common/enum/user-oauth-providers.enum';
 import { CreateGithubProfileDto } from 'src/modules/users/dto/create-github-user.dto';
 import { getSafeSelect } from 'src/common/utils/typeorm.utils';
+import { EmailLogChangesService } from 'src/modules/users/email-log-changes/email-log-changes.service';
 
 @Injectable()
 export class UsersService {
@@ -37,8 +38,11 @@ export class UsersService {
     private readonly rolesService: RolesService,
     private readonly mailService: MailService,
     private readonly oauthService: OAuthService,
+    private readonly dataSource: DataSource,
     @Inject(forwardRef(() => TokensService))
     private readonly tokensService: TokensService,
+    @Inject(forwardRef(() => EmailLogChangesService))
+    private readonly emailLogChangesService: EmailLogChangesService,
   ) {}
 
   async create(
@@ -185,24 +189,59 @@ export class UsersService {
 
   async update(id: number, updateUserDto: UpdateUserDto, i18n: I18nContext) {
     const update = await this.__ValidateAndCreateUser(updateUserDto, i18n, id);
-    await this.__ValidateChangeEmail(
+    const { change, oldEmail } = await this.__ValidateChangeEmail(
       (await this.findOne(id, i18n)).data.data,
       i18n,
       update.email,
       id,
     );
     try {
-      return await this.usersRepository.update(id, { ...update });
+      if (!change) return await this.usersRepository.update(id, update);
+
+      const { user, emailChange } = await this.dataSource.manager.transaction(
+        async (manager) => {
+          const user = await manager.getRepository(User).update(id, update);
+          const emailChange = await this.emailLogChangesService.changeEmail(
+            id,
+            oldEmail,
+            updateUserDto.email,
+            i18n,
+            manager,
+          );
+
+          return {
+            user,
+            emailChange,
+          };
+        },
+      );
+
+      const revertLink = `${process.env.FRONTEND_URL}/auth/revert-email/${emailChange.rollbackToken}`;
+
+      await this.mailService.sendMail(
+        oldEmail,
+        'Cambio de correo electrónico',
+        'auth-email-update',
+        {
+          oldEmail,
+          newEmail: updateUserDto.email,
+          revertLink,
+        },
+        i18n,
+      );
+
+      return user;
     } catch (error) {
       this.logger.error(error);
       internalServerError({ i18n, lang: i18n.lang });
     }
   }
 
-  async updatePassword(id: number, i18n: I18nContext) {
+  async updatePassword(id: number, i18n: I18nContext, manager?: EntityManager) {
+    const repo = manager ? manager.getRepository(User) : this.usersRepository;
     const user_secret = uuidv7();
     try {
-      return await this.usersRepository.update(id, {
+      return await repo.update(id, {
         user_secret,
       });
     } catch (error) {
@@ -365,22 +404,8 @@ export class UsersService {
         }),
       });
 
-    if (user.email === newEmail) return;
-
-    // revertLink = `${process.env.FRONTEND_URL}/auth/revert-email/${user.user_secret}`;
-    const revertLink = '';
-
-    await this.mailService.sendMail(
-      user.email,
-      'Cambio de correo electrónico',
-      'auth-email-update',
-      {
-        oldEmail: user.email,
-        newEmail: newEmail,
-        revertLink,
-      },
-      i18n,
-    );
+    if (user.email === newEmail) return { change: false };
+    return { change: true, oldEmail: user.email };
   }
 
   private async __ValidateAndCreateUser(

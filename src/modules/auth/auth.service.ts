@@ -112,14 +112,21 @@ export class AuthService {
   ) {
     const userToken = await this.tokensService.findOneByToken(token, i18n);
 
-    // ! Se debe hacer una database transaction
-    await this.credentialsService.updatePassword(
-      userToken.data.user.email,
-      resetPasswordTokenDto,
-      i18n,
-    );
-    await this.usersService.updatePassword(userToken.data.user.id, i18n);
-    await this.tokensService.updateTokenIsUsed(token, i18n);
+    await this.dataSource.transaction(async (manager) => {
+      await this.credentialsService.updatePassword(
+        userToken.data.user.email,
+        resetPasswordTokenDto,
+        i18n,
+        manager,
+      );
+      await this.usersService.updatePassword(
+        userToken.data.user.id,
+        i18n,
+        manager,
+      );
+      await this.tokensService.updateTokenIsUsed(token, i18n, manager);
+    });
+
     const loginUrl = process.env.URL_FRONTEND + '/auth/login';
     await this.mailService.sendMail(
       userToken.data.user.email,

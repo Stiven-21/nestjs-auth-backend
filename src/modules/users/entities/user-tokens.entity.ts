@@ -5,7 +5,7 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { User } from './user.entity';
+import { User } from 'src/modules/users/entities/user.entity';
 import { UserTokenEnum } from 'src/common/enum/user-token.enum';
 
 @Entity('user_tokens')

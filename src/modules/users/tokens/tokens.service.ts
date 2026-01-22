@@ -89,10 +89,17 @@ export class TokensService {
     );
   }
 
-  async updateTokenIsUsed(token: string, i18n: I18nContext) {
+  async updateTokenIsUsed(
+    token: string,
+    i18n: I18nContext,
+    manager?: EntityManager,
+  ) {
+    const repo = manager
+      ? manager.getRepository(UserToken)
+      : this.tokensRepository;
     this.findOne(token, i18n);
     try {
-      return await this.tokensRepository.update({ token }, { isUsed: true });
+      return await repo.update({ token }, { isUsed: true });
     } catch (error) {
       this.logger.error(error);
       internalServerError({ i18n, lang: i18n.lang });
