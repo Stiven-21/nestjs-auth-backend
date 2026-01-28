@@ -262,7 +262,7 @@ export class AuthService {
       email: user.email,
       role: {
         name: user.role.name,
-        permissions: user.role.permissions,
+        permissions: await this.normalizePermissions(user.role.permissions),
       },
     };
 
@@ -316,5 +316,19 @@ export class AuthService {
         total: 1,
       },
     });
+  }
+
+  private async normalizePermissions(
+    permissions: string | string[],
+  ): Promise<string[]> {
+    if (Array.isArray(permissions)) return permissions;
+
+    if (typeof permissions === 'string')
+      return permissions
+        .split(',')
+        .map((p) => p.trim())
+        .filter(Boolean);
+
+    return [];
   }
 }

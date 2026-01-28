@@ -12,6 +12,7 @@ import { I18n, I18nContext } from 'nestjs-i18n';
 import { DynamicQueryDto } from 'src/common/services/query/dto/dynamic.dto';
 import { UsersService } from './users.service';
 import { Auth } from '../auth/decorators/auth.decorator';
+import { UserSelfOrAdmin } from 'src/modules/users/decorator/user-self-or-admin.decorator';
 
 @Controller('users')
 export class UsersController {
@@ -31,6 +32,7 @@ export class UsersController {
 
   @Patch(':id')
   @Auth('users:update:id')
+  @UserSelfOrAdmin()
   async update(
     @Param('id') id: number,
     @Body() updateUserDto: UpdateUserDto,
@@ -41,6 +43,7 @@ export class UsersController {
 
   @Delete(':id')
   @Auth('users:delete:id')
+  @UserSelfOrAdmin()
   async remove(@Param('id') id: number, @I18n() i18n: I18nContext) {
     return await this.usersService.remove(id, i18n);
   }

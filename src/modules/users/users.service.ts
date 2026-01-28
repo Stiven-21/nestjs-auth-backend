@@ -253,7 +253,7 @@ export class UsersService {
   async remove(id: number, i18n: I18nContext) {
     this.findOne(id, i18n);
     try {
-      return await this.usersRepository.delete(id);
+      return await this.usersRepository.softDelete(id);
     } catch (error) {
       this.logger.error(error);
       internalServerError({ i18n, lang: i18n.lang });

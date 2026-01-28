@@ -15,7 +15,7 @@ export class Role {
   @Column({ unique: true, nullable: false, length: 20, type: 'varchar' })
   name: string;
 
-  @Column({ type: 'simple-array', nullable: false, default: [] })
+  @Column({ type: 'text', nullable: false, default: [] })
   permissions: string[];
 
   @CreateDateColumn()
