@@ -2,7 +2,6 @@ import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { I18nContext } from 'nestjs-i18n';
 import { forbiddenError } from 'src/common/exceptions';
 import { DefaultLanguage } from 'src/common/types/languages.types';
-// Importa la definición de tipo (o entidad) del usuario
 import { User } from 'src/modules/users/entities/user.entity';
 
 /**
@@ -16,7 +15,7 @@ import { User } from 'src/modules/users/entities/user.entity';
 @Injectable()
 export class SuperadminGuard implements CanActivate {
   // Constante para el rol que tiene acceso exclusivo
-  private readonly SUPER_ADMIN_ROLE = 'super_administrador';
+  private readonly SUPER_ADMIN_ROLE = 'super_admin';
 
   /**
    * @description

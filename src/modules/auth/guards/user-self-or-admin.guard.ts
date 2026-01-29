@@ -56,10 +56,7 @@ export class UserSelfOrAdminGuard implements CanActivate {
     if (user.sub === paramId) return true;
 
     // Caso 2: tiene rol o permiso elevado
-    if (
-      user.roles?.includes('super_admin') ||
-      user.permissions?.includes('all')
-    )
+    if (user.role === 'super_admin' || user.role?.permissions?.includes('all'))
       return true;
 
     forbiddenError({

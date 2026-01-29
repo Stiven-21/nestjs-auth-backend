@@ -266,6 +266,6 @@ Please read [`CONTRIBUTING.md`](CONTRIBUTING.md) before submitting changes.
 
 ## 📄 License
 
-Distributed under the **MIT License**.
+This project is licensed under the **MIT License**.
 
-See the `LICENSE` file for more information.
+See the [LICENSE](LICENSE) file for details.

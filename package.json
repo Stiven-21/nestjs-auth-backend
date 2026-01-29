@@ -1,10 +1,10 @@
 {
   "name": "open-auth",
   "version": "0.2.0-beta",
-  "description": "",
-  "author": "",
-  "private": true,
-  "license": "UNLICENSED",
+  "description": "OpenAuth es un sistema modular de autenticación open-source construido con NestJS.",
+  "author": "James Cordoba <ing.jamescordoba@gmail.com> (https://github.com/Stiven-21)",
+  "private": false,
+  "license": "MIT",
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",

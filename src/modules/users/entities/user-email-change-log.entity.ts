@@ -12,7 +12,9 @@ export class UserEmailChangeLog {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => User, (user) => user.emailChangeLogs)
+  @ManyToOne(() => User, (user) => user.emailChangeLogs, {
+    onDelete: 'CASCADE',
+  })
   user: User;
 
   @Column({ type: 'varchar', length: 100, nullable: false })

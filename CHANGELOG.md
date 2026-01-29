@@ -66,18 +66,4 @@ Los siguientes puntos fueron detectados durante el análisis y están por correg
 
 Si quieres, puedo aplicar parches automáticos para las correcciones prioritarias: sustituir `console.log` por `Logger.debug`, añadir retornos en `resetPasswordToken` y ajustar el manejo de error en `refreshToken`. También puedo tipar estrategias OAuth en un cambio separado si lo autorizas.
 
-## [v0.1.0-beta] - Inicial
-
-### Añadido
-
-- Versión inicial beta con módulos básicos:
-  - Autenticación local (registro, login, refresh token, reset password).
-  - Gestión de usuarios y roles.
-  - Envío de emails con `@nestjs-modules/mailer` y plantillas Handlebars.
-  - Internacionalización (`nestjs-i18n`) con locales `en` y `es`.
-  - Integración con TypeORM + PostgreSQL.
-  - Validación global y documentación Swagger.
-
----
-
 > Nota: Este changelog resume las entradas más relevantes para las versiones beta. Para releases futuras, se recomienda seguir el formato SemVer y añadir detalles de seguridad y breaking changes cuando apliquen.

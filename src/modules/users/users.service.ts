@@ -30,6 +30,7 @@ import { EmailLogChangesService } from 'src/modules/users/email-log-changes/emai
 @Injectable()
 export class UsersService {
   private readonly logger = new Logger(UsersService.name);
+
   constructor(
     @InjectRepository(User)
     private readonly usersRepository: Repository<User>,
@@ -54,7 +55,10 @@ export class UsersService {
     const create = await this.__ValidateAndCreateUser(createUserDto, i18n);
     const user_secret = uuidv7();
     let user = null;
-    const role = await this.rolesService.findOne(3, i18n);
+    const role = await this.rolesService.findOne(
+      Number(process.env.ROL_USER_ID),
+      i18n,
+    );
     try {
       user = await repo.save({
         user_secret,
@@ -253,7 +257,12 @@ export class UsersService {
   async remove(id: number, i18n: I18nContext) {
     this.findOne(id, i18n);
     try {
-      return await this.usersRepository.softDelete(id);
+      await this.usersRepository.softDelete(id);
+      return okResponse({
+        i18n,
+        lang: i18n.lang,
+        data: { data: null, total: 0 },
+      });
     } catch (error) {
       this.logger.error(error);
       internalServerError({ i18n, lang: i18n.lang });
@@ -320,7 +329,10 @@ export class UsersService {
     if (validateUser) return validateUser;
 
     const i18nCont = i18n ?? I18nContext.current();
-    const role = await this.rolesService.findOne(3, i18nCont);
+    const role = await this.rolesService.findOne(
+      Number(process.env.ROL_USER_ID),
+      i18nCont,
+    );
     const user_secret = uuidv7();
     return await repo.save({
       ...rest,
@@ -346,7 +358,10 @@ export class UsersService {
     if (validateUser) return validateUser;
 
     const i18nCont = i18n ?? I18nContext.current();
-    const role = await this.rolesService.findOne(3, i18nCont);
+    const role = await this.rolesService.findOne(
+      Number(process.env.ROL_USER_ID),
+      i18nCont,
+    );
     const user_secret = uuidv7();
     return await repo.save({
       ...rest,
@@ -372,7 +387,10 @@ export class UsersService {
     if (validateUser) return validateUser;
 
     const i18nCont = i18n ?? I18nContext.current();
-    const role = await this.rolesService.findOne(3, i18nCont);
+    const role = await this.rolesService.findOne(
+      Number(process.env.ROL_USER_ID),
+      i18nCont,
+    );
     const user_secret = uuidv7();
     return await repo.save({
       ...rest,
