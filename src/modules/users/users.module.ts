@@ -22,9 +22,9 @@ import { CredentialsService } from 'src/modules/users/credentials/credentials.se
 import { UserSecurity } from 'src/modules/users/entities/user-security.entity';
 import { SecurityController } from 'src/modules/users/security/security.controller';
 import { SecurityService } from 'src/modules/users/security/security.service';
-import { UserEmailChangeLog } from './entities/user-email-change-log.entity';
-import { EmailLogChangesService } from './email-log-changes/email-log-changes.service';
-import { EmailLogChangesController } from './email-log-changes/email-log-changes.controller';
+import { UserEmailChangeLog } from 'src/modules/users/entities/user-email-change-log.entity';
+import { EmailLogChangesService } from 'src/modules/users/email-log-changes/email-log-changes.service';
+import { EmailLogChangesController } from 'src/modules/users/email-log-changes/email-log-changes.controller';
 
 @Module({
   imports: [

@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserSession } from 'src/modules/users/entities/user-session.entity';
-import { Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import { UsersService } from '../users.service';
 import { CreateSessionDto } from '../dto/create-session.dto';
 import { I18nContext } from 'nestjs-i18n';
@@ -19,12 +19,19 @@ export class SessionService {
     private readonly dynamicQueryService: DynamicQueryService,
   ) {}
 
-  async create(createSessionDto: CreateSessionDto, i18n: I18nContext) {
+  async create(
+    createSessionDto: CreateSessionDto,
+    i18n: I18nContext,
+    manager?: EntityManager,
+  ) {
+    const repo = manager
+      ? manager.getRepository(UserSession)
+      : this.sessionRepository;
     const { userId, ...rest } = createSessionDto;
     const { data } = await this.usersService.findOne(userId, i18n);
     const user = data.data;
     try {
-      await this.sessionRepository.save({
+      await repo.save({
         user,
         expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
         ...rest,

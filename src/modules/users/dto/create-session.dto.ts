@@ -1,5 +1,6 @@
 import { IsNotEmpty, IsNumber, IsPositive, IsString } from 'class-validator';
 import { tm } from 'src/common/helpers/i18n.helper';
+import { LocationInfo } from 'src/common/interfaces/location-info.interface';
 
 export class CreateSessionDto {
   @IsNotEmpty({ message: tm('validator.isNotEmpty') })
@@ -20,6 +21,5 @@ export class CreateSessionDto {
   userAgent: string;
 
   @IsNotEmpty({ message: tm('validator.isNotEmpty') })
-  @IsString({ message: tm('validator.isString') })
-  location: string;
+  location: LocationInfo;
 }

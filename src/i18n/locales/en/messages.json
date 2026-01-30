@@ -23,6 +23,9 @@
             "unauthorized": "Unauthorized access",
             "deniedForPermission": "You do not have permission to access this resource",
             "deniedOnlyAdmin": "You do not have permission to access this resource, only administrators have access"
+        },
+        "refreshToken": {
+            "alreadyRevoked": "The session has already been revoked"
         }
     },
     "common": {

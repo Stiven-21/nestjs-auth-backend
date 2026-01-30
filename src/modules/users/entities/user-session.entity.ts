@@ -6,6 +6,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { User } from './user.entity';
+import { LocationInfo } from 'src/common/interfaces/location-info.interface';
 
 @Entity('user_sessions')
 export class UserSession {
@@ -27,8 +28,9 @@ export class UserSession {
   @Column({ nullable: false, type: 'text' })
   userAgent: string;
 
-  @Column({ nullable: true, type: 'varchar', length: 100 })
-  location: string;
+  // Mas adelante dividir country y city para mejor auditoria
+  @Column({ nullable: true, type: 'jsonb' })
+  location: LocationInfo | null;
 
   @CreateDateColumn()
   createdAt: Date;

@@ -49,6 +49,9 @@ export type I18nTranslations = {
                 "deniedForPermission": string;
                 "deniedOnlyAdmin": string;
             };
+            "refreshToken": {
+                "alreadyRevoked": string;
+            };
         };
         "common": {
             "notFound": string;

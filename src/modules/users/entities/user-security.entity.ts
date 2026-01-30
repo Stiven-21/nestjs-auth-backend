@@ -19,7 +19,7 @@ export class UserSecurity {
   @JoinColumn()
   user: User;
 
-  @Column({ default: false })
+  @Column({ default: false, type: 'boolean' })
   twoFactorEnabled: boolean;
 
   @Column({

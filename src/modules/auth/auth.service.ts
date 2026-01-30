@@ -25,6 +25,8 @@ import { User } from 'src/modules/users/entities/user.entity';
 import { CredentialsService } from 'src/modules/users/credentials/credentials.service';
 import { DataSource } from 'typeorm';
 import { SecurityService } from 'src/modules/users/security/security.service';
+import { AuthSessionsService } from 'src/modules/auth/sessions/sessions.service';
+import { AuthRefreshTokensService } from './refresh-tokens/refresh-tokens.service';
 
 @Injectable()
 export class AuthService {
@@ -39,6 +41,8 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly credentialsService: CredentialsService,
     private readonly dataSource: DataSource,
+    private readonly authSessionsService: AuthSessionsService,
+    private readonly authRefreshTokenService: AuthRefreshTokensService,
   ) {}
 
   async register(registerDto: RegisterDto, i18n: I18nContext) {
@@ -151,7 +155,12 @@ export class AuthService {
     });
   }
 
-  async login(req: Request, loginDto: LoginDto, i18n: I18nContext) {
+  async login(
+    req: Request,
+    loginDto: LoginDto,
+    deviceId: string,
+    i18n: I18nContext,
+  ) {
     const { email, password } = loginDto;
 
     const user = await this.usersService.findOneByEmail(email, i18n);
@@ -167,16 +176,32 @@ export class AuthService {
         }),
       });
 
-    return await this.__generatedTokenAndRefreshToken(req, user, i18n);
+    return await this.__generatedTokenAndRefreshToken(
+      req,
+      user,
+      i18n,
+      deviceId,
+    );
   }
 
-  async loginById(req: Request, id: number, i18n: I18nContext) {
+  async loginById(
+    req: Request,
+    id: number,
+    deviceId: string,
+    i18n: I18nContext,
+  ) {
     const user = await this.usersService.findById(id, i18n);
-    return await this.__generatedTokenAndRefreshToken(req, user.data, i18n);
+    return await this.__generatedTokenAndRefreshToken(
+      req,
+      user.data,
+      i18n,
+      deviceId,
+    );
   }
 
   async refreshToken(refreshToken: string, i18n: I18nContext) {
     if (!refreshToken) return badRequestError({ i18n, lang: i18n.lang });
+
     try {
       this.jwtService.verify(refreshToken, {
         secret: process.env.JWT_REFRESH_SECRET,
@@ -208,6 +233,22 @@ export class AuthService {
       },
     };
 
+    const authSession = await this.authRefreshTokenService.revokeRefreshToken(
+      refreshToken,
+      i18n,
+    );
+    const newRefreshToken = this.jwtService.sign(payload, {
+      secret: process.env.JWT_REFRESH_SECRET,
+      expiresIn: '2d',
+    });
+    await this.authRefreshTokenService.createRefreshToken(
+      {
+        authSession,
+        refreshToken: newRefreshToken,
+      },
+      i18n,
+    );
+
     return okResponse({
       i18n,
       lang: i18n.lang,
@@ -217,10 +258,7 @@ export class AuthService {
             secret: process.env.JWT_SECRET + user.user_secret,
             expiresIn: '30m',
           }),
-          refresh_token: this.jwtService.sign(payload, {
-            secret: process.env.JWT_REFRESH_SECRET,
-            expiresIn: '2d',
-          }),
+          refresh_token: newRefreshToken,
         },
         total: 1,
       },
@@ -231,7 +269,13 @@ export class AuthService {
     req: Request,
     user: User,
     i18n: I18nContext,
+    deviceId: string,
   ) {
+    req.user = {
+      sub: user.id,
+      email: user.email,
+      deviceId,
+    };
     if (user.status === UserStatusEnum.PENDING)
       badRequestError({
         i18n,
@@ -266,19 +310,49 @@ export class AuthService {
       },
     };
 
-    // CONFIGIRAR ENVIO DE EMAIL DE INICIO DE SESION
-    const { ip, userAgent, browser, os, device } = getClientInfo(req);
+    const { ip, userAgent, browser, os, device, location } =
+      await getClientInfo(req);
 
-    await this.sessionService.create(
-      {
-        userId: user.id,
-        ip,
-        device,
-        userAgent: userAgent,
-        location: null, // Luego se va a configurar por API
-      },
-      i18n,
-    );
+    const refreshToken = await this.dataSource.transaction(async (manager) => {
+      await this.sessionService.create(
+        {
+          userId: user.id,
+          ip,
+          device,
+          userAgent,
+          location,
+        },
+        i18n,
+        manager,
+      );
+
+      const authSession = await this.authSessionsService.createAuthSession(
+        {
+          user,
+          ipAddress: ip,
+          userAgent,
+          deviceId,
+        },
+        i18n,
+        manager,
+      );
+
+      const refreshToken = this.jwtService.sign(payload, {
+        secret: process.env.JWT_REFRESH_SECRET,
+        expiresIn: '2d',
+      });
+
+      await this.authRefreshTokenService.createRefreshToken(
+        {
+          authSession,
+          refreshToken,
+        },
+        i18n,
+        manager,
+      );
+
+      return refreshToken;
+    });
 
     await this.mailService.sendMail(
       user.email,
@@ -304,10 +378,7 @@ export class AuthService {
             secret: process.env.JWT_SECRET + user.user_secret,
             expiresIn: '30m',
           }),
-          refresh_token: this.jwtService.sign(payload, {
-            secret: process.env.JWT_REFRESH_SECRET,
-            expiresIn: '2d',
-          }),
+          refresh_token: refreshToken,
           email: user.email,
           user: user.name + ' ' + user.lastname,
           role: user.role.name,

@@ -3,6 +3,7 @@ import { AppModule } from 'src/app.module';
 import { CustomValidationPipe } from 'src/config/validation.config';
 import { I18nValidationExceptionFilter } from 'nestjs-i18n';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import * as cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -23,6 +24,9 @@ async function bootstrap() {
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
+
+  app.use(cookieParser());
+  // app.use('trust proxy', true);
 
   await app.listen(process.env.APP_PORT || 8080);
 }

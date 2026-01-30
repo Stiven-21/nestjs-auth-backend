@@ -7,9 +7,14 @@ import { UsersModule } from 'src/modules/users/users.module';
 import googleOauthConfig from 'src/config/google-oauth.config';
 import { GoogleStrategy } from './strategies/google.strategy';
 import facebookOauthConfig from 'src/config/facebook-oauth.config';
-import { FacebookStrategy } from './strategies/facebook.strategy';
+import { FacebookStrategy } from 'src/modules/auth/strategies/facebook.strategy';
 import githubOauthConfig from 'src/config/github-oauth.config';
-import { GithubStrategy } from './strategies/github.strategy';
+import { GithubStrategy } from 'src/modules/auth/strategies/github.strategy';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { AuthSessions } from 'src/modules/auth/entities/auth-sessions.entity';
+import { AuthRefreshTokens } from 'src/modules/auth/entities/auth-refresh-tokens.entity';
+import { AuthSessionsService } from 'src/modules/auth/sessions/sessions.service';
+import { AuthRefreshTokensService } from 'src/modules/auth/refresh-tokens/refresh-tokens.service';
 
 @Module({
   imports: [
@@ -20,13 +25,21 @@ import { GithubStrategy } from './strategies/github.strategy';
         global: true,
       }),
     }),
+    TypeOrmModule.forFeature([AuthSessions, AuthRefreshTokens]),
     ConfigModule.forFeature(googleOauthConfig),
     ConfigModule.forFeature(facebookOauthConfig),
     ConfigModule.forFeature(githubOauthConfig),
     forwardRef(() => UsersModule),
   ],
   controllers: [AuthController],
-  providers: [AuthService, GoogleStrategy, FacebookStrategy, GithubStrategy],
+  providers: [
+    AuthService,
+    GoogleStrategy,
+    FacebookStrategy,
+    GithubStrategy,
+    AuthSessionsService,
+    AuthRefreshTokensService,
+  ],
   exports: [JwtModule, AuthService],
 })
 export class AuthModule {}

@@ -23,6 +23,9 @@
             "unauthorized": "Acceso no autorizado",
             "deniedForPermission": "No tienes permiso para acceder a este recurso",
             "deniedOnlyAdmin": "No tienes permiso para acceder a este recurso, solamente los supera dministradores tienen acceso"
+        },
+        "refreshToken": {
+            "alreadyRevoked": "La sesión ya ha sido revocada"
         }
     },
     "common": {

@@ -18,6 +18,7 @@ import { UserAccountOAuth } from 'src/modules/users/entities/user-account-oauth.
 import { UserAccountCredentials } from 'src/modules/users/entities/user-account-credentials.entity';
 import { UserSecurity } from 'src/modules/users/entities/user-security.entity';
 import { UserEmailChangeLog } from './user-email-change-log.entity';
+import { AuthSessions } from 'src/modules/auth/entities/auth-sessions.entity';
 
 @Entity({ name: 'users' })
 export class User {
@@ -93,4 +94,7 @@ export class User {
 
   @OneToMany(() => UserEmailChangeLog, (user) => user.user)
   emailChangeLogs: UserEmailChangeLog[];
+
+  @OneToMany(() => AuthSessions, (authSessions) => authSessions.user)
+  authSessions: AuthSessions[];
 }

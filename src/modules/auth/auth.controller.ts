@@ -5,6 +5,7 @@ import {
   Param,
   Post,
   Req,
+  Res,
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from 'src/modules/auth/auth.service';
@@ -15,10 +16,11 @@ import {
   ResetPasswordTokenDto,
 } from './dto/reset-password.dto';
 import { LoginDto } from 'src/modules/auth/dto/login.dto';
-import { Request } from 'express';
+import { Request, Response } from 'express';
 import { GoogleOauthGuard } from 'src/modules/auth/guards/oauth/google-oauth.guard';
 import { FacebookOauthGuard } from 'src/modules/auth/guards/oauth/facebook-oauth.guard';
 import { GithubOauthGuard } from 'src/modules/auth/guards/oauth/github-oauth.guard';
+import { ensureDeviceId } from 'src/common/helpers/session.helper';
 
 @Controller('auth')
 export class AuthController {
@@ -60,8 +62,10 @@ export class AuthController {
     @Req() req: Request,
     @Body() loginDto: LoginDto,
     @I18n() i18n: I18nContext,
+    @Res({ passthrough: true }) res: Response,
   ) {
-    return await this.authService.login(req, loginDto, i18n);
+    const deviceId = await ensureDeviceId(req, res);
+    return await this.authService.login(req, loginDto, deviceId, i18n);
   }
 
   @Get('refresh-token/:token')
@@ -76,9 +80,14 @@ export class AuthController {
 
   @Get('google/callback')
   @UseGuards(GoogleOauthGuard)
-  async googleCallback(@Req() req, @I18n() i18n: I18nContext) {
+  async googleCallback(
+    @Req() req,
+    @I18n() i18n: I18nContext,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     const id: number = req.user.id;
-    return await this.authService.loginById(req, id, i18n);
+    const deviceId = await ensureDeviceId(req, res);
+    return await this.authService.loginById(req, id, deviceId, i18n);
   }
 
   //  Oauth Facebook
@@ -88,9 +97,14 @@ export class AuthController {
 
   @Get('facebook/callback')
   @UseGuards(FacebookOauthGuard)
-  async facebookCallback(@Req() req, @I18n() i18n: I18nContext) {
+  async facebookCallback(
+    @Req() req,
+    @I18n() i18n: I18nContext,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     const id: number = req.user.id;
-    return await this.authService.loginById(req, id, i18n);
+    const deviceId = await ensureDeviceId(req, res);
+    return await this.authService.loginById(req, id, deviceId, i18n);
   }
 
   // Oauth Github
@@ -100,8 +114,13 @@ export class AuthController {
 
   @Get('github/callback')
   @UseGuards(GithubOauthGuard)
-  async githubCallback(@Req() req, @I18n() i18n: I18nContext) {
+  async githubCallback(
+    @Req() req,
+    @I18n() i18n: I18nContext,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     const id: number = req.user.id;
-    return await this.authService.loginById(req, id, i18n);
+    const deviceId = await ensureDeviceId(req, res);
+    return await this.authService.loginById(req, id, deviceId, i18n);
   }
 }
