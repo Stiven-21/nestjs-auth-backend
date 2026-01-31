@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Logger,
   Param,
   Post,
   Req,
@@ -21,9 +22,11 @@ import { GoogleOauthGuard } from 'src/modules/auth/guards/oauth/google-oauth.gua
 import { FacebookOauthGuard } from 'src/modules/auth/guards/oauth/facebook-oauth.guard';
 import { GithubOauthGuard } from 'src/modules/auth/guards/oauth/github-oauth.guard';
 import { ensureDeviceId } from 'src/common/helpers/session.helper';
+import { Auth } from './decorators/auth.decorator';
 
 @Controller('auth')
 export class AuthController {
+  private readonly logger = new Logger(AuthController.name);
   constructor(private readonly authService: AuthService) {}
 
   @Post('register')
@@ -81,11 +84,11 @@ export class AuthController {
   @Get('google/callback')
   @UseGuards(GoogleOauthGuard)
   async googleCallback(
-    @Req() req,
+    @Req() req: Request,
     @I18n() i18n: I18nContext,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const id: number = req.user.id;
+    const id: number = req.user['id'];
     const deviceId = await ensureDeviceId(req, res);
     return await this.authService.loginById(req, id, deviceId, i18n);
   }
@@ -98,11 +101,11 @@ export class AuthController {
   @Get('facebook/callback')
   @UseGuards(FacebookOauthGuard)
   async facebookCallback(
-    @Req() req,
+    @Req() req: Request,
     @I18n() i18n: I18nContext,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const id: number = req.user.id;
+    const id: number = req.user['id'];
     const deviceId = await ensureDeviceId(req, res);
     return await this.authService.loginById(req, id, deviceId, i18n);
   }
@@ -115,12 +118,36 @@ export class AuthController {
   @Get('github/callback')
   @UseGuards(GithubOauthGuard)
   async githubCallback(
-    @Req() req,
+    @Req() req: Request,
     @I18n() i18n: I18nContext,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const id: number = req.user.id;
+    const id: number = req.user['id'];
     const deviceId = await ensureDeviceId(req, res);
     return await this.authService.loginById(req, id, deviceId, i18n);
+  }
+
+  @Get('logout')
+  @Auth()
+  async logout(@Req() req: Request, @I18n() i18n: I18nContext) {
+    const sessionId = req.user['sessionId'];
+    return await this.authService.logout(sessionId, i18n);
+  }
+
+  @Post('logout-device/:deviceId')
+  @Auth()
+  async logoutDevice(
+    @Param('deviceId') deviceId: string,
+    @I18n() i18n: I18nContext,
+  ) {
+    return await this.authService.logoutDevice(deviceId, i18n);
+  }
+
+  @Post('logout-all')
+  @Auth()
+  async logoutAll(@Req() req: Request, @I18n() i18n: I18nContext) {
+    const sessionId = req.user['sessionId'];
+    const userId = req.user['sub'];
+    return await this.authService.logoutAll(userId, sessionId, i18n);
   }
 }

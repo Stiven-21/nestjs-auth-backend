@@ -5,6 +5,7 @@ import { Strategy, VerifyCallback } from 'passport-google-oauth20';
 import { OAuthProviderEnum } from 'src/common/enum/user-oauth-providers.enum';
 import googleOauthConfig from 'src/config/google-oauth.config';
 import { OAuthService } from 'src/modules/users/oauth/oauth.service';
+import { SecurityService } from 'src/modules/users/security/security.service';
 import { UsersService } from 'src/modules/users/users.service';
 import { DataSource } from 'typeorm';
 
@@ -16,6 +17,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy) {
     private googleConfig: ConfigType<typeof googleOauthConfig>,
     private readonly usersService: UsersService,
     private readonly oauthService: OAuthService,
+    private readonly userSecurityService: SecurityService,
     private readonly dataSource: DataSource,
   ) {
     super({
@@ -53,6 +55,12 @@ export class GoogleStrategy extends PassportStrategy(Strategy) {
           isActive: profile.emails[0].verified,
           avatar: profile.photos[0].value,
         },
+        manager,
+      );
+
+      await this.userSecurityService.create(
+        { user: validateUser },
+        null,
         manager,
       );
 

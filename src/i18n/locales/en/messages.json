@@ -15,7 +15,9 @@
             "register": "An email has been sent with instructions to verify your email",
             "resetPassword": "An email has been sent with instructions to reset your password",
             "verifyEmail": "Your email has been verified successfully",
-            "updatePassword": "Your password has been updated successfully"
+            "updatePassword": "Your password has been updated successfully",
+            "logout": "You have been logged out successfully",
+            "logoutAll": "All sessions have been closed successfully"
         },
         "guard": {
             "noActiveSession": "No active session found, please log in",

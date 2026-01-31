@@ -15,7 +15,9 @@
             "register": "Se ha enviado un correo con las instrucciones para verificar el correo",
             "resetPassword": "Se ha enviado un correo con las instrucciones para restablecer la contrase\u00f1a",
             "verifyEmail": "Su correo ha sido verificado correctamente",
-            "updatePassword": "Se ha actualizado la contrase\u00f1a correctamente"
+            "updatePassword": "Se ha actualizado la contrase\u00f1a correctamente",
+            "logout": "Se ha cerrado la sesión correctamente",
+            "logoutAll": "Se han cerrado todas las sesiones correctamente"
         },
         "guard": {
             "noActiveSession": "No se ha encontrado una sesión activa, por favor inicie sesión",

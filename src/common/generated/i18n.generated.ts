@@ -41,6 +41,8 @@ export type I18nTranslations = {
                 "resetPassword": string;
                 "verifyEmail": string;
                 "updatePassword": string;
+                "logout": string;
+                "logoutAll": string;
             };
             "guard": {
                 "noActiveSession": string;

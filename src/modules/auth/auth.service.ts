@@ -61,7 +61,7 @@ export class AuthService {
         manager,
       );
 
-      await this.securityService.create(user, i18n, manager);
+      await this.securityService.create({ user }, i18n, manager);
 
       return okResponse({
         i18n,
@@ -184,6 +184,88 @@ export class AuthService {
     );
   }
 
+  async logout(sessionId: number, i18n: I18nContext) {
+    await this.dataSource.transaction(async (manager) => {
+      await this.authRefreshTokenService.revokeTokenWithSessionId(
+        sessionId,
+        i18n,
+        manager,
+      );
+      await this.authSessionsService.updateActive(
+        sessionId,
+        false,
+        i18n,
+        manager,
+      );
+    });
+
+    return okResponse({
+      i18n,
+      lang: i18n.lang,
+      data: {
+        data: i18n.t('messages.auth.success.logout', { lang: i18n.lang }),
+        total: 0,
+      },
+    });
+  }
+
+  async logoutDevice(deviceId: string, i18n: I18nContext) {
+    const authSession = await this.authSessionsService.findByDeviceId(
+      deviceId,
+      i18n,
+    );
+
+    await this.dataSource.transaction(async (manager) => {
+      await this.authRefreshTokenService.revokeTokenWithSessionId(
+        authSession.id,
+        i18n,
+        manager,
+      );
+      await this.authSessionsService.updateActive(
+        authSession.id,
+        false,
+        i18n,
+        manager,
+      );
+    });
+
+    return okResponse({
+      i18n,
+      lang: i18n.lang,
+      data: {
+        data: i18n.t('messages.auth.success.logout', { lang: i18n.lang }),
+        total: 0,
+      },
+    });
+  }
+
+  async logoutAll(userId: number, sessionId: number, i18n: I18nContext) {
+    await this.authSessionsService.findBySessionId(sessionId, i18n);
+    // CORREGIR - NO ME DEBE REVOCAR EL REFRESH TOKEN ACTUAL
+
+    await this.dataSource.transaction(async (manager) => {
+      await this.authRefreshTokenService.revokeTokenWithUserId(
+        userId,
+        i18n,
+        manager,
+      );
+      await this.authSessionsService.updateInactiveUserId(
+        userId,
+        i18n,
+        manager,
+      );
+    });
+
+    return okResponse({
+      i18n,
+      lang: i18n.lang,
+      data: {
+        data: i18n.t('messages.auth.success.logoutAll', { lang: i18n.lang }),
+        total: 0,
+      },
+    });
+  }
+
   async loginById(
     req: Request,
     id: number,
@@ -201,6 +283,11 @@ export class AuthService {
 
   async refreshToken(refreshToken: string, i18n: I18nContext) {
     if (!refreshToken) return badRequestError({ i18n, lang: i18n.lang });
+
+    const authSession = await this.authRefreshTokenService.revokeRefreshToken(
+      refreshToken,
+      i18n,
+    );
 
     try {
       this.jwtService.verify(refreshToken, {
@@ -226,6 +313,7 @@ export class AuthService {
 
     const payload = {
       sub: user.id,
+      sessionId: authSession.id,
       email: user.email,
       role: {
         name: user.role.name,
@@ -233,10 +321,6 @@ export class AuthService {
       },
     };
 
-    const authSession = await this.authRefreshTokenService.revokeRefreshToken(
-      refreshToken,
-      i18n,
-    );
     const newRefreshToken = this.jwtService.sign(payload, {
       secret: process.env.JWT_REFRESH_SECRET,
       expiresIn: '2d',
@@ -271,11 +355,6 @@ export class AuthService {
     i18n: I18nContext,
     deviceId: string,
   ) {
-    req.user = {
-      sub: user.id,
-      email: user.email,
-      deviceId,
-    };
     if (user.status === UserStatusEnum.PENDING)
       badRequestError({
         i18n,
@@ -301,19 +380,13 @@ export class AuthService {
         }),
       });
 
-    const payload = {
-      sub: user.id,
-      email: user.email,
-      role: {
-        name: user.role.name,
-        permissions: await this.normalizePermissions(user.role.permissions),
-      },
-    };
-
     const { ip, userAgent, browser, os, device, location } =
       await getClientInfo(req);
 
-    const refreshToken = await this.dataSource.transaction(async (manager) => {
+    const { refreshToken, payload } = await this.dataSource.transaction<{
+      refreshToken: string;
+      payload: any;
+    }>(async (manager) => {
       await this.sessionService.create(
         {
           userId: user.id,
@@ -337,6 +410,16 @@ export class AuthService {
         manager,
       );
 
+      const payload = {
+        sub: user.id,
+        sessionId: authSession.id,
+        email: user.email,
+        role: {
+          name: user.role.name,
+          permissions: await this.normalizePermissions(user.role.permissions),
+        },
+      };
+
       const refreshToken = this.jwtService.sign(payload, {
         secret: process.env.JWT_REFRESH_SECRET,
         expiresIn: '2d',
@@ -351,7 +434,7 @@ export class AuthService {
         manager,
       );
 
-      return refreshToken;
+      return { refreshToken, payload };
     });
 
     await this.mailService.sendMail(
@@ -368,6 +451,13 @@ export class AuthService {
       },
       i18n,
     );
+
+    req.user = {
+      id: user.id,
+      email: user.email,
+      sessionId: payload.sessionId,
+      deviceId,
+    };
 
     return okResponse({
       i18n,

@@ -2,11 +2,11 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { AuthRefreshTokens } from '../entities/auth-refresh-tokens.entity';
 import { EntityManager, Repository } from 'typeorm';
-import { CreateAuthRefreshTokenDto } from '../dto/create-auth-refresh-token.dto';
+import { CreateAuthRefreshTokenDto } from 'src/modules/auth/dto/create-auth-refresh-token.dto';
 import { I18nContext } from 'nestjs-i18n';
 import {
+  badRequestError,
   internalServerError,
-  notFoundError,
   unauthorizedError,
 } from 'src/common/exceptions';
 import * as crypto from 'crypto';
@@ -54,7 +54,11 @@ export class AuthRefreshTokensService {
       internalServerError({ i18n, lang: i18n.lang });
     }
 
-    if (!authRefreshToken) notFoundError({ i18n, lang: i18n.lang });
+    if (
+      !authRefreshToken ||
+      (authRefreshToken && authRefreshToken.expiresAt < new Date())
+    )
+      badRequestError({ i18n, lang: i18n.lang });
 
     if (authRefreshToken.revoked)
       unauthorizedError({
@@ -71,6 +75,54 @@ export class AuthRefreshTokensService {
         { revoked: true },
       );
       return authRefreshToken.authSession;
+    } catch (error) {
+      this.logger.error(error);
+      internalServerError({ i18n, lang: i18n.lang });
+    }
+  }
+
+  async revokeTokenWithSessionId(
+    sessionId: number,
+    i18n: I18nContext,
+    manager?: EntityManager,
+  ) {
+    const repo = manager
+      ? manager.getRepository(AuthRefreshTokens)
+      : this.refreshTokensRepository;
+    try {
+      await repo.update({ authSession: { id: sessionId } }, { revoked: true });
+    } catch (error) {
+      this.logger.error(error);
+      internalServerError({ i18n, lang: i18n.lang });
+    }
+  }
+
+  async revokeTokenWithUserId(
+    userId: number,
+    i18n: I18nContext,
+    manager?: EntityManager,
+  ) {
+    const repo = manager
+      ? manager.getRepository(AuthRefreshTokens)
+      : this.refreshTokensRepository;
+    try {
+      const tokens = await this.refreshTokensRepository.find({
+        where: {
+          revoked: false,
+          authSession: {
+            user: {
+              id: userId,
+            },
+          },
+        },
+      });
+      if (!tokens.length) return;
+
+      tokens.forEach((token) => {
+        token.revoked = true;
+      });
+
+      await repo.save(tokens);
     } catch (error) {
       this.logger.error(error);
       internalServerError({ i18n, lang: i18n.lang });

@@ -21,7 +21,7 @@ export class AuthSessions {
   })
   user: User;
 
-  @Column({ unique: true, nullable: false })
+  @Column({ nullable: false })
   deviceId: string;
 
   @Column()
