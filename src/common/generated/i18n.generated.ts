@@ -22,6 +22,10 @@ export type I18nTranslations = {
             "singular": string;
             "plural": string;
         };
+        "security": {
+            "singular": string;
+            "plural": string;
+        };
     };
     "messages": {
         "auth": {
@@ -35,6 +39,7 @@ export type I18nTranslations = {
                 "userEmailAlreadyExists": string;
                 "documentAlreadyExists": string;
                 "userNotFound": string;
+                "wrongCode": string;
             };
             "success": {
                 "register": string;
@@ -53,6 +58,17 @@ export type I18nTranslations = {
             };
             "refreshToken": {
                 "alreadyRevoked": string;
+            };
+        };
+        "security-recovery-codes": {
+            "error": {
+                "invalidCode": string;
+                "expiredCode": string;
+                "twoFactorDisabled": string;
+                "usedCode": string;
+            };
+            "success": {
+                "usedCode": string;
             };
         };
         "common": {

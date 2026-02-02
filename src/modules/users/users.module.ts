@@ -25,6 +25,9 @@ import { SecurityService } from 'src/modules/users/security/security.service';
 import { UserEmailChangeLog } from 'src/modules/users/entities/user-email-change-log.entity';
 import { EmailLogChangesService } from 'src/modules/users/email-log-changes/email-log-changes.service';
 import { EmailLogChangesController } from 'src/modules/users/email-log-changes/email-log-changes.controller';
+import { UserSecurityRecoveryCodes } from 'src/modules/users/entities/user_security_recovery_codes.entity';
+import { SecurityRecoveryCodesService } from './security-recovery-codes/security-recovery-codes.service';
+import { SecurityRecoveryCodesController } from './security-recovery-codes/security-recovery-codes.controller';
 
 @Module({
   imports: [
@@ -35,8 +38,9 @@ import { EmailLogChangesController } from 'src/modules/users/email-log-changes/e
       UserSession,
       UserAccountOAuth,
       UserAccountCredentials,
-      UserSecurity,
       UserEmailChangeLog,
+      UserSecurity,
+      UserSecurityRecoveryCodes,
     ]),
     forwardRef(() => AuthModule),
     RolesModule,
@@ -49,6 +53,7 @@ import { EmailLogChangesController } from 'src/modules/users/email-log-changes/e
     CredentialsController,
     SecurityController,
     EmailLogChangesController,
+    SecurityRecoveryCodesController,
   ],
   providers: [
     UsersService,
@@ -59,6 +64,7 @@ import { EmailLogChangesController } from 'src/modules/users/email-log-changes/e
     CredentialsService,
     SecurityService,
     EmailLogChangesService,
+    SecurityRecoveryCodesService,
   ],
   exports: [
     TypeOrmModule,
@@ -69,6 +75,7 @@ import { EmailLogChangesController } from 'src/modules/users/email-log-changes/e
     CredentialsService,
     SecurityService,
     EmailLogChangesService,
+    SecurityRecoveryCodesService,
   ],
 })
 export class UsersModule {}

@@ -14,5 +14,9 @@
     "token": {
         "singular": "Token",
         "plural": "Tokens"
+    },
+    "security": {
+        "singular": "Seguridad",
+        "plural": "Seguridad"
     }
 }

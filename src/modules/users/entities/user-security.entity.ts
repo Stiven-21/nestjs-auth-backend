@@ -3,12 +3,14 @@ import {
   CreateDateColumn,
   Entity,
   JoinColumn,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { User } from './user.entity';
+import { User } from 'src/modules/users/entities/user.entity';
 import { TwoFactorType } from 'src/common/enum/two-factor-type.enum';
+import { UserSecurityRecoveryCodes } from 'src/modules/users/entities/user_security_recovery_codes.entity';
 
 @Entity('user_security')
 export class UserSecurity {
@@ -52,4 +54,10 @@ export class UserSecurity {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @OneToMany(
+    () => UserSecurityRecoveryCodes,
+    (userSecurityRecoveryCodes) => userSecurityRecoveryCodes.userSecurity,
+  )
+  recoveryCodesList: UserSecurityRecoveryCodes[];
 }

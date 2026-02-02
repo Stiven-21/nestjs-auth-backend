@@ -9,7 +9,8 @@
             "inactiveUser": "El usuario se encuentra inactivo",
             "userEmailAlreadyExists": "Ya existe un usuario con el email {email}",
             "documentAlreadyExists": "Ya existe un usuario con el documento {document}",
-            "userNotFound": "El usuario no ha sido encontrado"
+            "userNotFound": "El usuario no ha sido encontrado",
+            "wrongCode": "El c\u00f3digo de autenticaci\u00f3n no es v\u00e1lido"
         },
         "success": {
             "register": "Se ha enviado un correo con las instrucciones para verificar el correo",
@@ -28,6 +29,17 @@
         },
         "refreshToken": {
             "alreadyRevoked": "La sesión ya ha sido revocada"
+        }
+    },
+    "security-recovery-codes": {
+        "error": {
+            "invalidCode": "El c\u00f3digo de recuperaci\u00f3n no es v\u00e1lido",
+            "expiredCode": "El c\u00f3digo de recuperaci\u00f3n ha expirado",
+            "twoFactorDisabled": "El usuario no ha habilitado la autenticaci\u00f3n de dos factores",
+            "usedCode": "El c\u00f3digo de recuperaci\u00f3n ya ha sido utilizado"
+        },
+        "success": {
+            "usedCode": "El c\u00f3digo de recuperaci\u00f3n ha sido utilizado correctamente"
         }
     },
     "common": {

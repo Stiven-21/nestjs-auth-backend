@@ -26,7 +26,9 @@ import { CredentialsService } from 'src/modules/users/credentials/credentials.se
 import { DataSource } from 'typeorm';
 import { SecurityService } from 'src/modules/users/security/security.service';
 import { AuthSessionsService } from 'src/modules/auth/sessions/sessions.service';
-import { AuthRefreshTokensService } from './refresh-tokens/refresh-tokens.service';
+import { AuthRefreshTokensService } from 'src/modules/auth/refresh-tokens/refresh-tokens.service';
+import { TwoFactorAuthVerifyDto } from 'src/modules/auth/dto/2fa-verify.dto';
+import { SecurityRecoveryCodesService } from 'src/modules/users/security-recovery-codes/security-recovery-codes.service';
 
 @Injectable()
 export class AuthService {
@@ -43,6 +45,7 @@ export class AuthService {
     private readonly dataSource: DataSource,
     private readonly authSessionsService: AuthSessionsService,
     private readonly authRefreshTokenService: AuthRefreshTokensService,
+    private readonly userSecurityRecoveryCodes: SecurityRecoveryCodesService,
   ) {}
 
   async register(registerDto: RegisterDto, i18n: I18nContext) {
@@ -176,12 +179,7 @@ export class AuthService {
         }),
       });
 
-    return await this.__generatedTokenAndRefreshToken(
-      req,
-      user,
-      i18n,
-      deviceId,
-    );
+    return await this.__Validate2FAUser(req, user, i18n, deviceId);
   }
 
   async logout(sessionId: number, i18n: I18nContext) {
@@ -273,12 +271,7 @@ export class AuthService {
     i18n: I18nContext,
   ) {
     const user = await this.usersService.findById(id, i18n);
-    return await this.__generatedTokenAndRefreshToken(
-      req,
-      user.data,
-      i18n,
-      deviceId,
-    );
+    return await this.__Validate2FAUser(req, user.data, i18n, deviceId);
   }
 
   async refreshToken(refreshToken: string, i18n: I18nContext) {
@@ -349,7 +342,7 @@ export class AuthService {
     });
   }
 
-  private async __generatedTokenAndRefreshToken(
+  private async __Validate2FAUser(
     req: Request,
     user: User,
     i18n: I18nContext,
@@ -380,6 +373,82 @@ export class AuthService {
         }),
       });
 
+    // VERIFICAR QUE SI EL USUARIO TIENE 2FA ACTIVADO
+    const userSecurity = await this.securityService.findOneByUser(user, i18n);
+    if (userSecurity.twoFactorEnabled)
+      return okResponse({
+        i18n,
+        lang: i18n.lang,
+        data: {
+          data: {
+            twoFactorRequired: true,
+            sub: user.id,
+          },
+          total: 0,
+        },
+      });
+
+    return await this.__generatedTokenAndRefreshToken(
+      req,
+      user,
+      i18n,
+      deviceId,
+    );
+  }
+
+  async verify2fa(
+    req: Request,
+    twoFactorAuthVerifyDto: TwoFactorAuthVerifyDto,
+    i18n: I18nContext,
+    deviceId: string,
+  ) {
+    const { code, userId } = twoFactorAuthVerifyDto;
+    const { data: user } = await this.usersService.findById(userId, i18n);
+    // const userSecurity = await this.securityService.findOneByUser(user, i18n);
+
+    let valid = false;
+
+    // if (userSecurity.two_factor_type === 'totp') {
+    //   valid = speakeasy.totp.verify({
+    //     secret: userSecurity.two_factor_data.secret,
+    //     encoding: 'base32',
+    //     token: code
+    //   });
+    // } else if (userSecurity.two_factor_type === 'sms' || userSecurity.two_factor_type === 'email') {
+    //   valid = userSecurity.two_factor_data?.last_code === code &&
+    //           new Date() < new Date(userSecurity.two_factor_data.expires_at);
+    // }
+
+    if (!valid && code)
+      valid = await this.userSecurityRecoveryCodes.useCode(
+        userId,
+        { code },
+        i18n,
+      );
+
+    if (!valid)
+      badRequestError({
+        i18n,
+        lang: i18n.lang,
+        description: i18n.t('messages.auth.error.wrongCode', {
+          lang: i18n.lang,
+        }),
+      });
+
+    return await this.__generatedTokenAndRefreshToken(
+      req,
+      user,
+      i18n,
+      deviceId,
+    );
+  }
+
+  private async __generatedTokenAndRefreshToken(
+    req: Request,
+    user: User,
+    i18n: I18nContext,
+    deviceId: string,
+  ) {
     const { ip, userAgent, browser, os, device, location } =
       await getClientInfo(req);
 

@@ -22,7 +22,8 @@ import { GoogleOauthGuard } from 'src/modules/auth/guards/oauth/google-oauth.gua
 import { FacebookOauthGuard } from 'src/modules/auth/guards/oauth/facebook-oauth.guard';
 import { GithubOauthGuard } from 'src/modules/auth/guards/oauth/github-oauth.guard';
 import { ensureDeviceId } from 'src/common/helpers/session.helper';
-import { Auth } from './decorators/auth.decorator';
+import { Auth } from 'src/modules/auth/decorators/auth.decorator';
+import { TwoFactorAuthVerifyDto } from 'src/modules/auth/dto/2fa-verify.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -127,7 +128,7 @@ export class AuthController {
     return await this.authService.loginById(req, id, deviceId, i18n);
   }
 
-  @Get('logout')
+  @Post('logout')
   @Auth()
   async logout(@Req() req: Request, @I18n() i18n: I18nContext) {
     const sessionId = req.user['sessionId'];
@@ -149,5 +150,21 @@ export class AuthController {
     const sessionId = req.user['sessionId'];
     const userId = req.user['sub'];
     return await this.authService.logoutAll(userId, sessionId, i18n);
+  }
+
+  @Post('2fa-verify')
+  async verify2fa(
+    @Req() req: Request,
+    @Body() twoFactorAuthVerifyDto: TwoFactorAuthVerifyDto,
+    @I18n() i18n: I18nContext,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const deviceId = await ensureDeviceId(req, res);
+    return await this.authService.verify2fa(
+      req,
+      twoFactorAuthVerifyDto,
+      i18n,
+      deviceId,
+    );
   }
 }
