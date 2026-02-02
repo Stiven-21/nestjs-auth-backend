@@ -19,6 +19,7 @@ import { UserAccountCredentials } from 'src/modules/users/entities/user-account-
 import { UserSecurity } from 'src/modules/users/entities/user-security.entity';
 import { UserEmailChangeLog } from './user-email-change-log.entity';
 import { AuthSessions } from 'src/modules/auth/entities/auth-sessions.entity';
+import { UserSecurityTwoFactorOtps } from './user-security-two-factor-otps.entity';
 
 @Entity({ name: 'users' })
 export class User {
@@ -97,4 +98,7 @@ export class User {
 
   @OneToMany(() => AuthSessions, (authSessions) => authSessions.user)
   authSessions: AuthSessions[];
+
+  @OneToMany(() => UserSecurityTwoFactorOtps, (user) => user.user)
+  userSecurityTwoFactorOtps: UserSecurityTwoFactorOtps[];
 }

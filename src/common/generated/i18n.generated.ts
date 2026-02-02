@@ -40,6 +40,8 @@ export type I18nTranslations = {
                 "documentAlreadyExists": string;
                 "userNotFound": string;
                 "wrongCode": string;
+                "twoFactorAlreadyEnabled": string;
+                "twoFactorCodeInvalid": string;
             };
             "success": {
                 "register": string;
@@ -48,6 +50,8 @@ export type I18nTranslations = {
                 "updatePassword": string;
                 "logout": string;
                 "logoutAll": string;
+                "twoFactorEnabled": string;
+                "twoFactorDisabled": string;
             };
             "guard": {
                 "noActiveSession": string;

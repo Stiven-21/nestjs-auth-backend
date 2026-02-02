@@ -53,4 +53,13 @@ export class SecurityService {
 
     return security;
   }
+
+  async save(security: UserSecurity, i18n: I18nContext) {
+    try {
+      return await this.securityRepository.save(security);
+    } catch (error) {
+      this.logger.error(error);
+      internalServerError({ i18n, lang: i18n.lang });
+    }
+  }
 }

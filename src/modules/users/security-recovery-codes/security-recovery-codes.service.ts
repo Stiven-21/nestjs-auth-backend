@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { UserSecurityRecoveryCodes } from 'src/modules/users/entities/user_security_recovery_codes.entity';
+import { UserSecurityRecoveryCodes } from 'src/modules/users/entities/user-security-recovery-codes.entity';
 import { Repository } from 'typeorm';
 import { UsersService } from 'src/modules/users/users.service';
 import { I18nContext } from 'nestjs-i18n';

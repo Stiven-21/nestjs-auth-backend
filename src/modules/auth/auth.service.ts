@@ -29,6 +29,10 @@ import { AuthSessionsService } from 'src/modules/auth/sessions/sessions.service'
 import { AuthRefreshTokensService } from 'src/modules/auth/refresh-tokens/refresh-tokens.service';
 import { TwoFactorAuthVerifyDto } from 'src/modules/auth/dto/2fa-verify.dto';
 import { SecurityRecoveryCodesService } from 'src/modules/users/security-recovery-codes/security-recovery-codes.service';
+import { TwoFactorEnableDto } from 'src/modules/auth/dto/2fa-enable.dto';
+import { TotpService } from 'src/modules/users/security/totp/totp.service';
+import { TwoFactorType } from 'src/common/enum/two-factor-type.enum';
+import { TwoFAConfirmDto } from './dto/2fa-confirm.dto';
 
 @Injectable()
 export class AuthService {
@@ -46,6 +50,7 @@ export class AuthService {
     private readonly authSessionsService: AuthSessionsService,
     private readonly authRefreshTokenService: AuthRefreshTokensService,
     private readonly userSecurityRecoveryCodes: SecurityRecoveryCodesService,
+    private readonly totpService: TotpService,
   ) {}
 
   async register(registerDto: RegisterDto, i18n: I18nContext) {
@@ -396,6 +401,83 @@ export class AuthService {
     );
   }
 
+  async enable2fa(
+    req: Request,
+    twoFactorEnableDto: TwoFactorEnableDto,
+    i18n: I18nContext,
+  ) {
+    const userId = req.user['sub'];
+    const { data: user } = await this.usersService.findById(userId, i18n);
+    const userSecurity = await this.securityService.findOneByUser(user, i18n);
+
+    if (userSecurity.twoFactorEnabled)
+      badRequestError({
+        i18n,
+        lang: i18n.lang,
+        description: i18n.t('messages.auth.error.twoFactorAlreadyEnabled', {
+          lang: i18n.lang,
+        }),
+      });
+
+    if (twoFactorEnableDto.twoFactorType === TwoFactorType.TOTP) {
+      return await this.totpService.enableTotp(user.email, userSecurity, i18n);
+    }
+  }
+
+  async confirm2fa(
+    req: Request,
+    twoFAConfirmDto: TwoFAConfirmDto,
+    i18n: I18nContext,
+  ) {
+    const { code } = twoFAConfirmDto;
+    const userId = req.user['sub'];
+    const { data: user } = await this.usersService.findById(userId, i18n);
+    const userSecurity = await this.securityService.findOneByUser(user, i18n);
+    let valid = false;
+
+    switch (userSecurity.twoFactorType) {
+      case TwoFactorType.TOTP:
+        valid = await this.totpService.verifyToken(
+          userSecurity.twoFactorData.secret.base32,
+          code,
+        );
+        if (valid) {
+          const secret = userSecurity.twoFactorData.secret;
+          userSecurity.twoFactorData = {
+            secret,
+            algorithm: 'sha1',
+            digits: 6,
+            period: 30,
+          };
+        }
+        break;
+    }
+
+    if (!valid)
+      badRequestError({
+        i18n,
+        lang: i18n.lang,
+        description: i18n.t('messages.auth.error.twoFactorCodeInvalid', {
+          lang: i18n.lang,
+        }),
+      });
+
+    userSecurity.twoFactorEnabled = true;
+    userSecurity.lastChangedAt = new Date();
+
+    await this.securityService.save(userSecurity, i18n);
+    return okResponse({
+      i18n,
+      lang: i18n.lang,
+      data: {
+        data: i18n.t('messages.auth.success.twoFactorEnabled', {
+          lang: i18n.lang,
+        }),
+        total: 0,
+      },
+    });
+  }
+
   async verify2fa(
     req: Request,
     twoFactorAuthVerifyDto: TwoFactorAuthVerifyDto,
@@ -404,20 +486,18 @@ export class AuthService {
   ) {
     const { code, userId } = twoFactorAuthVerifyDto;
     const { data: user } = await this.usersService.findById(userId, i18n);
-    // const userSecurity = await this.securityService.findOneByUser(user, i18n);
+    const userSecurity = await this.securityService.findOneByUser(user, i18n);
 
     let valid = false;
 
-    // if (userSecurity.two_factor_type === 'totp') {
-    //   valid = speakeasy.totp.verify({
-    //     secret: userSecurity.two_factor_data.secret,
-    //     encoding: 'base32',
-    //     token: code
-    //   });
-    // } else if (userSecurity.two_factor_type === 'sms' || userSecurity.two_factor_type === 'email') {
-    //   valid = userSecurity.two_factor_data?.last_code === code &&
-    //           new Date() < new Date(userSecurity.two_factor_data.expires_at);
-    // }
+    switch (userSecurity.twoFactorType) {
+      case TwoFactorType.TOTP:
+        valid = await this.totpService.verifyToken(
+          userSecurity.twoFactorData.secret.base32,
+          code,
+        );
+        break;
+    }
 
     if (!valid && code)
       valid = await this.userSecurityRecoveryCodes.useCode(
@@ -441,6 +521,28 @@ export class AuthService {
       i18n,
       deviceId,
     );
+  }
+
+  async disable2fa(req: Request, i18n: I18nContext) {
+    const userId = req.user['sub'];
+    const { data: user } = await this.usersService.findById(userId, i18n);
+    const userSecurity = await this.securityService.findOneByUser(user, i18n);
+
+    if (userSecurity.twoFactorEnabled) {
+      userSecurity.twoFactorEnabled = false;
+      userSecurity.lastChangedAt = new Date();
+      await this.securityService.save(userSecurity, i18n);
+      return okResponse({
+        i18n,
+        lang: i18n.lang,
+        data: {
+          data: i18n.t('messages.auth.success.twoFactorDisabled', {
+            lang: i18n.lang,
+          }),
+          total: 0,
+        },
+      });
+    }
   }
 
   private async __generatedTokenAndRefreshToken(

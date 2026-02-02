@@ -10,7 +10,9 @@
             "userEmailAlreadyExists": "A user already exists with the email {email}",
             "documentAlreadyExists": "A user already exists with the document {document}",
             "userNotFound": "The user has not been found",
-            "wrongCode": "The authentication code is not valid"
+            "wrongCode": "The authentication code is not valid",
+            "twoFactorAlreadyEnabled": "The user has already enabled two-factor authentication",
+            "twoFactorCodeInvalid": "The two-factor authentication code is not valid"
         },
         "success": {
             "register": "An email has been sent with instructions to verify your email",
@@ -18,7 +20,9 @@
             "verifyEmail": "Your email has been verified successfully",
             "updatePassword": "Your password has been updated successfully",
             "logout": "You have been logged out successfully",
-            "logoutAll": "All sessions have been closed successfully"
+            "logoutAll": "All sessions have been closed successfully",
+            "twoFactorEnabled": "Two-factor authentication has been enabled successfully",
+            "twoFactorDisabled": "Two-factor authentication has been disabled successfully"
         },
         "guard": {
             "noActiveSession": "No active session found, please log in",

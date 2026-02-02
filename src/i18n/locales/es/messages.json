@@ -10,7 +10,9 @@
             "userEmailAlreadyExists": "Ya existe un usuario con el email {email}",
             "documentAlreadyExists": "Ya existe un usuario con el documento {document}",
             "userNotFound": "El usuario no ha sido encontrado",
-            "wrongCode": "El c\u00f3digo de autenticaci\u00f3n no es v\u00e1lido"
+            "wrongCode": "El c\u00f3digo de autenticaci\u00f3n no es v\u00e1lido",
+            "twoFactorAlreadyEnabled": "El usuario ya ha habilitado la autenticaci\u00f3n de dos factores",
+            "twoFactorCodeInvalid": "El c\u00f3digo de autenticaci\u00f3n de dos factores no es v\u00e1lido"
         },
         "success": {
             "register": "Se ha enviado un correo con las instrucciones para verificar el correo",
@@ -18,7 +20,9 @@
             "verifyEmail": "Su correo ha sido verificado correctamente",
             "updatePassword": "Se ha actualizado la contrase\u00f1a correctamente",
             "logout": "Se ha cerrado la sesión correctamente",
-            "logoutAll": "Se han cerrado todas las sesiones correctamente"
+            "logoutAll": "Se han cerrado todas las sesiones correctamente",
+            "twoFactorEnabled": "Se ha habilitado la autenticaci\u00f3n de dos factores correctamente",
+            "twoFactorDisabled": "Se ha deshabilitado la autenticaci\u00f3n de dos factores correctamente"
         },
         "guard": {
             "noActiveSession": "No se ha encontrado una sesión activa, por favor inicie sesión",

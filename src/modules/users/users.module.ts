@@ -25,9 +25,12 @@ import { SecurityService } from 'src/modules/users/security/security.service';
 import { UserEmailChangeLog } from 'src/modules/users/entities/user-email-change-log.entity';
 import { EmailLogChangesService } from 'src/modules/users/email-log-changes/email-log-changes.service';
 import { EmailLogChangesController } from 'src/modules/users/email-log-changes/email-log-changes.controller';
-import { UserSecurityRecoveryCodes } from 'src/modules/users/entities/user_security_recovery_codes.entity';
-import { SecurityRecoveryCodesService } from './security-recovery-codes/security-recovery-codes.service';
-import { SecurityRecoveryCodesController } from './security-recovery-codes/security-recovery-codes.controller';
+import { UserSecurityRecoveryCodes } from 'src/modules/users/entities/user-security-recovery-codes.entity';
+import { SecurityRecoveryCodesService } from 'src/modules/users/security-recovery-codes/security-recovery-codes.service';
+import { SecurityRecoveryCodesController } from 'src/modules/users/security-recovery-codes/security-recovery-codes.controller';
+import { TotpService } from 'src/modules/users/security/totp/totp.service';
+import { UserSecurityTwoFactorOtps } from 'src/modules/users/entities/user-security-two-factor-otps.entity';
+import { OtpsService } from './security/otps/otps.service';
 
 @Module({
   imports: [
@@ -41,6 +44,7 @@ import { SecurityRecoveryCodesController } from './security-recovery-codes/secur
       UserEmailChangeLog,
       UserSecurity,
       UserSecurityRecoveryCodes,
+      UserSecurityTwoFactorOtps,
     ]),
     forwardRef(() => AuthModule),
     RolesModule,
@@ -65,6 +69,8 @@ import { SecurityRecoveryCodesController } from './security-recovery-codes/secur
     SecurityService,
     EmailLogChangesService,
     SecurityRecoveryCodesService,
+    TotpService,
+    OtpsService,
   ],
   exports: [
     TypeOrmModule,
@@ -76,6 +82,7 @@ import { SecurityRecoveryCodesController } from './security-recovery-codes/secur
     SecurityService,
     EmailLogChangesService,
     SecurityRecoveryCodesService,
+    TotpService,
   ],
 })
 export class UsersModule {}

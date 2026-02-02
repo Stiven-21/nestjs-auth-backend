@@ -24,6 +24,8 @@ import { GithubOauthGuard } from 'src/modules/auth/guards/oauth/github-oauth.gua
 import { ensureDeviceId } from 'src/common/helpers/session.helper';
 import { Auth } from 'src/modules/auth/decorators/auth.decorator';
 import { TwoFactorAuthVerifyDto } from 'src/modules/auth/dto/2fa-verify.dto';
+import { TwoFactorEnableDto } from 'src/modules/auth/dto/2fa-enable.dto';
+import { TwoFAConfirmDto } from 'src/modules/auth/dto/2fa-confirm.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -152,7 +154,7 @@ export class AuthController {
     return await this.authService.logoutAll(userId, sessionId, i18n);
   }
 
-  @Post('2fa-verify')
+  @Post('2fa/verify')
   async verify2fa(
     @Req() req: Request,
     @Body() twoFactorAuthVerifyDto: TwoFactorAuthVerifyDto,
@@ -166,5 +168,31 @@ export class AuthController {
       i18n,
       deviceId,
     );
+  }
+
+  @Auth()
+  @Post('2fa/enable')
+  async enable2fa(
+    @Req() req: Request,
+    @Body() twoFactorEnableDto: TwoFactorEnableDto,
+    @I18n() i18n: I18nContext,
+  ) {
+    return await this.authService.enable2fa(req, twoFactorEnableDto, i18n);
+  }
+
+  @Auth()
+  @Post('2fa/confirm')
+  async confirm2fa(
+    @Req() req: Request,
+    @Body() twoFAConfirmDto: TwoFAConfirmDto,
+    @I18n() i18n: I18nContext,
+  ) {
+    return await this.authService.confirm2fa(req, twoFAConfirmDto, i18n);
+  }
+
+  @Auth()
+  @Post('2fa/disable')
+  async disable2fa(@Req() req: Request, @I18n() i18n: I18nContext) {
+    return await this.authService.disable2fa(req, i18n);
   }
 }

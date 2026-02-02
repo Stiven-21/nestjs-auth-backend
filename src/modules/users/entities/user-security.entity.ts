@@ -10,7 +10,7 @@ import {
 } from 'typeorm';
 import { User } from 'src/modules/users/entities/user.entity';
 import { TwoFactorType } from 'src/common/enum/two-factor-type.enum';
-import { UserSecurityRecoveryCodes } from 'src/modules/users/entities/user_security_recovery_codes.entity';
+import { UserSecurityRecoveryCodes } from 'src/modules/users/entities/user-security-recovery-codes.entity';
 
 @Entity('user_security')
 export class UserSecurity {
