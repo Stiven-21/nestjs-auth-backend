@@ -26,7 +26,6 @@ async function bootstrap() {
   SwaggerModule.setup('api/docs', app, document);
 
   app.use(cookieParser());
-  // app.use('trust proxy', true);
 
   await app.listen(process.env.APP_PORT || 8080);
 }

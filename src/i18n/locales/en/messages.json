@@ -12,7 +12,9 @@
             "userNotFound": "The user has not been found",
             "wrongCode": "The authentication code is not valid",
             "twoFactorAlreadyEnabled": "The user has already enabled two-factor authentication",
-            "twoFactorCodeInvalid": "The two-factor authentication code is not valid"
+            "twoFactorCodeInvalid": "The two-factor authentication code is not valid",
+            "twoFactorSMSDisabled": "The SMS service is not available at the moment",
+            "twoFactorTypeNotSupported": "The two-factor authentication type is not supported"
         },
         "success": {
             "register": "An email has been sent with instructions to verify your email",
@@ -33,7 +35,11 @@
         },
         "refreshToken": {
             "alreadyRevoked": "The session has already been revoked"
-        }
+        },
+        "twoFactorOtps": {
+            "blocked": "The user has been blocked for exceeding the limit of authentication attempts with two-factor authentication"
+        },
+        "email2faEnabled": "The two-factor authentication code has been sent by email"
     },
     "security-recovery-codes": {
         "error": {

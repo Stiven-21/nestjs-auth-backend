@@ -22,7 +22,7 @@ export class UserSecurityTwoFactorOtps {
   @Column({ type: 'enum', enum: TwoFactorOtpsType })
   type: TwoFactorOtpsType;
 
-  @Column({ type: 'varchar', length: 8, nullable: false })
+  @Column({ type: 'varchar', length: 255, nullable: false })
   code: string;
 
   @Column({ type: 'timestamp', nullable: false })

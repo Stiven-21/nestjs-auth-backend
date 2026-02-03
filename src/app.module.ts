@@ -7,6 +7,7 @@ import { AuthModule } from 'src/modules/auth/auth.module';
 import { UsersModule } from 'src/modules/users/users.module';
 import { CommonModule } from 'src/shared/common/common.module';
 import { RolesModule } from 'src/modules/roles/roles.module';
+import { ThrottlerModule } from './shared/throttler/thorttler.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { RolesModule } from 'src/modules/roles/roles.module';
             : null,
       },
     }),
+    ThrottlerModule,
     MailsModule,
     I18nModule,
     CommonModule,

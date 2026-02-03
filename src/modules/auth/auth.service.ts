@@ -33,6 +33,8 @@ import { TwoFactorEnableDto } from 'src/modules/auth/dto/2fa-enable.dto';
 import { TotpService } from 'src/modules/users/security/totp/totp.service';
 import { TwoFactorType } from 'src/common/enum/two-factor-type.enum';
 import { TwoFAConfirmDto } from './dto/2fa-confirm.dto';
+import { OtpsService } from '../users/security/otps/otps.service';
+import { TwoFactorOtpsType } from 'src/common/enum/two-factor-otps.enum';
 
 @Injectable()
 export class AuthService {
@@ -49,8 +51,9 @@ export class AuthService {
     private readonly dataSource: DataSource,
     private readonly authSessionsService: AuthSessionsService,
     private readonly authRefreshTokenService: AuthRefreshTokensService,
-    private readonly userSecurityRecoveryCodes: SecurityRecoveryCodesService,
+    private readonly userSecurityRecoveryCodesService: SecurityRecoveryCodesService,
     private readonly totpService: TotpService,
+    private readonly otpsService: OtpsService,
   ) {}
 
   async register(registerDto: RegisterDto, i18n: I18nContext) {
@@ -380,7 +383,25 @@ export class AuthService {
 
     // VERIFICAR QUE SI EL USUARIO TIENE 2FA ACTIVADO
     const userSecurity = await this.securityService.findOneByUser(user, i18n);
-    if (userSecurity.twoFactorEnabled)
+    if (userSecurity.twoFactorEnabled) {
+      if (userSecurity.twoFactorType === TwoFactorType.EMAIL) {
+        const code = await this.otpsService.createOtp(
+          user,
+          TwoFactorOtpsType.EMAIL,
+          i18n,
+        );
+        this.mailService.sendMail(
+          user.email,
+          'Codigo de seguridad',
+          'auth-2fa-otp',
+          {
+            otpCode: code,
+            expiryMinutes: 5,
+            loginIp: req.ip,
+          },
+          i18n,
+        );
+      }
       return okResponse({
         i18n,
         lang: i18n.lang,
@@ -392,6 +413,7 @@ export class AuthService {
           total: 0,
         },
       });
+    }
 
     return await this.__generatedTokenAndRefreshToken(
       req,
@@ -419,9 +441,68 @@ export class AuthService {
         }),
       });
 
-    if (twoFactorEnableDto.twoFactorType === TwoFactorType.TOTP) {
-      return await this.totpService.enableTotp(user.email, userSecurity, i18n);
+    const dataSend = {
+      data: null,
+      total: 0,
+    };
+
+    switch (twoFactorEnableDto.twoFactorType.toLowerCase()) {
+      case TwoFactorType.TOTP:
+        const dataImage = await this.totpService.enableTotp(
+          user.email,
+          userSecurity,
+          i18n,
+        );
+        dataSend.data = {
+          dataImage: dataImage,
+        };
+        break;
+      case TwoFactorType.SMS:
+        badRequestError({
+          i18n,
+          lang: i18n.lang,
+          description: i18n.t('messages.auth.error.twoFactorSMSDisabled', {
+            lang: i18n.lang,
+          }),
+        });
+        break;
+      case TwoFactorType.EMAIL:
+        const code = await this.otpsService.enableOtps(
+          user,
+          userSecurity,
+          i18n,
+        );
+        this.mailService.sendMail(
+          user.email,
+          'Codigo de verificacion para habilitar 2FA',
+          'auth-2fa-otp',
+          {
+            otpCode: code,
+            expiryMinutes: 5,
+            loginIp: req.ip,
+          },
+          i18n,
+        );
+        dataSend.data = {
+          message: i18n.t('messages.auth.email2faEnabled', { lang: i18n.lang }),
+        };
+        break;
+      default:
+        badRequestError({
+          i18n,
+          lang: i18n.lang,
+          description: i18n.t('messages.auth.error.twoFactorTypeNotSupported', {
+            lang: i18n.lang,
+          }),
+        });
+        break;
     }
+
+    return okResponse({
+      i18n,
+      lang: i18n.lang,
+      data: dataSend,
+    });
   }
 
   async confirm2fa(
@@ -451,6 +532,24 @@ export class AuthService {
           };
         }
         break;
+      case TwoFactorType.SMS:
+        break;
+      case TwoFactorType.EMAIL:
+        valid = await this.otpsService.verifyOtps(
+          user.id,
+          TwoFactorOtpsType.EMAIL,
+          code,
+          i18n,
+        );
+
+        this.logger.debug(valid);
+        if (valid) {
+          userSecurity.twoFactorData = {
+            otpsType: TwoFactorOtpsType.EMAIL,
+            email: user.email,
+          };
+        }
+        break;
     }
 
     if (!valid)
@@ -466,13 +565,22 @@ export class AuthService {
     userSecurity.lastChangedAt = new Date();
 
     await this.securityService.save(userSecurity, i18n);
+
+    const recoveryCodes = await this.userSecurityRecoveryCodesService.generate(
+      userId,
+      i18n,
+    );
+
     return okResponse({
       i18n,
       lang: i18n.lang,
       data: {
-        data: i18n.t('messages.auth.success.twoFactorEnabled', {
-          lang: i18n.lang,
-        }),
+        data: {
+          message: i18n.t('messages.auth.success.twoFactorEnabled', {
+            lang: i18n.lang,
+          }),
+          recoveryCode: recoveryCodes.data.data,
+        },
         total: 0,
       },
     });
@@ -497,10 +605,19 @@ export class AuthService {
           code,
         );
         break;
+      case TwoFactorType.SMS:
+        break;
+      case TwoFactorType.EMAIL:
+        valid = await this.otpsService.verifyOtps(
+          user.id,
+          TwoFactorOtpsType.EMAIL,
+          code,
+          i18n,
+        );
     }
 
     if (!valid && code)
-      valid = await this.userSecurityRecoveryCodes.useCode(
+      valid = await this.userSecurityRecoveryCodesService.useCode(
         userId,
         { code },
         i18n,
@@ -530,6 +647,8 @@ export class AuthService {
 
     if (userSecurity.twoFactorEnabled) {
       userSecurity.twoFactorEnabled = false;
+      userSecurity.twoFactorData = null;
+      userSecurity.twoFactorType = null;
       userSecurity.lastChangedAt = new Date();
       await this.securityService.save(userSecurity, i18n);
       return okResponse({

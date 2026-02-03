@@ -42,6 +42,8 @@ export type I18nTranslations = {
                 "wrongCode": string;
                 "twoFactorAlreadyEnabled": string;
                 "twoFactorCodeInvalid": string;
+                "twoFactorSMSDisabled": string;
+                "twoFactorTypeNotSupported": string;
             };
             "success": {
                 "register": string;
@@ -63,6 +65,10 @@ export type I18nTranslations = {
             "refreshToken": {
                 "alreadyRevoked": string;
             };
+            "twoFactorOtps": {
+                "blocked": string;
+            };
+            "email2faEnabled": string;
         };
         "security-recovery-codes": {
             "error": {

@@ -26,12 +26,14 @@ import { Auth } from 'src/modules/auth/decorators/auth.decorator';
 import { TwoFactorAuthVerifyDto } from 'src/modules/auth/dto/2fa-verify.dto';
 import { TwoFactorEnableDto } from 'src/modules/auth/dto/2fa-enable.dto';
 import { TwoFAConfirmDto } from 'src/modules/auth/dto/2fa-confirm.dto';
+import { ThorttleLimit } from 'src/common/decorators/throttle.decorator';
 
 @Controller('auth')
 export class AuthController {
   private readonly logger = new Logger(AuthController.name);
   constructor(private readonly authService: AuthService) {}
 
+  @ThorttleLimit(3, 60)
   @Post('register')
   async register(@Body() registerDto: RegisterDto, @I18n() i18n: I18nContext) {
     return await this.authService.register(registerDto, i18n);
@@ -42,6 +44,7 @@ export class AuthController {
     return await this.authService.verifyEmail(token, i18n);
   }
 
+  @ThorttleLimit(3, 60)
   @Post('reset-password')
   async resetPassword(
     @Body() resetPasswordDto: ResetPasswordDto,
@@ -63,6 +66,7 @@ export class AuthController {
     );
   }
 
+  @ThorttleLimit(5, 60)
   @Post('sign-in')
   async login(
     @Req() req: Request,

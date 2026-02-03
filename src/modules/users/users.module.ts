@@ -30,7 +30,7 @@ import { SecurityRecoveryCodesService } from 'src/modules/users/security-recover
 import { SecurityRecoveryCodesController } from 'src/modules/users/security-recovery-codes/security-recovery-codes.controller';
 import { TotpService } from 'src/modules/users/security/totp/totp.service';
 import { UserSecurityTwoFactorOtps } from 'src/modules/users/entities/user-security-two-factor-otps.entity';
-import { OtpsService } from './security/otps/otps.service';
+import { OtpsService } from 'src/modules/users/security/otps/otps.service';
 
 @Module({
   imports: [
@@ -83,6 +83,7 @@ import { OtpsService } from './security/otps/otps.service';
     EmailLogChangesService,
     SecurityRecoveryCodesService,
     TotpService,
+    OtpsService,
   ],
 })
 export class UsersModule {}
