@@ -20,6 +20,7 @@ import { AuthAttempts } from 'src/modules/auth/entities/auth-attempts.entity';
 import { AuthPasswordPolicy } from 'src/modules/auth/entities/auth-password-policy.entity';
 import { PasswordPolicyService } from 'src/modules/auth/password-policy/password-policy.service';
 import { PasswordPolicyConstraint } from 'src/common/validator/passwordPolicyConstraint.validator';
+import { AuditLogModule } from 'src/modules/audit-log/audit-log.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { PasswordPolicyConstraint } from 'src/common/validator/passwordPolicyCon
     ConfigModule.forFeature(facebookOauthConfig),
     ConfigModule.forFeature(githubOauthConfig),
     forwardRef(() => UsersModule),
+    AuditLogModule,
   ],
   controllers: [AuthController],
   providers: [

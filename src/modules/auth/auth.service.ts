@@ -36,6 +36,8 @@ import { TwoFAConfirmDto } from 'src/modules/auth/dto/2fa-confirm.dto';
 import { OtpsService } from 'src/modules/users/security/otps/otps.service';
 import { TwoFactorOtpsType } from 'src/common/enum/two-factor-otps.enum';
 import { AttemptsService } from 'src/modules/auth/attempts/attempts.service';
+import { AuditLogService } from '../audit-log/audit-log.service';
+import { AuditEvent } from 'src/common/enum/audit-event.enum';
 
 @Injectable()
 export class AuthService {
@@ -56,6 +58,7 @@ export class AuthService {
     private readonly attemptsService: AttemptsService,
     private readonly totpService: TotpService,
     private readonly otpsService: OtpsService,
+    private readonly auditLogService: AuditLogService,
   ) {}
 
   async register(registerDto: RegisterDto, i18n: I18nContext) {
@@ -183,6 +186,14 @@ export class AuthService {
 
     if (!isValidPassword) {
       await this.attemptsService.recordFailure(email, req.ip, i18n);
+      await this.auditLogService.create(
+        {
+          event: AuditEvent.LOGIN_FAILED,
+          ip: req.ip,
+          userAgent: req.headers['user-agent'],
+        },
+        i18n,
+      );
       badRequestError({
         i18n,
         lang: i18n.lang,
@@ -571,6 +582,15 @@ export class AuthService {
     userSecurity.lastChangedAt = new Date();
 
     await this.securityService.save(userSecurity, i18n);
+    await this.auditLogService.create(
+      {
+        event: AuditEvent.MFA_ENABLED,
+        actorId: userId,
+        ip: req.ip,
+        userAgent: req.headers['user-agent'],
+      },
+      i18n,
+    );
 
     const recoveryCodes = await this.userSecurityRecoveryCodesService.generate(
       userId,
@@ -659,6 +679,15 @@ export class AuthService {
       userSecurity.twoFactorType = null;
       userSecurity.lastChangedAt = new Date();
       await this.securityService.save(userSecurity, i18n);
+      await this.auditLogService.create(
+        {
+          event: AuditEvent.MFA_DISABLED,
+          actorId: userId,
+          ip: req.ip,
+          userAgent: req.headers['user-agent'],
+        },
+        i18n,
+      );
       return okResponse({
         i18n,
         lang: i18n.lang,
@@ -758,6 +787,21 @@ export class AuthService {
     };
 
     await this.attemptsService.reset(user.email, i18n);
+    await this.auditLogService.create(
+      {
+        event: AuditEvent.LOGIN_SUCCESS,
+        actorId: user.id,
+        ip,
+        userAgent,
+        metadata: {
+          browser,
+          os,
+          device,
+          location,
+        },
+      },
+      i18n,
+    );
 
     return okResponse({
       i18n,

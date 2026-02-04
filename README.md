@@ -3,12 +3,14 @@
 <p align="center">
   <img src="https://img.shields.io/badge/build-passing-brightgreen" />
   <img src="https://img.shields.io/badge/license-MIT-blue" />
-  <img src="https://img.shields.io/badge/version-v0.2.0--beta-orange" />
+  <img src="https://img.shields.io/badge/version-v0.4.0--beta-orange" />
   <img src="https://img.shields.io/badge/NestJS-framework-red" />
   <img src="https://img.shields.io/badge/TypeScript-language-blue" />
   <img src="https://img.shields.io/badge/Mailer-SMTP-lightgrey" />
   <img src="https://img.shields.io/badge/i18n-ES%20%7C%20EN-green" />
   <img src="https://img.shields.io/badge/Open%20Source-Yes-success" />
+  <img src="https://img.shields.io/badge/docs-Swagger-green" />
+
 </p>
 
 **OPEN AUTH** is an **open-source authentication server**, modular and extensible, built with **NestJS**. It is designed as a **professional reference implementation** and a **solid foundation** for **SaaS platforms, eCommerce projects, and modern APIs** that require secure and scalable authentication.
@@ -228,14 +230,16 @@ OPEN AUTH provides structured documentation to support usage, contribution, and 
 
 <p align="center">
   <strong>James Córdoba</strong><br />
-  Software Engineer · Backend Developer
+  Software Engineer · Fullstack Developer
 </p>
 
-<p align="center">
-  <a href="https://github.com/Stiven-21">🐙 GitHub</a> ·
-  <a href="https://www.linkedin.com/in/james-cordoba-a93437272/">💼 LinkedIn</a> ·
-  <a href="https://jam-dev-fullstack.onrender.com/">🌐 Portfolio</a>
-</p>
+<div align="center">
+
+[![Github](https://img.shields.io/badge/Github-0077B5?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Stiven-21)
+[![Instagram](https://img.shields.io/badge/Instagram-E4405F?style=for-the-badge&logo=instagram&logoColor=white)](https://www.instagram.com/stiveen1821/)
+[![Portfolio](https://img.shields.io/badge/Portfolio-FF5722?style=for-the-badge&logo=google-chrome&logoColor=white)](https://jam-dev-fullstack.onrender.com/)
+
+</div>
 
 Currently developed and maintained by a single author. Open to collaborators.
 
