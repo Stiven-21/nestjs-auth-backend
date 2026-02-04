@@ -15,6 +15,11 @@ import { AuthSessions } from 'src/modules/auth/entities/auth-sessions.entity';
 import { AuthRefreshTokens } from 'src/modules/auth/entities/auth-refresh-tokens.entity';
 import { AuthSessionsService } from 'src/modules/auth/sessions/sessions.service';
 import { AuthRefreshTokensService } from 'src/modules/auth/refresh-tokens/refresh-tokens.service';
+import { AttemptsService } from 'src/modules/auth/attempts/attempts.service';
+import { AuthAttempts } from 'src/modules/auth/entities/auth-attempts.entity';
+import { AuthPasswordPolicy } from 'src/modules/auth/entities/auth-password-policy.entity';
+import { PasswordPolicyService } from 'src/modules/auth/password-policy/password-policy.service';
+import { PasswordPolicyConstraint } from 'src/common/validator/passwordPolicyConstraint.validator';
 
 @Module({
   imports: [
@@ -25,7 +30,12 @@ import { AuthRefreshTokensService } from 'src/modules/auth/refresh-tokens/refres
         global: true,
       }),
     }),
-    TypeOrmModule.forFeature([AuthSessions, AuthRefreshTokens]),
+    TypeOrmModule.forFeature([
+      AuthSessions,
+      AuthRefreshTokens,
+      AuthAttempts,
+      AuthPasswordPolicy,
+    ]),
     ConfigModule.forFeature(googleOauthConfig),
     ConfigModule.forFeature(facebookOauthConfig),
     ConfigModule.forFeature(githubOauthConfig),
@@ -39,6 +49,9 @@ import { AuthRefreshTokensService } from 'src/modules/auth/refresh-tokens/refres
     GithubStrategy,
     AuthSessionsService,
     AuthRefreshTokensService,
+    AttemptsService,
+    PasswordPolicyService,
+    PasswordPolicyConstraint,
   ],
   exports: [JwtModule, AuthService],
 })

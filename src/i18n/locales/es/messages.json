@@ -31,7 +31,8 @@
             "sessionLost": "Se ha perdido la sesión, por favor inicie sesión",
             "unauthorized": "Acceso no autorizado",
             "deniedForPermission": "No tienes permiso para acceder a este recurso",
-            "deniedOnlyAdmin": "No tienes permiso para acceder a este recurso, solamente los supera dministradores tienen acceso"
+            "deniedOnlyAdmin": "No tienes permiso para acceder a este recurso, solamente los supera dministradores tienen acceso",
+            "bruteForceLogin": "El acceso ha sido bloqueado por exceder el l\u00edmite de intentos de autenticaci\u00f3n durante {time}"
         },
         "refreshToken": {
             "alreadyRevoked": "La sesión ya ha sido revocada"
@@ -53,6 +54,12 @@
         }
     },
     "common": {
-        "notFound": "El recurso {entity} no ha sido encontrado"
+        "notFound": "El recurso {entity} no ha sido encontrado",
+        "hour": "hora",
+        "hours": "horas",
+        "minute": "minuto",
+        "minutes": "minutos",
+        "second": "segundo",
+        "seconds": "segundos"
     }
 }

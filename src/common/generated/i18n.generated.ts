@@ -61,6 +61,7 @@ export type I18nTranslations = {
                 "unauthorized": string;
                 "deniedForPermission": string;
                 "deniedOnlyAdmin": string;
+                "bruteForceLogin": string;
             };
             "refreshToken": {
                 "alreadyRevoked": string;
@@ -83,6 +84,12 @@ export type I18nTranslations = {
         };
         "common": {
             "notFound": string;
+            "hour": string;
+            "hours": string;
+            "minute": string;
+            "minutes": string;
+            "second": string;
+            "seconds": string;
         };
     };
     "pagination": {
@@ -344,6 +351,7 @@ export type I18nTranslations = {
         };
         "isEnum": string;
         "isBoolean": string;
+        "isValidPassword": string;
     };
 };
 /* prettier-ignore */

@@ -12,9 +12,7 @@ export function Auth(permission?: string, options?: AuthOptions) {
   const guards: Type<CanActivate>[] = [AuthGuard];
 
   if (permission) guards.push(PermissionGuard);
-
   if (options?.allowSelf) guards.push(UserSelfOrAdminGuard);
-
   if (options?.superadminOnly) guards.push(SuperadminGuard);
 
   return applyDecorators(

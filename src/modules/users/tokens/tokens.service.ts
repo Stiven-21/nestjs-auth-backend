@@ -114,15 +114,6 @@ export class TokensService {
       this.logger.error(error);
       internalServerError({ i18n, lang: i18n.lang });
     }
-    if (!userToken || userToken.isUsed || userToken.expiresAt < new Date())
-      notFoundError({
-        i18n,
-        lang: i18n.lang,
-        description: i18n.t('messages.common.notFound', {
-          lang: i18n.lang,
-          args: { entity: i18n.t('entities.token.singular') },
-        }),
-      });
     return userToken;
   }
 

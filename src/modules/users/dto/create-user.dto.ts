@@ -4,10 +4,9 @@ import {
   IsNumber,
   IsPositive,
   IsString,
-  Matches,
   MaxLength,
-  MinLength,
 } from 'class-validator';
+import { IsValidPassword } from 'src/common/decorators/isValidPassword.decorator';
 import { tm } from 'src/common/helpers/i18n.helper';
 
 export class CreateUserDto {
@@ -82,32 +81,6 @@ export class CreateUserDto {
     message: tm('validator.isString'),
   })
   @Transform(({ value }) => value.toString().trim())
-  @MinLength(8, {
-    message: tm('validator.isMinLength', {
-      min: 8,
-    }),
-  })
-  @MaxLength(18, {
-    message: tm('validator.isMaxLength', {
-      max: 18,
-    }),
-  })
-  @Matches(/(?=.*[a-z])/, {
-    message: tm('validator.matches.lowercase'),
-  })
-  @Matches(/(?=.*[A-Z])/, {
-    message: tm('validator.matches.uppercase'),
-  })
-  @Matches(/(?=.*\d)/, {
-    message: tm('validator.matches.number'),
-  })
-  @Matches(/(?=.*[.,!@#$%^&*()_+\-=[\]{};':"\\|<>/?])/, {
-    message: tm('validator.matches.spacial'),
-  })
+  @IsValidPassword({ message: tm('validator.isPassword') })
   password: string;
-
-  // @IsNotEmpty({ message: tm('validator.isNotEmpty') })
-  // @IsNumber(undefined, { message: tm('validator.isNumber') })
-  // @IsPositive({ message: tm('validator.isPositive') })
-  // roleId: number;
 }

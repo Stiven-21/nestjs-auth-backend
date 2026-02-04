@@ -32,9 +32,10 @@ import { SecurityRecoveryCodesService } from 'src/modules/users/security-recover
 import { TwoFactorEnableDto } from 'src/modules/auth/dto/2fa-enable.dto';
 import { TotpService } from 'src/modules/users/security/totp/totp.service';
 import { TwoFactorType } from 'src/common/enum/two-factor-type.enum';
-import { TwoFAConfirmDto } from './dto/2fa-confirm.dto';
-import { OtpsService } from '../users/security/otps/otps.service';
+import { TwoFAConfirmDto } from 'src/modules/auth/dto/2fa-confirm.dto';
+import { OtpsService } from 'src/modules/users/security/otps/otps.service';
 import { TwoFactorOtpsType } from 'src/common/enum/two-factor-otps.enum';
+import { AttemptsService } from 'src/modules/auth/attempts/attempts.service';
 
 @Injectable()
 export class AuthService {
@@ -52,6 +53,7 @@ export class AuthService {
     private readonly authSessionsService: AuthSessionsService,
     private readonly authRefreshTokenService: AuthRefreshTokensService,
     private readonly userSecurityRecoveryCodesService: SecurityRecoveryCodesService,
+    private readonly attemptsService: AttemptsService,
     private readonly totpService: TotpService,
     private readonly otpsService: OtpsService,
   ) {}
@@ -121,6 +123,7 @@ export class AuthService {
   }
 
   async resetPasswordToken(
+    req: Request,
     token: string,
     resetPasswordTokenDto: ResetPasswordTokenDto,
     i18n: I18nContext,
@@ -154,6 +157,8 @@ export class AuthService {
       },
       i18n,
     );
+
+    await this.logoutAll(userToken.data.user.id, null, i18n);
     return okResponse({
       i18n,
       lang: i18n.lang,
@@ -173,12 +178,11 @@ export class AuthService {
     i18n: I18nContext,
   ) {
     const { email, password } = loginDto;
-
     const user = await this.usersService.findOneByEmail(email, i18n);
-
     const isValidPassword = await bcrypt.compare(password, user.password);
 
-    if (!isValidPassword)
+    if (!isValidPassword) {
+      await this.attemptsService.recordFailure(email, req.ip, i18n);
       badRequestError({
         i18n,
         lang: i18n.lang,
@@ -186,6 +190,7 @@ export class AuthService {
           lang: i18n.lang,
         }),
       });
+    }
 
     return await this.__Validate2FAUser(req, user, i18n, deviceId);
   }
@@ -245,8 +250,9 @@ export class AuthService {
     });
   }
 
-  async logoutAll(userId: number, sessionId: number, i18n: I18nContext) {
-    await this.authSessionsService.findBySessionId(sessionId, i18n);
+  async logoutAll(userId: number, sessionId?: number, i18n?: I18nContext) {
+    if (!sessionId)
+      await this.authSessionsService.findBySessionId(sessionId, i18n);
     // CORREGIR - NO ME DEBE REVOCAR EL REFRESH TOKEN ACTUAL
 
     await this.dataSource.transaction(async (manager) => {
@@ -623,7 +629,8 @@ export class AuthService {
         i18n,
       );
 
-    if (!valid)
+    if (!valid) {
+      await this.attemptsService.recordFailure(user.email, req.ip, i18n);
       badRequestError({
         i18n,
         lang: i18n.lang,
@@ -631,6 +638,7 @@ export class AuthService {
           lang: i18n.lang,
         }),
       });
+    }
 
     return await this.__generatedTokenAndRefreshToken(
       req,
@@ -748,6 +756,8 @@ export class AuthService {
       sessionId: payload.sessionId,
       deviceId,
     };
+
+    await this.attemptsService.reset(user.email, i18n);
 
     return okResponse({
       i18n,

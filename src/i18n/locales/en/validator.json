@@ -14,5 +14,6 @@
         "spacial": "The {property} field must contain at least one special character"
     },
     "isEnum": "The {property} field must be one of the following values: {enumValues}",
-    "isBoolean": "The {property} field must be a boolean"
+    "isBoolean": "The {property} field must be a boolean",
+    "isValidPassword": "The {property} field must contain at least one uppercase letter, one lowercase letter, one number, and one special character"
 }

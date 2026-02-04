@@ -4,6 +4,7 @@ import { CustomValidationPipe } from 'src/config/validation.config';
 import { I18nValidationExceptionFilter } from 'nestjs-i18n';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as cookieParser from 'cookie-parser';
+import { useContainer } from 'class-validator';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -26,6 +27,7 @@ async function bootstrap() {
   SwaggerModule.setup('api/docs', app, document);
 
   app.use(cookieParser());
+  useContainer(app.select(AppModule), { fallbackOnErrors: true });
 
   await app.listen(process.env.APP_PORT || 8080);
 }

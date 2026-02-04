@@ -27,6 +27,7 @@ import { TwoFactorAuthVerifyDto } from 'src/modules/auth/dto/2fa-verify.dto';
 import { TwoFactorEnableDto } from 'src/modules/auth/dto/2fa-enable.dto';
 import { TwoFAConfirmDto } from 'src/modules/auth/dto/2fa-confirm.dto';
 import { ThorttleLimit } from 'src/common/decorators/throttle.decorator';
+import { BruteForce } from 'src/modules/auth/decorators/brute-force.decorator';
 
 @Controller('auth')
 export class AuthController {
@@ -53,13 +54,16 @@ export class AuthController {
     return await this.authService.resetPassword(resetPasswordDto, i18n);
   }
 
+  @ThorttleLimit(3, 60)
   @Post('reset-password-token/:token')
   async resetPasswordToken(
     @Param('token') token: string,
     @Body() resetPasswordTokenDto: ResetPasswordTokenDto,
+    @Req() req: Request,
     @I18n() i18n: I18nContext,
   ) {
     return await this.authService.resetPasswordToken(
+      req,
       token,
       resetPasswordTokenDto,
       i18n,
@@ -67,6 +71,7 @@ export class AuthController {
   }
 
   @ThorttleLimit(5, 60)
+  @BruteForce()
   @Post('sign-in')
   async login(
     @Req() req: Request,
@@ -158,6 +163,7 @@ export class AuthController {
     return await this.authService.logoutAll(userId, sessionId, i18n);
   }
 
+  @ThorttleLimit(5, 60)
   @Post('2fa/verify')
   async verify2fa(
     @Req() req: Request,
@@ -174,6 +180,7 @@ export class AuthController {
     );
   }
 
+  @ThorttleLimit(3, 60)
   @Auth()
   @Post('2fa/enable')
   async enable2fa(
@@ -184,6 +191,7 @@ export class AuthController {
     return await this.authService.enable2fa(req, twoFactorEnableDto, i18n);
   }
 
+  @ThorttleLimit(3, 60)
   @Auth()
   @Post('2fa/confirm')
   async confirm2fa(
@@ -194,6 +202,7 @@ export class AuthController {
     return await this.authService.confirm2fa(req, twoFAConfirmDto, i18n);
   }
 
+  @ThorttleLimit(2, 60)
   @Auth()
   @Post('2fa/disable')
   async disable2fa(@Req() req: Request, @I18n() i18n: I18nContext) {

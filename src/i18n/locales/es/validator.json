@@ -14,5 +14,6 @@
         "spacial": "El campo {property} debe contener al menos un caracter especial"
     },
     "isEnum": "El campo {property} debe ser uno de los siguientes valores: {enumValues}",
-    "isBoolean": "El campo {property} debe ser un booleano"
+    "isBoolean": "El campo {property} debe ser un booleano",
+    "isValidPassword": "El campo {property} debe contener al menos una letra mayuscula, una letra minuscula, un numero y un caracter especial"
 }
