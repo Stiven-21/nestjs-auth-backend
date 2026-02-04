@@ -3,7 +3,7 @@ name: Crear Release Automático
 on:
   push:
     tags:
-      - 'nestjs-auth-backend-v*'
+      - 'nest-auth-v*'
 
 permissions:
   contents: write

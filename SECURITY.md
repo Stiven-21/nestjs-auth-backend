@@ -1,8 +1,8 @@
-# 🔐 Security Policy — OPEN AUTH
+# 🔐 Security Policy — NEST AUTH
 
 ## 📢 Reporting a Vulnerability
 
-Security is a top priority for **OPEN AUTH**. If you discover a security vulnerability, **please do not open a public issue**.
+Security is a top priority for **NEST AUTH**. If you discover a security vulnerability, **please do not open a public issue**.
 
 Instead, report it responsibly using one of the private channels below.
 
@@ -46,8 +46,8 @@ Only the versions listed below currently receive security updates.
 
 | Version range | Status           | Notes                    |
 | ------------- | ---------------- | ------------------------ |
-| v0.2.x        | ✅ Supported     | Active beta release line |
-| < v0.2        | ❌ Not supported | No security patches      |
+| v0.4.x        | ✅ Supported     | Active beta release line |
+| < v0.4        | ❌ Not supported | No security patches      |
 
 > ⚠️ Only supported versions receive security fixes. Users are strongly encouraged to upgrade.
 
@@ -71,7 +71,7 @@ All security-related fixes are:
 
 ## 🛡️ Security Practices
 
-OPEN AUTH applies the following security measures by default:
+NEST AUTH applies the following security measures by default:
 
 - Secure password hashing
 - JWT access tokens with expiration
@@ -98,7 +98,7 @@ With the reporter’s consent, security contributors may be acknowledged in:
 
 ## 📄 Scope
 
-This security policy applies **only** to the official **OPEN AUTH** repository and its source code.
+This security policy applies **only** to the official **NEST AUTH** repository and its source code.
 
 It does **not** cover:
 
@@ -108,4 +108,4 @@ It does **not** cover:
 
 ---
 
-Thank you for helping keep **OPEN AUTH** secure for everyone.
+Thank you for helping keep **NEST AUTH** secure for everyone.

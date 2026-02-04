@@ -15,7 +15,7 @@ import { I18n, I18nContext } from 'nestjs-i18n';
 import {
   ResetPasswordDto,
   ResetPasswordTokenDto,
-} from './dto/reset-password.dto';
+} from 'src/modules/auth/dto/reset-password.dto';
 import { LoginDto } from 'src/modules/auth/dto/login.dto';
 import { Request, Response } from 'express';
 import { GoogleOauthGuard } from 'src/modules/auth/guards/oauth/google-oauth.guard';
@@ -40,6 +40,7 @@ export class AuthController {
     return await this.authService.register(registerDto, i18n);
   }
 
+  @ThorttleLimit(3, 60)
   @Get('verify-email/:token')
   async verifyEmail(@Param('token') token: string, @I18n() i18n: I18nContext) {
     return await this.authService.verifyEmail(token, i18n);
@@ -55,7 +56,7 @@ export class AuthController {
   }
 
   @ThorttleLimit(3, 60)
-  @Post('reset-password-token/:token')
+  @Post('reset-password/:token')
   async resetPasswordToken(
     @Param('token') token: string,
     @Body() resetPasswordTokenDto: ResetPasswordTokenDto,
@@ -84,8 +85,12 @@ export class AuthController {
   }
 
   @Get('refresh-token/:token')
-  async refreshToken(@Param('token') token: string, @I18n() i18n: I18nContext) {
-    return await this.authService.refreshToken(token, i18n);
+  async refreshToken(
+    @Param('token') token: string,
+    @I18n() i18n: I18nContext,
+    @Req() req: Request,
+  ) {
+    return await this.authService.refreshToken(req, token, i18n);
   }
 
   // Oauth Google

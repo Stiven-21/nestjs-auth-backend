@@ -10,7 +10,7 @@ import { UsersModule } from 'src/modules/users/users.module';
   imports: [
     TypeOrmModule.forFeature([AuditLog]),
     forwardRef(() => AuthModule),
-    UsersModule,
+    forwardRef(() => UsersModule),
   ],
   controllers: [AuditLogController],
   providers: [AuditLogService],

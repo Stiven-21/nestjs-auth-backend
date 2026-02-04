@@ -6,12 +6,16 @@ import {
   Param,
   Delete,
   Query,
+  Post,
+  Req,
 } from '@nestjs/common';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdateUserDto } from 'src/modules/users/dto/update-user.dto';
 import { I18n, I18nContext } from 'nestjs-i18n';
 import { DynamicQueryDto } from 'src/common/services/query/dto/dynamic.dto';
-import { UsersService } from './users.service';
-import { Auth } from '../auth/decorators/auth.decorator';
+import { UsersService } from 'src/modules/users/users.service';
+import { Auth } from 'src/modules/auth/decorators/auth.decorator';
+import { ChangeRoleDto } from 'src/modules/users/dto/change-role.dto';
+import { Request } from 'express';
 
 @Controller('users')
 export class UsersController {
@@ -51,5 +55,18 @@ export class UsersController {
   })
   async remove(@Param('id') id: number, @I18n() i18n: I18nContext) {
     return await this.usersService.remove(id, i18n);
+  }
+
+  @Post('change-role/:userId')
+  @Auth('users:update:id:role', {
+    superadminOnly: true,
+  })
+  async changeRole(
+    @Param('userId') userId: number,
+    @Body() changeRoleDto: ChangeRoleDto,
+    @I18n() i18n: I18nContext,
+    @Req() req: Request,
+  ) {
+    return await this.usersService.changeRole(req, userId, changeRoleDto, i18n);
   }
 }

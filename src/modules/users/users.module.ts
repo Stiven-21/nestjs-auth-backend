@@ -31,6 +31,7 @@ import { SecurityRecoveryCodesController } from 'src/modules/users/security-reco
 import { TotpService } from 'src/modules/users/security/totp/totp.service';
 import { UserSecurityTwoFactorOtps } from 'src/modules/users/entities/user-security-two-factor-otps.entity';
 import { OtpsService } from 'src/modules/users/security/otps/otps.service';
+import { AuditLogModule } from '../audit-log/audit-log.module';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { OtpsService } from 'src/modules/users/security/otps/otps.service';
     ]),
     forwardRef(() => AuthModule),
     RolesModule,
+    AuditLogModule,
   ],
   controllers: [
     UsersController,

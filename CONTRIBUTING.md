@@ -1,6 +1,6 @@
-# 🤝 Contributing to OPEN AUTH
+# 🤝 Contributing to NEST AUTH
 
-Thank you for your interest in contributing to **OPEN AUTH**! 🎉
+Thank you for your interest in contributing to **NEST AUTH**! 🎉
 This project is open-source, and all kinds of help — whether code, documentation, or reviews — are welcome.
 
 The goal of this document is to set **clear expectations**, maintain **high code quality**, and make collaboration easier.
@@ -9,7 +9,7 @@ The goal of this document is to set **clear expectations**, maintain **high code
 
 ## 🧭 Contribution Philosophy
 
-OPEN AUTH is built on the following principles:
+NEST AUTH is built on the following principles:
 
 - Clarity over complexity
 - Security by default
@@ -165,4 +165,4 @@ If you have questions before contributing, you can contact the maintainer:
 
 ---
 
-Thank you for helping **OPEN AUTH** continue to grow 🚀
+Thank you for helping **NEST AUTH** continue to grow 🚀

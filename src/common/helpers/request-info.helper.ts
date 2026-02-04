@@ -14,14 +14,7 @@ export interface RequestClientInfo {
 export const getClientInfo = async (
   req: Request,
 ): Promise<RequestClientInfo> => {
-  let ip =
-    (req.headers['x-forwarded-for'] as string)?.split(',')[0] ||
-    req.socket.remoteAddress ||
-    '';
-
-  if (ip === '::1') ip = '127.0.0.1';
-
-  ip = ip.replace('::ffff:', '').trim();
+  const ip = getIPFromRequest(req);
 
   const ua = req.headers['user-agent'] || '';
   const result = UAParser(ua);
@@ -56,4 +49,15 @@ const getIPLocation = async (ip: string): Promise<LocationInfo | null> => {
     console.error('Error obteniendo ubicación:', error);
     return null;
   }
+};
+
+export const getIPFromRequest = (req: Request): string => {
+  let ip =
+    (req.headers['x-forwarded-for'] as string)?.split(',')[0] ||
+    req.socket.remoteAddress ||
+    '';
+
+  if (ip === '::1') ip = '127.0.0.1';
+  ip = ip.replace('::ffff:', '').trim();
+  return ip;
 };

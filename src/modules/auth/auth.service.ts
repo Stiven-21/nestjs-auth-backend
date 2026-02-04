@@ -18,7 +18,10 @@ import {
 import * as bcrypt from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
 import { MailService } from 'src/mails/mail.service';
-import { getClientInfo } from 'src/common/helpers/request-info.helper';
+import {
+  getClientInfo,
+  getIPFromRequest,
+} from 'src/common/helpers/request-info.helper';
 import { Request } from 'express';
 import { SessionService } from 'src/modules/users/session/session.service';
 import { User } from 'src/modules/users/entities/user.entity';
@@ -38,6 +41,7 @@ import { TwoFactorOtpsType } from 'src/common/enum/two-factor-otps.enum';
 import { AttemptsService } from 'src/modules/auth/attempts/attempts.service';
 import { AuditLogService } from '../audit-log/audit-log.service';
 import { AuditEvent } from 'src/common/enum/audit-event.enum';
+import { parsePermissions } from 'src/common/utils/normalize-permissions.utils';
 
 @Injectable()
 export class AuthService {
@@ -162,6 +166,15 @@ export class AuthService {
     );
 
     await this.logoutAll(userToken.data.user.id, null, i18n);
+    await this.auditLogService.create(
+      {
+        event: AuditEvent.PASSWORD_CHANGED,
+        actorId: userToken.data.user.id,
+        ip: getIPFromRequest(req),
+        userAgent: req.headers['user-agent'],
+      },
+      i18n,
+    );
     return okResponse({
       i18n,
       lang: i18n.lang,
@@ -185,11 +198,15 @@ export class AuthService {
     const isValidPassword = await bcrypt.compare(password, user.password);
 
     if (!isValidPassword) {
-      await this.attemptsService.recordFailure(email, req.ip, i18n);
+      await this.attemptsService.recordFailure(
+        email,
+        getIPFromRequest(req),
+        i18n,
+      );
       await this.auditLogService.create(
         {
           event: AuditEvent.LOGIN_FAILED,
-          ip: req.ip,
+          ip: getIPFromRequest(req),
           userAgent: req.headers['user-agent'],
         },
         i18n,
@@ -296,10 +313,11 @@ export class AuthService {
     i18n: I18nContext,
   ) {
     const user = await this.usersService.findById(id, i18n);
+    user.data.role.permissions = parsePermissions(user.data.role.permissions);
     return await this.__Validate2FAUser(req, user.data, i18n, deviceId);
   }
 
-  async refreshToken(refreshToken: string, i18n: I18nContext) {
+  async refreshToken(req: Request, refreshToken: string, i18n: I18nContext) {
     if (!refreshToken) return badRequestError({ i18n, lang: i18n.lang });
 
     const authSession = await this.authRefreshTokenService.revokeRefreshToken(
@@ -335,7 +353,7 @@ export class AuthService {
       email: user.email,
       role: {
         name: user.role.name,
-        permissions: user.role.permissions,
+        permissions: parsePermissions(user.role.permissions),
       },
     };
 
@@ -347,6 +365,16 @@ export class AuthService {
       {
         authSession,
         refreshToken: newRefreshToken,
+      },
+      i18n,
+    );
+
+    await this.auditLogService.create(
+      {
+        event: AuditEvent.REFRESH_TOKEN_REVOKED,
+        ip: getIPFromRequest(req),
+        userAgent: req.headers['user-agent'],
+        actorId: user.id,
       },
       i18n,
     );
@@ -414,7 +442,7 @@ export class AuthService {
           {
             otpCode: code,
             expiryMinutes: 5,
-            loginIp: req.ip,
+            loginIp: getIPFromRequest(req),
           },
           i18n,
         );
@@ -496,7 +524,7 @@ export class AuthService {
           {
             otpCode: code,
             expiryMinutes: 5,
-            loginIp: req.ip,
+            loginIp: getIPFromRequest(req),
           },
           i18n,
         );
@@ -586,7 +614,7 @@ export class AuthService {
       {
         event: AuditEvent.MFA_ENABLED,
         actorId: userId,
-        ip: req.ip,
+        ip: getIPFromRequest(req),
         userAgent: req.headers['user-agent'],
       },
       i18n,
@@ -650,7 +678,11 @@ export class AuthService {
       );
 
     if (!valid) {
-      await this.attemptsService.recordFailure(user.email, req.ip, i18n);
+      await this.attemptsService.recordFailure(
+        user.email,
+        getIPFromRequest(req),
+        i18n,
+      );
       badRequestError({
         i18n,
         lang: i18n.lang,
@@ -683,7 +715,7 @@ export class AuthService {
         {
           event: AuditEvent.MFA_DISABLED,
           actorId: userId,
-          ip: req.ip,
+          ip: getIPFromRequest(req),
           userAgent: req.headers['user-agent'],
         },
         i18n,
@@ -743,7 +775,7 @@ export class AuthService {
         email: user.email,
         role: {
           name: user.role.name,
-          permissions: await this.normalizePermissions(user.role.permissions),
+          permissions: parsePermissions(user.role.permissions),
         },
       };
 
@@ -816,24 +848,10 @@ export class AuthService {
           email: user.email,
           user: user.name + ' ' + user.lastname,
           role: user.role.name,
-          permissions: user.role.permissions,
+          permissions: parsePermissions(user.role.permissions),
         },
         total: 1,
       },
     });
-  }
-
-  private async normalizePermissions(
-    permissions: string | string[],
-  ): Promise<string[]> {
-    if (Array.isArray(permissions)) return permissions;
-
-    if (typeof permissions === 'string')
-      return permissions
-        .split(',')
-        .map((p) => p.trim())
-        .filter(Boolean);
-
-    return [];
   }
 }

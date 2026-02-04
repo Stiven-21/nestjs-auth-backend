@@ -1,6 +1,11 @@
-# 🔐 OPEN AUTH
+# 🔐 NEST AUTH
 
-<p align="center">
+<div align="center">
+  <img src="./assets/nest_auth.png" width="auto" height="auto">
+</div>
+
+<div align="center">
+
   <img src="https://img.shields.io/badge/build-passing-brightgreen" />
   <img src="https://img.shields.io/badge/license-MIT-blue" />
   <img src="https://img.shields.io/badge/version-v0.4.0--beta-orange" />
@@ -11,9 +16,9 @@
   <img src="https://img.shields.io/badge/Open%20Source-Yes-success" />
   <img src="https://img.shields.io/badge/docs-Swagger-green" />
 
-</p>
+</div>
 
-**OPEN AUTH** is an **open-source authentication server**, modular and extensible, built with **NestJS**. It is designed as a **professional reference implementation** and a **solid foundation** for **SaaS platforms, eCommerce projects, and modern APIs** that require secure and scalable authentication.
+**NEST AUTH** is an **open-source authentication server**, modular and extensible, built with **NestJS**. It is designed as a **professional reference implementation** and a **solid foundation** for **SaaS platforms, eCommerce projects, and modern APIs** that require secure and scalable authentication.
 
 > 🎯 Goal: provide a complete, clear, and maintainable authentication system, production-ready and easy to extend.
 
@@ -21,10 +26,10 @@
 
 ## 📌 General Information
 
-- **Project name:** OPEN AUTH
+- **Project name:** NEST AUTH
 - **Type:** Backend / Authentication Server
 - **Status:** Beta
-- **Current version:** `v0.2.0-beta`
+- **Current version:** `v0.4.0-beta`
 - **Framework:** NestJS
 - **Language:** TypeScript
 - **License:** MIT
@@ -51,7 +56,7 @@
 
 ## 🧠 Project Philosophy
 
-OPEN AUTH is not just a boilerplate. It is a **reference implementation** that aims to:
+NEST AUTH is not just a boilerplate. It is a **reference implementation** that aims to:
 
 - Serve as a **reliable technical foundation** for real-world products
 - Showcase **NestJS best practices**
@@ -97,7 +102,7 @@ This allows invalidating all sessions for a single user without affecting others
 
 ## 🌐 OAuth & Multiple Credentials
 
-Since `v0.2.0-beta`, OPEN AUTH supports **multiple authentication methods per user**.
+Since `v0.2.0-beta`, NEST AUTH supports **multiple authentication methods per user**.
 
 ### Supported Providers
 
@@ -179,7 +184,7 @@ pnpm run start:dev
 
 ```ini
 APP_PORT=8080
-NAME_APP=OPEN AUTH
+NAME_APP=NEST AUTH
 
 DB_TYPE=postgres
 DB_HOST=localhost
@@ -198,7 +203,7 @@ DEFAULT_LOCALE=en
 
 ## 📚 Documentation
 
-OPEN AUTH provides structured documentation to support usage, contribution, and long-term maintenance.
+NEST AUTH provides structured documentation to support usage, contribution, and long-term maintenance.
 
 ### Core
 

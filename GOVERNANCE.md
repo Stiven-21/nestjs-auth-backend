@@ -1,8 +1,8 @@
 # Governance
 
-## Project: OPEN AUTH
+## Project: NEST AUTH
 
-This document defines the governance model for **OPEN AUTH**, an open-source authentication framework designed as a reference implementation and foundation for SaaS platforms, eCommerce systems, and APIs.
+This document defines the governance model for **NEST AUTH**, an open-source authentication framework designed as a reference implementation and foundation for SaaS platforms, eCommerce systems, and APIs.
 
 The goal of this governance is to ensure **clarity, transparency, security, and long-term sustainability** while keeping decision-making efficient and aligned with the project’s vision.
 
@@ -30,7 +30,7 @@ The maintainer is responsible for:
 
 ## 2. Decision-Making Process
 
-OPEN AUTH follows a **maintainer-led governance model**.
+NEST AUTH follows a **maintainer-led governance model**.
 
 ### General Principles
 
@@ -93,7 +93,7 @@ Given the nature of authentication and identity management, **security is a top 
 
 ## 5. Release and Versioning Policy
 
-- OPEN AUTH follows **Semantic Versioning (SemVer)**.
+- NEST AUTH follows **Semantic Versioning (SemVer)**.
 - Releases are tagged and documented.
 - Breaking changes are avoided unless strictly necessary and clearly communicated.
 
@@ -123,4 +123,4 @@ This governance model may evolve as the project grows.
 
 ## 8. Attribution
 
-This governance model is inspired by common open-source governance practices and adapted to fit the scope and security requirements of OPEN AUTH.
+This governance model is inspired by common open-source governance practices and adapted to fit the scope and security requirements of NEST AUTH.

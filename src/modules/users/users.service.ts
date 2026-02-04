@@ -1,7 +1,7 @@
 import { forwardRef, Inject, Injectable, Logger, Param } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { User } from './entities/user.entity';
+import { CreateUserDto } from 'src/modules/users/dto/create-user.dto';
+import { UpdateUserDto } from 'src/modules/users/dto/update-user.dto';
+import { User } from 'src/modules/users/entities/user.entity';
 import { DataSource, EntityManager, IsNull, Repository } from 'typeorm';
 import { I18nContext } from 'nestjs-i18n';
 import {
@@ -26,6 +26,11 @@ import { OAuthProviderEnum } from 'src/common/enum/user-oauth-providers.enum';
 import { CreateGithubProfileDto } from 'src/modules/users/dto/create-github-user.dto';
 import { getSafeSelect } from 'src/common/utils/typeorm.utils';
 import { EmailLogChangesService } from 'src/modules/users/email-log-changes/email-log-changes.service';
+import { ChangeRoleDto } from 'src/modules/users/dto/change-role.dto';
+import { Request } from 'express';
+import { AuditLogService } from '../audit-log/audit-log.service';
+import { AuditEvent } from 'src/common/enum/audit-event.enum';
+import { getIPFromRequest } from 'src/common/helpers/request-info.helper';
 
 @Injectable()
 export class UsersService {
@@ -44,6 +49,7 @@ export class UsersService {
     private readonly tokensService: TokensService,
     @Inject(forwardRef(() => EmailLogChangesService))
     private readonly emailLogChangesService: EmailLogChangesService,
+    private readonly auditLogService: AuditLogService,
   ) {}
 
   async create(
@@ -55,14 +61,14 @@ export class UsersService {
     const create = await this.__ValidateAndCreateUser(createUserDto, i18n);
     const user_secret = uuidv7();
     let user = null;
-    const role = await this.rolesService.findOne(
-      Number(process.env.ROL_USER_ID),
+    const role = await this.rolesService.getNameRoleOrCreate(
+      process.env.ROL_USER_DEFAULT,
       i18n,
     );
     try {
       user = await repo.save({
         user_secret,
-        role: role.data,
+        role,
         ...create,
       });
     } catch (error) {
@@ -468,5 +474,50 @@ export class UsersService {
       document,
       email,
     };
+  }
+
+  async changeRole(
+    req: Request,
+    userId: number,
+    changeRoleDto: ChangeRoleDto,
+    i18n: I18nContext,
+  ) {
+    const { data: user } = (await this.findOne(userId, i18n)).data;
+    const { data: role } = await this.rolesService.findOne(
+      changeRoleDto.roleId,
+      i18n,
+    );
+    const after = user.role;
+
+    const userLogged = req.user['sub'];
+
+    user.role = role;
+    try {
+      await this.usersRepository.save(user);
+      await this.auditLogService.create(
+        {
+          event: AuditEvent.CHANGE_ROLE_USER,
+          actorId: userLogged,
+          ip: getIPFromRequest(req),
+          userAgent: req.headers['user-agent'],
+          metadata: {
+            after: after,
+            before: user.role,
+          },
+        },
+        i18n,
+      );
+      return okResponse({
+        i18n,
+        lang: i18n.lang,
+        data: {
+          data: null,
+          total: 1,
+        },
+      });
+    } catch (error) {
+      this.logger.error(error);
+      internalServerError({ i18n, lang: i18n.lang });
+    }
   }
 }

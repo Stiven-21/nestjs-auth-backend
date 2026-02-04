@@ -1,69 +1,160 @@
 # Changelog
 
-Registro profesional de cambios y notas de lanzamiento.
+Professional change log and release notes for **NEST AUTH**.
 
-## [v0.2.0-beta] - 2026-01-15
+This project follows **Semantic Versioning (SemVer)**.  
+`beta` versions may include internal changes without prior notice.
 
-## Resumen
+---
 
-Versión beta que incorpora soporte para autenticación mediante proveedores externos (OAuth), separación explícita de modelos de credenciales, y estandarización del formato de respuestas API con soporte i18n.
+## [v0.4.0] — Advanced Authorization & Auditing
 
-## Añadido
+📅 2026-02-04
 
-- Soporte OAuth para Google, Facebook y GitHub (estrategias, guards y endpoints de callback).
-- Entidades para gestión de métodos de autenticación: cuentas con credenciales locales y cuentas vinculadas a proveedores OAuth.
-- Flujo de vinculación automática de cuentas cuando el proveedor retorna un email coincidente con un usuario existente.
-- Variables de entorno y configuración de proveedores OAuth (clientes, secretos, callbacks).
+## Summary
 
-## Cambios
+This release introduces **fine-grained authorization** along with **auditing and critical security event logging**, laying the foundation for traceability, compliance, and advanced monitoring.
 
-- Estandarización de respuestas y errores mediante una fábrica central (`ResponseFactory`) y uso de `nestjs-i18n` para mensajes localizados.
-- Documentación renovada para orientar el proyecto como servidor de autenticación open-source y mejorar ejemplos de uso.
-- Actualización de la versión del paquete a `0.2.0-beta`.
+## Added
 
-## Correcciones y refinamientos
+### Advanced authorization
 
-- Correcciones menores en ejemplos de documentación y descripciones de endpoints.
-- Ajustes en dependencias y configuración para soportar estrategias OAuth.
+- Fine-grained guards for action-level permission control (specific CRUD operations).
+- Clear separation between roles and permissions.
+- Dynamic permission evaluation per resource and action.
 
-## Conocidos / Observaciones técnicas
+### Auditing & critical events
 
-- Algunos métodos de servicio pueden no devolver una respuesta HTTP explícita en todos los flujos (p. ej. `resetPasswordToken`, `refreshToken`) — esto puede causar respuestas inconsistentes en casos de error.
-- Existen áreas con tipado permisivo en estrategias OAuth y DTOs que se beneficiarían de un tipado TypeScript más estricto.
-- `synchronize` está habilitado en la configuración de TypeORM: deshabilitar en entornos de producción y usar migraciones para gestión de esquema.
+- Security-critical event logging:
+  - `LOGIN_SUCCESS`
+  - `LOGIN_FAILED`
+  - `PASSWORD_CHANGED`
+  - `2FA_ENABLED / 2FA_DISABLED`
+  - `REFRESH_TOKEN_REVOKED`
+- Audit trail for role and permission changes.
+- Persistent event storage for later analysis and monitoring.
 
-## [v0.1.0-beta] - Inicial
+## Changes
 
-## Resumen
+- Authorization logic refactored for improved extensibility.
+- Architecture prepared for integration with external logging or SIEM systems.
+- Clearer separation of responsibilities between guards, services, and audit layers.
 
-Versión inicial beta que establece la base del sistema de autenticación.
+## Technical notes
 
-## Funcionalidades principales
+- The audit system is designed to evolve (alerts, webhooks, dashboards).
+- Define log retention policies according to the environment (development vs production).
 
-- Autenticación local: registro, inicio de sesión, refresh token y restablecimiento de contraseña.
-- Gestión de usuarios y roles con permisos básicos.
-- Envío de correos mediante `@nestjs-modules/mailer` y plantillas Handlebars.
-- Internacionalización con `nestjs-i18n` (soporte para `en` y `es`).
-- Persistencia con TypeORM y PostgreSQL, validación global y documentación Swagger.
+---
 
-## Notas finales
+## [v0.3.0] — Account Security & Sessions
 
-Esta publicación corresponde a versiones en estado beta; se recomienda seguir las prácticas de seguridad habituales antes de desplegar en producción (revisión de secretos, uso de migraciones, auditoría de dependencias y pruebas de integración).
+📅 2026-02-01
 
-- Actualizaciones de documentación y ejemplos corregidos en `README.md`.
-- Creación de `CHANGELOG.md` (este archivo) para registrar cambios.
+## Summary
 
-### Issues detectados / pendientes (observaciones importantes)
+This release focuses on **advanced account security**, introducing **MFA**, **session management**, and **hardening against common attack vectors**.
 
-Los siguientes puntos fueron detectados durante el análisis y están por corregir o revisar (no todos fueron modificados automáticamente):
+## Added
 
-- `console.log(user)` permanece en `src/modules/auth/auth.service.ts` — reemplazar por `Logger` para evitar exposición de datos en logs.
-- `AuthService.resetPasswordToken` realiza acciones (actualizar contraseña, marcar token usado, enviar correo) pero no retorna explícitamente un `okResponse` (falta respuesta consistente al cliente).
-- `AuthService.refreshToken` captura errores de `jwtService.verify` y llama a `internalServerError(...)` pero la ejecución continúa; idealmente debe retornar/arrojar una excepción clara (`badRequestError` o `unauthorizedError`).
-- Algunas estrategias OAuth y usos de `any` (por ejemplo `profile: any`) están sin tipar; se recomienda crear interfaces `GoogleProfile`, `GithubProfile`, `FacebookProfile`.
-- `synchronize: true` en `TypeOrmModule.forRoot` (en `src/app.module.ts`) está habilitado — debe desactivarse en producción y preferir migraciones.
-- Controladores vacíos detectados (por ejemplo `tokens` y `credentials` controllers) — evaluar si exponer endpoints administrativos o de verificación.
+### 2FA / MFA
 
-Si quieres, puedo aplicar parches automáticos para las correcciones prioritarias: sustituir `console.log` por `Logger.debug`, añadir retornos en `resetPasswordToken` y ajustar el manejo de error en `refreshToken`. También puedo tipar estrategias OAuth en un cambio separado si lo autorizas.
+- TOTP (Google Authenticator / Authy).
+- Verification codes via email and SMS.
+- Enable / disable per user.
+- Backup codes.
 
-> Nota: Este changelog resume las entradas más relevantes para las versiones beta. Para releases futuras, se recomienda seguir el formato SemVer y añadir detalles de seguridad y breaking changes cuando apliquen.
+### Session & refresh token management
+
+- Dedicated database table for sessions / refresh tokens.
+- Rotatable and revocable refresh tokens.
+- Logout per device.
+- Global logout (revoke all active refresh tokens).
+
+### Hardening
+
+- Rate limiting for:
+  - Login
+  - Password reset
+  - 2FA flows
+- Brute-force attack protection.
+- Configurable password policies.
+
+## Changes
+
+- Authentication flow refactored to support multiple active sessions.
+- Clear separation between authentication, session handling, and security layers.
+- Improved refresh token lifecycle management.
+
+## Technical notes
+
+- Rate limiting should ideally be combined with external layers (NGINX, Cloudflare).
+- Password policies can be hardened per environment.
+
+---
+
+## [v0.2.0-beta] — OAuth & Standardization
+
+📅 2026-01-15
+
+## Summary
+
+Beta release introducing **OAuth authentication providers**, explicit credential model separation, and **standardized API responses with i18n support**.
+
+## Added
+
+- OAuth support for:
+  - Google
+  - Facebook
+  - GitHub
+- OAuth strategies, guards, and callback endpoints.
+- Authentication method entities:
+  - Local credentials
+  - OAuth-linked accounts
+- Automatic account linking when provider email matches an existing user.
+- Environment-based configuration for OAuth providers.
+
+## Changes
+
+- Standardized API responses and errors via `ResponseFactory`.
+- Integrated `nestjs-i18n` for localized messages.
+- Improved and restructured documentation.
+- Package version updated to `0.2.0-beta`.
+
+## Fixes & refinements
+
+- Dependency and configuration adjustments for OAuth strategies.
+- Minor documentation and example fixes.
+
+## Technical notes
+
+- `synchronize: true` is enabled in TypeORM (disable in production).
+- Permissive typing (`any`) in OAuth strategies — stricter typing recommended.
+- Some service flows may not return explicit HTTP responses in all cases.
+
+---
+
+## [v0.1.0-beta] — Credentials Foundation
+
+📅 Initial release
+
+## Summary
+
+Initial beta release establishing the **core authentication system**.
+
+## Core features
+
+- Local authentication: registration and login.
+- Refresh token and password reset flows.
+- Basic user, role, and permission management.
+- Email delivery via `@nestjs-modules/mailer` with Handlebars templates.
+- Internationalization (`en`, `es`) using `nestjs-i18n`.
+- Persistence with TypeORM and PostgreSQL.
+- Global validation and Swagger documentation.
+
+## Final notes
+
+This release marks the foundation of the project as a **reusable authentication service**.  
+Not recommended for production use without additional security review.
+
+---

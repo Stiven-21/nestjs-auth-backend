@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Role } from './entities/role.entity';
+import { Role } from 'src/modules/roles/entities/role.entity';
 import { Repository } from 'typeorm';
 import {
   internalServerError,
@@ -8,6 +8,7 @@ import {
   okResponse,
 } from 'src/common/exceptions';
 import { I18nContext } from 'nestjs-i18n';
+import { normalizePermissions } from 'src/common/utils/normalize-permissions.utils';
 
 @Injectable()
 export class RolesService {
@@ -49,5 +50,29 @@ export class RolesService {
         }),
       });
     return okResponse({ i18n, lang: i18n.lang, data: role });
+  }
+
+  async getNameRoleOrCreate(rol: string, i18n: I18nContext) {
+    let role: Role | null = null;
+    try {
+      role = await this.rolesRepository.findOneBy({ name: rol });
+    } catch (error) {
+      this.logger.error(error);
+      internalServerError({ i18n, lang: i18n.lang });
+    }
+
+    if (!role) {
+      try {
+        const permissions = await normalizePermissions(
+          process.env.ROL_PERMISSION_DEFAULT,
+        );
+        role = await this.rolesRepository.save({ name: rol, permissions });
+      } catch (error) {
+        this.logger.error(error);
+        internalServerError({ i18n, lang: i18n.lang });
+      }
+    }
+
+    return role;
   }
 }

@@ -2,7 +2,7 @@
 
 ## Our Pledge
 
-We as maintainers and contributors of **OPEN AUTH** pledge to make participation in this project a harassment-free experience for everyone, regardless of age, body size, visible or invisible disability, ethnicity, sex characteristics, gender identity and expression, level of experience, education, socio-economic status, nationality, personal appearance, race, religion, or sexual identity and orientation.
+We as maintainers and contributors of **NEST AUTH** pledge to make participation in this project a harassment-free experience for everyone, regardless of age, body size, visible or invisible disability, ethnicity, sex characteristics, gender identity and expression, level of experience, education, socio-economic status, nationality, personal appearance, race, religion, or sexual identity and orientation.
 
 We are committed to creating a **professional, respectful, and inclusive environment** where collaboration and learning are encouraged.
 
@@ -41,7 +41,7 @@ Maintainers have the right and responsibility to remove, edit, or reject comment
 This Code of Conduct applies within all project spaces, including:
 
 - GitHub repositories (issues, pull requests, discussions)
-- Community interactions related to OPEN AUTH
+- Community interactions related to NEST AUTH
 - Any official communication channels maintained by the project
 
 ---

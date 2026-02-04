@@ -1,6 +1,6 @@
-# 🔐 OPEN AUTH — Version Roadmap
+# 🔐 NEST AUTH — Version Roadmap
 
-This roadmap outlines the planned evolution of **OPEN AUTH**, a robust, reusable authentication backend designed as a standalone service for integration into other projects.
+This roadmap outlines the planned evolution of **NEST AUTH**, a robust, reusable authentication backend designed as a standalone service for integration into other projects.
 
 ---
 
@@ -49,7 +49,7 @@ This roadmap outlines the planned evolution of **OPEN AUTH**, a robust, reusable
 
 ---
 
-## ⏳ v0.4.0 — Advanced Authorization & Auditing
+## ✅ v0.4.0 — Advanced Authorization & Auditing
 
 - Fine-grained roles and permission control:
   - More precise guards for specific CRUD actions
@@ -59,7 +59,6 @@ This roadmap outlines the planned evolution of **OPEN AUTH**, a robust, reusable
   - PASSWORD_CHANGED
   - 2FA enabled/disabled
   - Revoked refresh tokens
-- Optional limit on active sessions per user
 
 ---
 

@@ -1,8 +1,8 @@
 # Support
 
-## OPEN AUTH Support
+## NEST AUTH Support
 
-Thank you for using **OPEN AUTH**.
+Thank you for using **NEST AUTH**.
 
 This document explains how to get help, report issues, and request support in a clear and efficient way.
 
@@ -10,7 +10,7 @@ This document explains how to get help, report issues, and request support in a 
 
 ## 📌 Scope of Support
 
-OPEN AUTH is an **open-source project** maintained by the community.
+NEST AUTH is an **open-source project** maintained by the community.
 
 Support is provided on a **best-effort basis** and covers:
 
@@ -38,7 +38,7 @@ If you believe you have found a bug:
 
 Please include:
 
-- OPEN AUTH version
+- NEST AUTH version
 - Node.js version
 - Database type and version
 - Steps to reproduce
@@ -58,7 +58,7 @@ To propose a new feature:
 
 - Open a GitHub issue
 - Clearly describe the problem it solves
-- Explain why it fits the scope of OPEN AUTH
+- Explain why it fits the scope of NEST AUTH
 
 Well-structured proposals are more likely to be discussed and accepted.
 
@@ -113,6 +113,6 @@ Backend Software Engineer
 
 ## 📄 Disclaimer
 
-OPEN AUTH is provided "as is", without warranty of any kind.
+NEST AUTH is provided "as is", without warranty of any kind.
 
 Use it at your own risk and ensure proper testing and security reviews before deploying to production.
