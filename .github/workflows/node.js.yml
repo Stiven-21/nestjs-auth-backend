@@ -39,7 +39,7 @@ jobs:
 
       # 5. Build del proyecto (NestJS)
       - name: Build
-        run: pnpm run build --if-present
+        run: pnpm run build
 
       # 6. Tests (opcional, actívalo si tienes pruebas)
       # - name: Test
