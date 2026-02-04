@@ -30,7 +30,7 @@ This roadmap outlines the planned evolution of **OPEN AUTH**, a robust, reusable
 
 ---
 
-## ⏳ v0.3.0 — Account Security & Sessions
+## ✅ v0.3.0 — Account Security & Sessions
 
 - **2FA / MFA**
   - TOTP (Google Authenticator / Authy)

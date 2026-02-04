@@ -7,7 +7,8 @@ import { AuthModule } from 'src/modules/auth/auth.module';
 import { UsersModule } from 'src/modules/users/users.module';
 import { CommonModule } from 'src/shared/common/common.module';
 import { RolesModule } from 'src/modules/roles/roles.module';
-import { ThrottlerModule } from './shared/throttler/thorttler.module';
+import { ThrottlerModule } from 'src/shared/throttler/thorttler.module';
+import { AuditLogModule } from 'src/modules/audit-log/audit-log.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { ThrottlerModule } from './shared/throttler/thorttler.module';
     AuthModule,
     UsersModule,
     RolesModule,
+    AuditLogModule,
   ],
   controllers: [],
   providers: [],
