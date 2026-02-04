@@ -5,6 +5,9 @@ on:
     tags:
       - 'nestjs-auth-backend-v*'
 
+permissions:
+  contents: write
+
 jobs:
   release:
     runs-on: ubuntu-latest
