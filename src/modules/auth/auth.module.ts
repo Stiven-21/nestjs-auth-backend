@@ -21,6 +21,9 @@ import { AuthPasswordPolicy } from 'src/modules/auth/entities/auth-password-poli
 import { PasswordPolicyService } from 'src/modules/auth/password-policy/password-policy.service';
 import { PasswordPolicyConstraint } from 'src/common/validator/passwordPolicyConstraint.validator';
 import { AuditLogModule } from 'src/modules/audit-log/audit-log.module';
+import { AuthReAuthToken } from 'src/modules/auth/entities/auth-reauth-token.entity';
+import { ReAuthController } from './re-auth/re-auth.controller';
+import { ReAuthService } from './re-auth/re-auth.service';
 
 @Module({
   imports: [
@@ -36,6 +39,7 @@ import { AuditLogModule } from 'src/modules/audit-log/audit-log.module';
       AuthRefreshTokens,
       AuthAttempts,
       AuthPasswordPolicy,
+      AuthReAuthToken,
     ]),
     ConfigModule.forFeature(googleOauthConfig),
     ConfigModule.forFeature(facebookOauthConfig),
@@ -43,7 +47,7 @@ import { AuditLogModule } from 'src/modules/audit-log/audit-log.module';
     forwardRef(() => UsersModule),
     AuditLogModule,
   ],
-  controllers: [AuthController],
+  controllers: [AuthController, ReAuthController],
   providers: [
     AuthService,
     GoogleStrategy,
@@ -54,6 +58,7 @@ import { AuditLogModule } from 'src/modules/audit-log/audit-log.module';
     AttemptsService,
     PasswordPolicyService,
     PasswordPolicyConstraint,
+    ReAuthService,
   ],
   exports: [JwtModule, AuthService],
 })

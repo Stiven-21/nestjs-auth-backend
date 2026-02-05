@@ -42,6 +42,7 @@ import { AttemptsService } from 'src/modules/auth/attempts/attempts.service';
 import { AuditLogService } from '../audit-log/audit-log.service';
 import { AuditEvent } from 'src/common/enum/audit-event.enum';
 import { parsePermissions } from 'src/common/utils/normalize-permissions.utils';
+import { ReAuthService } from 'src/modules/auth/re-auth/re-auth.service';
 
 @Injectable()
 export class AuthService {
@@ -63,6 +64,7 @@ export class AuthService {
     private readonly totpService: TotpService,
     private readonly otpsService: OtpsService,
     private readonly auditLogService: AuditLogService,
+    private readonly reauthService: ReAuthService,
   ) {}
 
   async register(registerDto: RegisterDto, i18n: I18nContext) {
@@ -281,7 +283,6 @@ export class AuthService {
   async logoutAll(userId: number, sessionId?: number, i18n?: I18nContext) {
     if (!sessionId)
       await this.authSessionsService.findBySessionId(sessionId, i18n);
-    // CORREGIR - NO ME DEBE REVOCAR EL REFRESH TOKEN ACTUAL
 
     await this.dataSource.transaction(async (manager) => {
       await this.authRefreshTokenService.revokeTokenWithUserId(
@@ -851,6 +852,73 @@ export class AuthService {
           permissions: parsePermissions(user.role.permissions),
         },
         total: 1,
+      },
+    });
+  }
+
+  async resetPasswordLogged(
+    reauthToken: string,
+    req: Request,
+    resetPasswordTokenDto: ResetPasswordTokenDto,
+    i18n: I18nContext,
+  ) {
+    const userId = req.user['sub'];
+    const sessionId = req.user['sessionId'];
+    const email = req.user['email'];
+
+    if (
+      resetPasswordTokenDto.password !== resetPasswordTokenDto.password_confirm
+    )
+      badRequestError({
+        i18n,
+        lang: i18n.lang,
+        description: i18n.t('messages.auth.error.passwordsDoesNotMatch', {
+          lang: i18n.lang,
+        }),
+      });
+
+    await this.dataSource.transaction(async (manager) => {
+      await this.credentialsService.updatePassword(
+        email,
+        resetPasswordTokenDto,
+        i18n,
+        manager,
+      );
+      await this.usersService.updatePassword(userId, i18n, manager);
+      await this.reauthService.consumeToken(userId, reauthToken, i18n, manager);
+    });
+
+    const loginUrl = process.env.URL_FRONTEND + '/auth/login';
+    await this.mailService.sendMail(
+      email,
+      'Cambio de contraseña exitoso', // Subject o asunto
+      'auth-password-success', // Plantilla o template
+      {
+        loginUrl,
+        updateDate: new Date().toLocaleString(),
+        updateTime: new Date().toLocaleTimeString(),
+      },
+      i18n,
+    );
+
+    await this.logoutAll(userId, sessionId, i18n);
+    await this.auditLogService.create(
+      {
+        event: AuditEvent.PASSWORD_CHANGED,
+        actorId: userId,
+        ip: getIPFromRequest(req),
+        userAgent: req.headers['user-agent'],
+      },
+      i18n,
+    );
+    return okResponse({
+      i18n,
+      lang: i18n.lang,
+      data: {
+        data: i18n.t('messages.auth.success.updatePassword', {
+          lang: i18n.lang,
+        }),
+        total: 0,
       },
     });
   }

@@ -40,7 +40,11 @@
         "twoFactorOtps": {
             "blocked": "The user has been blocked for exceeding the limit of authentication attempts with two-factor authentication"
         },
-        "email2faEnabled": "The two-factor authentication code has been sent by email"
+        "email2faEnabled": "The two-factor authentication code has been sent by email",
+        "reauth": {
+            "sessionExpired": "A new session has been detected, please log in again",
+            "invalidReauthToken": "The reauthentication token is not valid"
+        }
     },
     "security-recovery-codes": {
         "error": {

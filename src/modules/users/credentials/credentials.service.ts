@@ -63,9 +63,22 @@ export class CredentialsService {
     const repo = manager
       ? manager.getRepository(UserAccountCredentials)
       : this.credentialsRepository;
-    const { id } = await this.credentialsRepository.findOneBy({
+
+    let credential = await this.credentialsRepository.findOneBy({
       user: { email },
     });
+
+    if (!credential) {
+      const user = await this.usersService.__findOneByEmail(email, i18n);
+      credential = await this.create(
+        {
+          user,
+          password: updatePasswordDto.password,
+        },
+        i18n,
+        manager,
+      );
+    }
     const { password, password_confirm } = updatePasswordDto;
 
     if (password !== password_confirm)
@@ -78,12 +91,36 @@ export class CredentialsService {
       });
     const password_hash = await bcrypt.hash(password, 10);
     try {
-      return await repo.update(id, {
+      return await repo.update(credential.id, {
         password: password_hash,
       });
     } catch (error) {
       this.logger.error(error);
       internalServerError({ i18n, lang: i18n.lang });
     }
+  }
+
+  async validateReathPassword(
+    userId: number,
+    password: string,
+    i18n: I18nContext,
+  ) {
+    let credentials: UserAccountCredentials | null = null;
+    try {
+      credentials = await this.credentialsRepository.findOne({
+        where: { user: { id: userId } },
+        select: ['id', 'password'],
+      });
+    } catch (error) {
+      this.logger.error(error);
+      internalServerError({ i18n, lang: i18n.lang });
+    }
+
+    if (!credentials && password !== '') return false;
+    if (!credentials && password === '') return true;
+
+    const isMatch = await bcrypt.compare(password, credentials.password);
+    if (!isMatch) return false;
+    return true;
   }
 }

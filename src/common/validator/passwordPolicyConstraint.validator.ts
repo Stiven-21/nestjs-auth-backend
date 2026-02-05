@@ -2,12 +2,13 @@ import {
   ValidatorConstraint,
   ValidatorConstraintInterface,
 } from 'class-validator';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { PasswordPolicyService } from 'src/modules/auth/password-policy/password-policy.service';
 
 @ValidatorConstraint({ async: true })
 @Injectable()
 export class PasswordPolicyConstraint implements ValidatorConstraintInterface {
+  private readonly logger = new Logger(PasswordPolicyConstraint.name);
   constructor(
     private readonly authPaswordPolicyService: PasswordPolicyService,
   ) {}

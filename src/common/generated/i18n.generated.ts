@@ -70,6 +70,10 @@ export type I18nTranslations = {
                 "blocked": string;
             };
             "email2faEnabled": string;
+            "reauth": {
+                "sessionExpired": string;
+                "invalidReauthToken": string;
+            };
         };
         "security-recovery-codes": {
             "error": {

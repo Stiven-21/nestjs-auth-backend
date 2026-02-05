@@ -40,7 +40,11 @@
         "twoFactorOtps": {
             "blocked": "El usuario ha sido bloqueado por exceder el l\u00edmite de intentos de autenticaci\u00f3n de dos factores"
         },
-        "email2faEnabled": "Se ha enviado el codigo de autenticaci\u00f3n de dos factores por correo"
+        "email2faEnabled": "Se ha enviado el codigo de autenticaci\u00f3n de dos factores por correo",
+        "reauth": {
+            "sessionExpired": "Se ha detectado un cambio de sesión, por favor inicie sesión nuevamente",
+            "invalidReauthToken": "El token de reautenticación no es v\u00e1lido"
+        }
     },
     "security-recovery-codes": {
         "error": {

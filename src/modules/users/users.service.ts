@@ -15,8 +15,8 @@ import { DynamicQueryDto } from 'src/common/services/query/dto/dynamic.dto';
 import { DynamicQueryService } from 'src/common/services/query/dynamic.service';
 import { IdentityTypesService } from 'src/modules/users/identity-types/identity-types.service';
 import { v7 as uuidv7 } from 'uuid';
-import { TokensService } from './tokens/tokens.service';
-import { RolesService } from '../roles/roles.service';
+import { TokensService } from 'src/modules/users/tokens/tokens.service';
+import { RolesService } from 'src/modules/roles/roles.service';
 import { UserStatusEnum } from 'src/common/enum/user-status.enum';
 import { MailService } from 'src/mails/mail.service';
 import { GoogleProfileDto } from 'src/modules/users/dto/create-google-user.dto';
@@ -28,7 +28,7 @@ import { getSafeSelect } from 'src/common/utils/typeorm.utils';
 import { EmailLogChangesService } from 'src/modules/users/email-log-changes/email-log-changes.service';
 import { ChangeRoleDto } from 'src/modules/users/dto/change-role.dto';
 import { Request } from 'express';
-import { AuditLogService } from '../audit-log/audit-log.service';
+import { AuditLogService } from 'src/modules/audit-log/audit-log.service';
 import { AuditEvent } from 'src/common/enum/audit-event.enum';
 import { getIPFromRequest } from 'src/common/helpers/request-info.helper';
 
@@ -291,7 +291,7 @@ export class UsersService {
     return userToken.data.user.email;
   }
 
-  private async __findOneByEmail(email: string, i18n: I18nContext) {
+  async __findOneByEmail(email: string, i18n: I18nContext) {
     try {
       return await this.usersRepository.findOneBy({ email });
     } catch (error) {

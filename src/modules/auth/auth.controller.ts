@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Headers,
   Logger,
   Param,
   Post,
@@ -66,6 +67,23 @@ export class AuthController {
     return await this.authService.resetPasswordToken(
       req,
       token,
+      resetPasswordTokenDto,
+      i18n,
+    );
+  }
+
+  @ThorttleLimit(3, 60)
+  @Auth()
+  @Post('change-password')
+  async resetPasswordLooged(
+    @Body() resetPasswordTokenDto: ResetPasswordTokenDto,
+    @Req() req: Request,
+    @I18n() i18n: I18nContext,
+    @Headers('X-Reauth-Token') reauthToken: string,
+  ) {
+    return await this.authService.resetPasswordLogged(
+      reauthToken,
+      req,
       resetPasswordTokenDto,
       i18n,
     );

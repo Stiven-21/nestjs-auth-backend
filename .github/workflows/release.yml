@@ -1,45 +1,56 @@
-name: Crear Release Automático
+name: Automated Release (pnpm)
 
 on:
   push:
-    tags:
-      - 'nest-auth-v*'
-
-permissions:
-  contents: write
+    branches:
+      - main
 
 jobs:
   release:
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
-
     steps:
-      - name: Obtener el código
+      - name: Checkout código
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          fetch-tags: true
 
-      - name: Generar notas del release
-        id: changelog
-        run: |
-          ULTIMO_TAG=$(git describe --tags --abbrev=0 $(git rev-list --tags --skip=1 --max-count=1))
-
-          if [ -z "$ULTIMO_TAG" ]; then
-            NOTAS=$(git log -1 --pretty=format:'- %s')
-          else
-            NOTAS=$(git log $ULTIMO_TAG..${GITHUB_REF_NAME} --pretty=format:'- %s')
-          fi
-
-          echo "notas<<EOF" >> $GITHUB_OUTPUT
-          echo "$NOTAS" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-
-      - name: Crear release en GitHub
-        uses: softprops/action-gh-release@v1
+      - name: Instalar pnpm
+        uses: pnpm/action-setup@v3
         with:
-          tag_name: ${{ github.ref_name }}
-          name: Release ${{ github.ref_name }}
-          body: ${{ steps.changelog.outputs.notas }}
-          prerelease: ${{ contains(github.ref_name, '-beta') || contains(github.ref_name, '-rc') }}
+          version: 10.10.0 # O la versión que estés usando actualmente
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.16.0
+          cache: 'pnpm'
+
+      - name: Instalar dependencias
+        run: pnpm install
+
+      - name: Configurar Git para el Bot
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Bump Version & Generate Tag
+        id: tag_version
+        run: |
+          # Usamos pnpx para ejecutar standard-version
+          pnpx standard-version
+
+          # Extraemos la versión para el siguiente paso
+          NEW_VERSION=$(node -p "require('./package.json').version")
+          echo "version=v$NEW_VERSION" >> $GITHUB_OUTPUT
+
+          git push --follow-tags origin main
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag_version.outputs.version }}
+          body_path: CHANGELOG.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
