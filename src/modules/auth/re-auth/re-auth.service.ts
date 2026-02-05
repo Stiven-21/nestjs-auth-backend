@@ -1,7 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { I18nContext } from 'nestjs-i18n';
-import { internalServerError, unauthorizedError } from 'src/common/exceptions';
+import {
+  internalServerError,
+  okResponse,
+  unauthorizedError,
+} from 'src/common/exceptions';
 import { hashValue } from 'src/common/utils/hash.utils';
 import { AuthReAuthToken } from 'src/modules/auth/entities/auth-reauth-token.entity';
 import { CredentialsService } from 'src/modules/users/credentials/credentials.service';
@@ -62,7 +66,11 @@ export class ReAuthService {
       internalServerError({ i18n, lang: i18n.lang });
     }
 
-    return token;
+    return okResponse({
+      i18n,
+      lang: i18n.lang,
+      data: { data: token, total: 1 },
+    });
   }
 
   async consumeToken(
@@ -113,10 +121,22 @@ export class ReAuthService {
       });
 
     try {
-      await repo.update({ user: { id: userId } }, { revoked: true });
+      const reauthTokens = await this.reAuthTokenRepository.find({
+        where: { user: { id: userId }, revoked: false },
+      });
+      if (!reauthTokens.length) return;
+      reauthTokens.forEach((reauthToken) => {
+        reauthToken.revoked = true;
+      });
+      await repo.save(reauthTokens);
     } catch (error) {
       this.logger.error(error);
       internalServerError({ i18n, lang: i18n.lang });
     }
+  }
+
+  async validate(userId: number, token: string, i18n: I18nContext) {
+    await this.consumeToken(userId, token, i18n);
+    return true;
   }
 }

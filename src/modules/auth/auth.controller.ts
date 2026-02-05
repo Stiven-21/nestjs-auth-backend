@@ -73,7 +73,9 @@ export class AuthController {
   }
 
   @ThorttleLimit(3, 60)
-  @Auth()
+  @Auth(null, {
+    reauth: true,
+  })
   @Post('change-password')
   async resetPasswordLooged(
     @Body() resetPasswordTokenDto: ResetPasswordTokenDto,
@@ -81,8 +83,8 @@ export class AuthController {
     @I18n() i18n: I18nContext,
     @Headers('X-Reauth-Token') reauthToken: string,
   ) {
+    this.logger.debug(reauthToken);
     return await this.authService.resetPasswordLogged(
-      reauthToken,
       req,
       resetPasswordTokenDto,
       i18n,

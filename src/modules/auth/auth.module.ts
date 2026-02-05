@@ -60,6 +60,6 @@ import { ReAuthService } from './re-auth/re-auth.service';
     PasswordPolicyConstraint,
     ReAuthService,
   ],
-  exports: [JwtModule, AuthService],
+  exports: [JwtModule, AuthService, ReAuthService],
 })
 export class AuthModule {}

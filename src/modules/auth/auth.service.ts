@@ -857,7 +857,6 @@ export class AuthService {
   }
 
   async resetPasswordLogged(
-    reauthToken: string,
     req: Request,
     resetPasswordTokenDto: ResetPasswordTokenDto,
     i18n: I18nContext,
@@ -885,7 +884,6 @@ export class AuthService {
         manager,
       );
       await this.usersService.updatePassword(userId, i18n, manager);
-      await this.reauthService.consumeToken(userId, reauthToken, i18n, manager);
     });
 
     const loginUrl = process.env.URL_FRONTEND + '/auth/login';

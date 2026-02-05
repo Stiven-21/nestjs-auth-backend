@@ -5,8 +5,10 @@ import {
   Column,
   CreateDateColumn,
   ManyToOne,
+  Index,
 } from 'typeorm';
 
+@Index(['user'])
 @Entity('auth_reauth_tokens')
 export class AuthReAuthToken {
   @PrimaryGeneratedColumn()
