@@ -24,6 +24,7 @@ import { AuditLogModule } from 'src/modules/audit-log/audit-log.module';
 import { AuthReAuthToken } from 'src/modules/auth/entities/auth-reauth-token.entity';
 import { ReAuthController } from './re-auth/re-auth.controller';
 import { ReAuthService } from './re-auth/re-auth.service';
+import { OAuthStateService } from './oauth/oauth.service';
 
 @Module({
   imports: [
@@ -59,6 +60,7 @@ import { ReAuthService } from './re-auth/re-auth.service';
     PasswordPolicyService,
     PasswordPolicyConstraint,
     ReAuthService,
+    OAuthStateService,
   ],
   exports: [JwtModule, AuthService, ReAuthService],
 })

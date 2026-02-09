@@ -22,7 +22,7 @@ import {
   getClientInfo,
   getIPFromRequest,
 } from 'src/common/helpers/request-info.helper';
-import { Request } from 'express';
+import { Request, Response } from 'express';
 import { SessionService } from 'src/modules/users/session/session.service';
 import { User } from 'src/modules/users/entities/user.entity';
 import { CredentialsService } from 'src/modules/users/credentials/credentials.service';
@@ -39,14 +39,19 @@ import { TwoFAConfirmDto } from 'src/modules/auth/dto/2fa-confirm.dto';
 import { OtpsService } from 'src/modules/users/security/otps/otps.service';
 import { TwoFactorOtpsType } from 'src/common/enum/two-factor-otps.enum';
 import { AttemptsService } from 'src/modules/auth/attempts/attempts.service';
-import { AuditLogService } from '../audit-log/audit-log.service';
+import { AuditLogService } from 'src/modules/audit-log/audit-log.service';
 import { AuditEvent } from 'src/common/enum/audit-event.enum';
 import { parsePermissions } from 'src/common/utils/normalize-permissions.utils';
 import { ReAuthService } from 'src/modules/auth/re-auth/re-auth.service';
+import { OAuthStateService } from 'src/modules/auth/oauth/oauth.service';
+import { OAuthProfile } from 'src/common/interfaces/oauth-profile.interface';
+import { OAuthService } from 'src/modules/users/oauth/oauth.service';
+import { ensureDeviceId } from 'src/common/helpers/session.helper';
 
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
+  private isProd = process.env.NODE_ENV === 'production';
 
   constructor(
     private readonly usersService: UsersService,
@@ -65,6 +70,8 @@ export class AuthService {
     private readonly otpsService: OtpsService,
     private readonly auditLogService: AuditLogService,
     private readonly reauthService: ReAuthService,
+    private readonly oauthService: OAuthService,
+    private readonly oauthStateService: OAuthStateService,
   ) {}
 
   async register(registerDto: RegisterDto, i18n: I18nContext) {
@@ -191,6 +198,7 @@ export class AuthService {
 
   async login(
     req: Request,
+    res: Response,
     loginDto: LoginDto,
     deviceId: string,
     i18n: I18nContext,
@@ -222,7 +230,7 @@ export class AuthService {
       });
     }
 
-    return await this.__Validate2FAUser(req, user, i18n, deviceId);
+    return await this.__Validate2FAUser(req, res, user, i18n, deviceId);
   }
 
   async logout(sessionId: number, i18n: I18nContext) {
@@ -309,13 +317,14 @@ export class AuthService {
 
   async loginById(
     req: Request,
+    res: Response,
     id: number,
     deviceId: string,
     i18n: I18nContext,
   ) {
     const user = await this.usersService.findById(id, i18n);
     user.data.role.permissions = parsePermissions(user.data.role.permissions);
-    return await this.__Validate2FAUser(req, user.data, i18n, deviceId);
+    return await this.__Validate2FAUser(req, res, user.data, i18n, deviceId);
   }
 
   async refreshToken(req: Request, refreshToken: string, i18n: I18nContext) {
@@ -398,6 +407,7 @@ export class AuthService {
 
   private async __Validate2FAUser(
     req: Request,
+    res: Response,
     user: User,
     i18n: I18nContext,
     deviceId: string,
@@ -463,6 +473,7 @@ export class AuthService {
 
     return await this.__generatedTokenAndRefreshToken(
       req,
+      res,
       user,
       i18n,
       deviceId,
@@ -643,6 +654,7 @@ export class AuthService {
 
   async verify2fa(
     req: Request,
+    res: Response,
     twoFactorAuthVerifyDto: TwoFactorAuthVerifyDto,
     i18n: I18nContext,
     deviceId: string,
@@ -695,6 +707,7 @@ export class AuthService {
 
     return await this.__generatedTokenAndRefreshToken(
       req,
+      res,
       user,
       i18n,
       deviceId,
@@ -736,6 +749,7 @@ export class AuthService {
 
   private async __generatedTokenAndRefreshToken(
     req: Request,
+    res: Response,
     user: User,
     i18n: I18nContext,
     deviceId: string,
@@ -812,13 +826,6 @@ export class AuthService {
       i18n,
     );
 
-    req.user = {
-      id: user.id,
-      email: user.email,
-      sessionId: payload.sessionId,
-      deviceId,
-    };
-
     await this.attemptsService.reset(user.email, i18n);
     await this.auditLogService.create(
       {
@@ -836,24 +843,44 @@ export class AuthService {
       i18n,
     );
 
-    return okResponse({
-      i18n,
-      lang: i18n.lang,
-      data: {
-        data: {
-          access_token: this.jwtService.sign(payload, {
-            secret: process.env.JWT_SECRET + user.user_secret,
-            expiresIn: '30m',
-          }),
-          refresh_token: refreshToken,
-          email: user.email,
-          user: user.name + ' ' + user.lastname,
-          role: user.role.name,
-          permissions: parsePermissions(user.role.permissions),
-        },
-        total: 1,
-      },
+    const access_token = this.jwtService.sign(payload, {
+      secret: process.env.JWT_SECRET + user.user_secret,
+      expiresIn: '30m',
     });
+
+    res.cookie('access_token', access_token, {
+      httpOnly: true,
+      secure: this.isProd,
+      sameSite: this.isProd ? 'none' : 'lax',
+      path: '/',
+      maxAge: 15 * 60 * 1000,
+    });
+
+    res.cookie('refresh_token', refreshToken, {
+      httpOnly: true,
+      secure: this.isProd,
+      sameSite: this.isProd ? 'none' : 'lax',
+      path: '/',
+      maxAge: 2 * 24 * 60 * 60 * 1000, // 2 days
+    });
+
+    return res.status(200).json(
+      okResponse({
+        i18n,
+        lang: i18n.lang,
+        data: {
+          data: {
+            access_token,
+            refresh_token: refreshToken,
+            email: user.email,
+            user: user.name + ' ' + user.lastname,
+            role: user.role.name,
+            permissions: parsePermissions(user.role.permissions),
+          },
+          total: 1,
+        },
+      }),
+    );
   }
 
   async resetPasswordLogged(
@@ -918,6 +945,121 @@ export class AuthService {
         }),
         total: 0,
       },
+    });
+  }
+
+  // VERIFICAR SI ES REGISTRO CON OAUTH O ES LINK PARA VINCULAR CON OAUTH
+  async handleOAuthCallback(
+    req: Request,
+    res: Response,
+    deviceId: string,
+    i18n: I18nContext,
+  ) {
+    const state = req.query.state;
+    const payload = this.oauthStateService.verify(state as string);
+    this.logger.debug(payload);
+
+    if (payload.flow === 'login') return this.loginWithOauth(req, res, i18n);
+
+    if (payload.flow === 'link') {
+      return this.linkOauth(req, res, i18n, payload.userId);
+    }
+  }
+
+  async loginWithOauth(req: Request, res: Response, i18n: I18nContext) {
+    const user = await this.dataSource.transaction(async (manager) => {
+      const user = await this.usersService.validateOAuthUser(
+        req.user as OAuthProfile,
+        i18n,
+        manager,
+      );
+
+      await this.oauthService.create(
+        {
+          user: user,
+          provider: req.user['provider'],
+          providerId: req.user['providerId'],
+          isActive: req.user['isActive'],
+          avatar: req.user['avatar'],
+        },
+        manager,
+      );
+      return user;
+    });
+
+    const user_secret = await this.usersService.getUserSecret(user.id, i18n);
+    const { ip, userAgent } = await getClientInfo(req);
+
+    const authSession = await this.authSessionsService.createAuthSession(
+      {
+        user,
+        ipAddress: ip,
+        userAgent,
+        deviceId: await ensureDeviceId(req, res),
+      },
+      i18n,
+    );
+
+    const payload = {
+      sub: user.id,
+      sessionId: authSession.id,
+      email: user.email,
+      role: {
+        name: user.role.name,
+        permissions: parsePermissions(user.role.permissions),
+      },
+    };
+
+    const access_token = this.jwtService.sign(payload, {
+      secret: process.env.JWT_SECRET + user_secret,
+      expiresIn: '30m',
+    });
+    const refresh_token = this.jwtService.sign(payload, {
+      secret: process.env.JWT_REFRESH_SECRET,
+      expiresIn: '2d',
+    });
+
+    res.cookie('access_token', access_token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 15 * 60 * 1000, // 15 min
+    });
+
+    res.cookie('refresh_token', refresh_token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 2 * 24 * 60 * 60 * 1000, // 2 days
+    });
+  }
+
+  async linkOauth(
+    req: Request,
+    res: Response,
+    i18n: I18nContext,
+    userId: number,
+  ) {
+    const oath_exist = await this.oauthService.getUserWithProviderAndProviderId(
+      req.user['providerId'],
+      req.user['provider'],
+    );
+
+    if (oath_exist && oath_exist.id !== userId)
+      res.redirect(
+        process.env.URL_FRONTEND +
+          '/dashboard?error=1&message=You are already linked to another account',
+      );
+
+    const { data: user } = (await this.usersService.findOne(userId, i18n)).data;
+    await this.oauthService.create({
+      user: user,
+      provider: req.user['provider'],
+      providerId: req.user['providerId'],
+      isActive: req.user['isActive'],
+      avatar: req.user['avatar'],
     });
   }
 }

@@ -31,6 +31,7 @@ import { Request } from 'express';
 import { AuditLogService } from 'src/modules/audit-log/audit-log.service';
 import { AuditEvent } from 'src/common/enum/audit-event.enum';
 import { getIPFromRequest } from 'src/common/helpers/request-info.helper';
+import { OAuthProfile } from 'src/common/interfaces/oauth-profile.interface';
 
 @Injectable()
 export class UsersService {
@@ -319,6 +320,7 @@ export class UsersService {
     return null;
   }
 
+  // Proximante se elimina
   async validateGoogleUser(
     googleUser: GoogleProfileDto,
     i18n?: I18nContext,
@@ -348,6 +350,7 @@ export class UsersService {
     });
   }
 
+  // Proximante se elimina
   async validateFacebookUser(
     facebookUser: FacebookProfileDto,
     i18n?: I18nContext,
@@ -377,6 +380,7 @@ export class UsersService {
     });
   }
 
+  // Proximante se elimina
   async validateGithubUser(
     githubUser: CreateGithubProfileDto,
     i18n?: I18nContext,
@@ -401,6 +405,40 @@ export class UsersService {
     return await repo.save({
       ...rest,
       role: role.data,
+      user_secret,
+      status: UserStatusEnum.ACTIVE,
+    });
+  }
+
+  // Oauth optimizado
+  async validateOAuthUser(
+    oauth: OAuthProfile,
+    i18n: I18nContext,
+    manager?: EntityManager,
+  ) {
+    const repo = manager ? manager.getRepository(User) : this.usersRepository;
+
+    const validateUser = await this.__ValidateProviderUser(
+      oauth.providerId,
+      oauth.provider,
+      oauth.email,
+      i18n,
+    );
+
+    if (validateUser) return validateUser;
+
+    const role = await this.rolesService.getNameRoleOrCreate(
+      process.env.ROL_USER_DEFAULT,
+      i18n,
+    );
+    const user_secret = uuidv7();
+
+    return await repo.save({
+      email: oauth.email,
+      name: oauth.name,
+      lastname: oauth.lastname,
+      avatar: oauth.avatar,
+      role,
       user_secret,
       status: UserStatusEnum.ACTIVE,
     });
@@ -519,5 +557,10 @@ export class UsersService {
       this.logger.error(error);
       internalServerError({ i18n, lang: i18n.lang });
     }
+  }
+
+  async me(req: Request, i18n: I18nContext) {
+    const user = await this.findOne(req.user['sub'], i18n);
+    return user.data;
   }
 }

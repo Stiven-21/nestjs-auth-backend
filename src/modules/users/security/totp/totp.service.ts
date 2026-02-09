@@ -38,7 +38,6 @@ export class TotpService {
   }
 
   async verifyToken(secret: string, token: string) {
-    this.logger.log({ secret, token });
     return speakeasy.totp.verify({
       secret,
       encoding: 'base32',
@@ -54,6 +53,7 @@ export class TotpService {
   ) {
     const secret = speakeasy.generateSecret({
       name: `${process.env.NAME_APP} (${email})`,
+      issuer: process.env.NAME_APP,
     });
     userSecurity.twoFactorEnabled = false;
     userSecurity.twoFactorType = TwoFactorType.TOTP;

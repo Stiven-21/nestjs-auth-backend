@@ -15,7 +15,8 @@
             "twoFactorCodeInvalid": "The two-factor authentication code is not valid",
             "twoFactorSMSDisabled": "The SMS service is not available at the moment",
             "twoFactorTypeNotSupported": "The two-factor authentication type is not supported",
-            "wrongReauthToken": "The reauthentication token is not valid"
+            "wrongReauthToken": "The reauthentication token is not valid",
+            "unauthorized": "Unauthorized access"
         },
         "success": {
             "register": "An email has been sent with instructions to verify your email",

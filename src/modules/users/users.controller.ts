@@ -69,4 +69,10 @@ export class UsersController {
   ) {
     return await this.usersService.changeRole(req, userId, changeRoleDto, i18n);
   }
+
+  @Get('profile/me')
+  @Auth()
+  async me(@Req() req: Request, @I18n() i18n: I18nContext) {
+    return await this.usersService.me(req, i18n);
+  }
 }

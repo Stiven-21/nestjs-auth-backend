@@ -45,6 +45,7 @@ export type I18nTranslations = {
                 "twoFactorSMSDisabled": string;
                 "twoFactorTypeNotSupported": string;
                 "wrongReauthToken": string;
+                "unauthorized": string;
             };
             "success": {
                 "register": string;
