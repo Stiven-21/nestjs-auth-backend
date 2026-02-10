@@ -62,7 +62,7 @@ This roadmap outlines the planned evolution of **NEST AUTH**, a robust, reusable
 
 ---
 
-## ⏳ v0.5.0 — Complete Account Flows
+## ✅ v0.5.0 — Complete Account Flows
 
 - Full password reset (API-only)
 - Email change with confirmation
