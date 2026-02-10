@@ -852,7 +852,6 @@ export class AuthService {
       httpOnly: true,
       secure: this.isProd,
       sameSite: this.isProd ? 'none' : 'lax',
-      path: '/',
       maxAge: 15 * 60 * 1000,
     });
 
@@ -860,27 +859,24 @@ export class AuthService {
       httpOnly: true,
       secure: this.isProd,
       sameSite: this.isProd ? 'none' : 'lax',
-      path: '/',
       maxAge: 2 * 24 * 60 * 60 * 1000, // 2 days
     });
 
-    return res.status(200).json(
-      okResponse({
-        i18n,
-        lang: i18n.lang,
+    return okResponse({
+      i18n,
+      lang: i18n.lang,
+      data: {
         data: {
-          data: {
-            access_token,
-            refresh_token: refreshToken,
-            email: user.email,
-            user: user.name + ' ' + user.lastname,
-            role: user.role.name,
-            permissions: parsePermissions(user.role.permissions),
-          },
-          total: 1,
+          accessToken: access_token,
+          refreshToken,
+          email: user.email,
+          user: user.name + ' ' + user.lastname,
+          role: user.role.name,
+          permissions: parsePermissions(user.role.permissions),
         },
-      }),
-    );
+        total: 1,
+      },
+    });
   }
 
   async resetPasswordLogged(
@@ -957,16 +953,24 @@ export class AuthService {
   ) {
     const state = req.query.state;
     const payload = this.oauthStateService.verify(state as string);
-    this.logger.debug(payload);
+    this.logger.log(payload);
 
-    if (payload.flow === 'login') return this.loginWithOauth(req, res, i18n);
-
-    if (payload.flow === 'link') {
-      return this.linkOauth(req, res, i18n, payload.userId);
+    switch (payload.flow) {
+      case 'login':
+        await this.loginWithOauth(req, res, i18n);
+        break;
+      case 'link':
+        await this.linkOauth(req, res, i18n, payload.userId);
+        break;
+      default:
+        this.logger.error('Invalid flow');
+        break;
     }
   }
 
   async loginWithOauth(req: Request, res: Response, i18n: I18nContext) {
+    const deviceId = await ensureDeviceId(req, res);
+
     const user = await this.dataSource.transaction(async (manager) => {
       const user = await this.usersService.validateOAuthUser(
         req.user as OAuthProfile,
@@ -987,53 +991,72 @@ export class AuthService {
       return user;
     });
 
-    const user_secret = await this.usersService.getUserSecret(user.id, i18n);
-    const { ip, userAgent } = await getClientInfo(req);
+    const { ip, userAgent, device, location } = await getClientInfo(req);
 
-    const authSession = await this.authSessionsService.createAuthSession(
-      {
-        user,
-        ipAddress: ip,
-        userAgent,
-        deviceId: await ensureDeviceId(req, res),
+    const refreshToken = await this.dataSource.transaction<string>(
+      async (manager) => {
+        await this.sessionService.create(
+          {
+            userId: user.id,
+            ip,
+            device,
+            userAgent,
+            location,
+          },
+          i18n,
+          manager,
+        );
+
+        const authSession = await this.authSessionsService.createAuthSession(
+          {
+            user,
+            ipAddress: ip,
+            userAgent,
+            deviceId,
+          },
+          i18n,
+          manager,
+        );
+
+        const payload = {
+          sub: user.id,
+          sessionId: authSession.id,
+          email: user.email,
+          role: {
+            name: user.role.name,
+            permissions: parsePermissions(user.role.permissions),
+          },
+        };
+
+        const refreshToken = this.jwtService.sign(payload, {
+          secret: process.env.JWT_REFRESH_SECRET,
+          expiresIn: '2d',
+        });
+
+        await this.authRefreshTokenService.createRefreshToken(
+          {
+            authSession,
+            refreshToken,
+          },
+          i18n,
+          manager,
+        );
+
+        return refreshToken;
       },
-      i18n,
     );
 
-    const payload = {
-      sub: user.id,
-      sessionId: authSession.id,
-      email: user.email,
-      role: {
-        name: user.role.name,
-        permissions: parsePermissions(user.role.permissions),
-      },
-    };
-
-    const access_token = this.jwtService.sign(payload, {
-      secret: process.env.JWT_SECRET + user_secret,
-      expiresIn: '30m',
-    });
-    const refresh_token = this.jwtService.sign(payload, {
-      secret: process.env.JWT_REFRESH_SECRET,
-      expiresIn: '2d',
-    });
-
-    res.cookie('access_token', access_token, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'lax',
-      path: '/',
-      maxAge: 15 * 60 * 1000, // 15 min
-    });
-
-    res.cookie('refresh_token', refresh_token, {
+    res.cookie('refresh_token', refreshToken, {
       httpOnly: true,
       secure: true,
       sameSite: 'lax',
       path: '/',
       maxAge: 2 * 24 * 60 * 60 * 1000, // 2 days
     });
+
+    return res.redirect(
+      process.env.URL_FRONTEND + `/auth/callback?token=${refreshToken}`,
+    );
   }
 
   async linkOauth(

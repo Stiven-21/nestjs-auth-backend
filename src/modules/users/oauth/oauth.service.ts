@@ -22,7 +22,6 @@ export class OAuthService {
     const repo = manager
       ? manager.getRepository(UserAccountOAuth)
       : this.oauthRepository;
-    this.logger.log('Create OAuth');
 
     const oath = await this.oauthRepository.findOne({
       where: {
@@ -36,6 +35,21 @@ export class OAuthService {
     try {
       await repo.save(createOAuthDto);
       return;
+    } catch (error) {
+      this.logger.error(error);
+      internalServerError({ i18n, lang: i18n.lang });
+    }
+  }
+
+  async findAllOAuthWithUser(userId: number, i18n: I18nContext) {
+    try {
+      const data = await this.oauthRepository.find({
+        where: {
+          user: { id: userId },
+        },
+        select: ['id', 'provider', 'providerId', 'avatar', 'user'],
+      });
+      return data;
     } catch (error) {
       this.logger.error(error);
       internalServerError({ i18n, lang: i18n.lang });

@@ -19,11 +19,8 @@ import { TokensService } from 'src/modules/users/tokens/tokens.service';
 import { RolesService } from 'src/modules/roles/roles.service';
 import { UserStatusEnum } from 'src/common/enum/user-status.enum';
 import { MailService } from 'src/mails/mail.service';
-import { GoogleProfileDto } from 'src/modules/users/dto/create-google-user.dto';
 import { OAuthService } from 'src/modules/users/oauth/oauth.service';
-import { FacebookProfileDto } from 'src/modules/users/dto/create-facebook-user.dto';
 import { OAuthProviderEnum } from 'src/common/enum/user-oauth-providers.enum';
-import { CreateGithubProfileDto } from 'src/modules/users/dto/create-github-user.dto';
 import { getSafeSelect } from 'src/common/utils/typeorm.utils';
 import { EmailLogChangesService } from 'src/modules/users/email-log-changes/email-log-changes.service';
 import { ChangeRoleDto } from 'src/modules/users/dto/change-role.dto';
@@ -320,96 +317,6 @@ export class UsersService {
     return null;
   }
 
-  // Proximante se elimina
-  async validateGoogleUser(
-    googleUser: GoogleProfileDto,
-    i18n?: I18nContext,
-    manager?: EntityManager,
-  ) {
-    const repo = manager ? manager.getRepository(User) : this.usersRepository;
-    const { googleId, ...rest } = googleUser;
-    const validateUser = await this.__ValidateProviderUser(
-      googleId,
-      OAuthProviderEnum.GOOGLE,
-      googleUser.email,
-      i18n,
-    );
-    if (validateUser) return validateUser;
-
-    const i18nCont = i18n ?? I18nContext.current();
-    const role = await this.rolesService.findOne(
-      Number(process.env.ROL_USER_ID),
-      i18nCont,
-    );
-    const user_secret = uuidv7();
-    return await repo.save({
-      ...rest,
-      role: role.data,
-      user_secret,
-      status: UserStatusEnum.ACTIVE,
-    });
-  }
-
-  // Proximante se elimina
-  async validateFacebookUser(
-    facebookUser: FacebookProfileDto,
-    i18n?: I18nContext,
-    manager?: EntityManager,
-  ) {
-    const repo = manager ? manager.getRepository(User) : this.usersRepository;
-    const { facebookId, ...rest } = facebookUser;
-    const validateUser = await this.__ValidateProviderUser(
-      facebookId,
-      OAuthProviderEnum.FACEBOOK,
-      facebookUser.email,
-      i18n,
-    );
-    if (validateUser) return validateUser;
-
-    const i18nCont = i18n ?? I18nContext.current();
-    const role = await this.rolesService.findOne(
-      Number(process.env.ROL_USER_ID),
-      i18nCont,
-    );
-    const user_secret = uuidv7();
-    return await repo.save({
-      ...rest,
-      role: role.data,
-      user_secret,
-      status: UserStatusEnum.ACTIVE,
-    });
-  }
-
-  // Proximante se elimina
-  async validateGithubUser(
-    githubUser: CreateGithubProfileDto,
-    i18n?: I18nContext,
-    manager?: EntityManager,
-  ) {
-    const repo = manager ? manager.getRepository(User) : this.usersRepository;
-    const { githubId, ...rest } = githubUser;
-    const validateUser = await this.__ValidateProviderUser(
-      githubId,
-      OAuthProviderEnum.GITHUB,
-      githubUser.email,
-      i18n,
-    );
-    if (validateUser) return validateUser;
-
-    const i18nCont = i18n ?? I18nContext.current();
-    const role = await this.rolesService.findOne(
-      Number(process.env.ROL_USER_ID),
-      i18nCont,
-    );
-    const user_secret = uuidv7();
-    return await repo.save({
-      ...rest,
-      role: role.data,
-      user_secret,
-      status: UserStatusEnum.ACTIVE,
-    });
-  }
-
   // Oauth optimizado
   async validateOAuthUser(
     oauth: OAuthProfile,
@@ -560,7 +467,18 @@ export class UsersService {
   }
 
   async me(req: Request, i18n: I18nContext) {
-    const user = await this.findOne(req.user['sub'], i18n);
-    return user.data;
+    const { data: user } = (await this.findOne(req.user['sub'], i18n)).data;
+    const oauthactive = await this.oauthService.findAllOAuthWithUser(
+      req.user['sub'],
+      i18n,
+    );
+    return okResponse({
+      i18n,
+      lang: i18n.lang,
+      data: {
+        data: { ...user, oauth: oauthactive },
+        total: 1,
+      },
+    });
   }
 }

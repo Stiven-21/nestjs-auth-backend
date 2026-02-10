@@ -45,6 +45,7 @@ export class AuthRefreshTokensService {
 
   async revokeRefreshToken(refreshToken: string, i18n: I18nContext) {
     let authRefreshToken: AuthRefreshTokens | null;
+
     try {
       authRefreshToken = await this.refreshTokensRepository.findOne({
         where: { token: await this.hashToken(refreshToken) },

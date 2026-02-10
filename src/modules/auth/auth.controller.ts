@@ -26,13 +26,15 @@ import { TwoFactorEnableDto } from 'src/modules/auth/dto/2fa-enable.dto';
 import { TwoFAConfirmDto } from 'src/modules/auth/dto/2fa-confirm.dto';
 import { ThorttleLimit } from 'src/common/decorators/throttle.decorator';
 import { BruteForce } from 'src/modules/auth/decorators/brute-force.decorator';
-import { AuthGuard } from '@nestjs/passport';
 import { GithubLoginGuard } from 'src/modules/auth/guards/oauth/github/github-login.guard';
 import { GithubLinkGuard } from 'src/modules/auth/guards/oauth/github/github-link.guard';
 import { GoogleLoginGuard } from 'src/modules/auth/guards/oauth/google/google-login.guard';
 import { GoogleLinkGuard } from 'src/modules/auth/guards/oauth/google/login-link.guard';
 import { FacebookLoginGuard } from 'src/modules/auth/guards/oauth/facebook/facebook-login.guard';
 import { FacebookLinkGuard } from 'src/modules/auth/guards/oauth/facebook/facebook-link.guard';
+import { GoogleOauthGuard } from './guards/oauth/google-oauth.guard';
+import { FacebookOauthGuard } from './guards/oauth/facebook-oauth.guard';
+import { GithubOauthGuard } from './guards/oauth/github-oauth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -108,7 +110,7 @@ export class AuthController {
     return await this.authService.login(req, res, loginDto, deviceId, i18n);
   }
 
-  @Get('refresh-token/:token')
+  @Post('refresh-token/:token')
   async refreshToken(
     @Param('token') token: string,
     @I18n() i18n: I18nContext,
@@ -127,7 +129,7 @@ export class AuthController {
   linkGoogle() {}
 
   @Get('google/callback')
-  @UseGuards(AuthGuard('google'))
+  @UseGuards(GoogleOauthGuard)
   async googleCallback(
     @Req() req: Request,
     @I18n() i18n: I18nContext,
@@ -135,7 +137,7 @@ export class AuthController {
   ) {
     const deviceId = await ensureDeviceId(req, res);
     await this.authService.handleOAuthCallback(req, res, deviceId, i18n);
-    return res.redirect(process.env.URL_FRONTEND + '/dashboard');
+    // return res.redirect(process.env.URL_FRONTEND + '/dashboard');
   }
 
   //  Oauth Facebook
@@ -148,7 +150,7 @@ export class AuthController {
   linkFacebook() {}
 
   @Get('facebook/callback')
-  @UseGuards(AuthGuard('facebook'))
+  @UseGuards(FacebookOauthGuard)
   async facebookCallback(
     @Req() req: Request,
     @I18n() i18n: I18nContext,
@@ -156,7 +158,7 @@ export class AuthController {
   ) {
     const deviceId = await ensureDeviceId(req, res);
     await this.authService.handleOAuthCallback(req, res, deviceId, i18n);
-    return res.redirect(process.env.URL_FRONTEND + '/dashboard');
+    // return res.redirect(process.env.URL_FRONTEND + '/dashboard');
   }
 
   // Oauth Github - updated
@@ -170,7 +172,7 @@ export class AuthController {
   linkGithub() {}
 
   @Get('github/callback')
-  @UseGuards(AuthGuard('github'))
+  @UseGuards(GithubOauthGuard)
   async githubCallback(
     @Req() req: Request,
     @I18n() i18n: I18nContext,
@@ -178,7 +180,7 @@ export class AuthController {
   ) {
     const deviceId = await ensureDeviceId(req, res);
     await this.authService.handleOAuthCallback(req, res, deviceId, i18n);
-    return res.redirect(process.env.URL_FRONTEND + '/dashboard');
+    // return res.redirect(process.env.URL_FRONTEND + '/dashboard');
   }
 
   @Post('logout')
