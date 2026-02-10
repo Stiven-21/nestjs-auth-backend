@@ -47,6 +47,7 @@ import { OAuthStateService } from 'src/modules/auth/oauth/oauth.service';
 import { OAuthProfile } from 'src/common/interfaces/oauth-profile.interface';
 import { OAuthService } from 'src/modules/users/oauth/oauth.service';
 import { ensureDeviceId } from 'src/common/helpers/session.helper';
+import { OAuthProviderEnum } from 'src/common/enum/user-oauth-providers.enum';
 
 @Injectable()
 export class AuthService {
@@ -1073,8 +1074,11 @@ export class AuthService {
     if (oath_exist && oath_exist.id !== userId)
       res.redirect(
         process.env.URL_FRONTEND +
-          '/dashboard?error=1&message=You are already linked to another account',
+          `/dashboard?error=1&message=${i18n.t(
+            'messages.auth.error.linkProvider',
+          )}`,
       );
+    // You are already linked to another account
 
     const { data: user } = (await this.usersService.findOne(userId, i18n)).data;
     await this.oauthService.create({
@@ -1083,6 +1087,34 @@ export class AuthService {
       providerId: req.user['providerId'],
       isActive: req.user['isActive'],
       avatar: req.user['avatar'],
+    });
+
+    return res.redirect(
+      process.env.URL_FRONTEND +
+        `/dashboard?success=1&message=${i18n.t(
+          'messages.auth.success.linkProvider',
+        )}`,
+    );
+    // You have successfully linked your account
+  }
+
+  async unlinkProvider(
+    req: Request,
+    provider: OAuthProviderEnum,
+    i18n: I18nContext,
+  ) {
+    const userId: number = req.user['sub'];
+
+    await this.oauthService.delete(userId, provider, i18n);
+    return okResponse({
+      i18n,
+      lang: i18n.lang,
+      data: {
+        data: i18n.t('messages.auth.success.unlinkProvider', {
+          lang: i18n.lang,
+        }),
+        total: 0,
+      },
     });
   }
 }

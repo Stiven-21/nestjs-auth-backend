@@ -35,6 +35,7 @@ import { FacebookLinkGuard } from 'src/modules/auth/guards/oauth/facebook/facebo
 import { GoogleOauthGuard } from './guards/oauth/google-oauth.guard';
 import { FacebookOauthGuard } from './guards/oauth/facebook-oauth.guard';
 import { GithubOauthGuard } from './guards/oauth/github-oauth.guard';
+import { OAuthProviderEnum } from 'src/common/enum/user-oauth-providers.enum';
 
 @Controller('auth')
 export class AuthController {
@@ -137,7 +138,6 @@ export class AuthController {
   ) {
     const deviceId = await ensureDeviceId(req, res);
     await this.authService.handleOAuthCallback(req, res, deviceId, i18n);
-    // return res.redirect(process.env.URL_FRONTEND + '/dashboard');
   }
 
   //  Oauth Facebook
@@ -158,7 +158,6 @@ export class AuthController {
   ) {
     const deviceId = await ensureDeviceId(req, res);
     await this.authService.handleOAuthCallback(req, res, deviceId, i18n);
-    // return res.redirect(process.env.URL_FRONTEND + '/dashboard');
   }
 
   // Oauth Github - updated
@@ -180,7 +179,6 @@ export class AuthController {
   ) {
     const deviceId = await ensureDeviceId(req, res);
     await this.authService.handleOAuthCallback(req, res, deviceId, i18n);
-    // return res.redirect(process.env.URL_FRONTEND + '/dashboard');
   }
 
   @Post('logout')
@@ -256,5 +254,16 @@ export class AuthController {
   @Post('2fa/disable')
   async disable2fa(@Req() req: Request, @I18n() i18n: I18nContext) {
     return await this.authService.disable2fa(req, i18n);
+  }
+
+  @ThorttleLimit(2, 60)
+  @Auth()
+  @Post('unlink/:provider')
+  async unlinkProvider(
+    @Req() req: Request,
+    @Param('provider') provider: OAuthProviderEnum,
+    @I18n() i18n: I18nContext,
+  ) {
+    return await this.authService.unlinkProvider(req, provider, i18n);
   }
 }

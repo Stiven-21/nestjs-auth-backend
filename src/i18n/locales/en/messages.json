@@ -16,7 +16,8 @@
             "twoFactorSMSDisabled": "The SMS service is not available at the moment",
             "twoFactorTypeNotSupported": "The two-factor authentication type is not supported",
             "wrongReauthToken": "The reauthentication token is not valid",
-            "unauthorized": "Unauthorized access"
+            "unauthorized": "Unauthorized access",
+            "linkProvider": "The provider has already been linked to another user"
         },
         "success": {
             "register": "An email has been sent with instructions to verify your email",
@@ -26,7 +27,9 @@
             "logout": "You have been logged out successfully",
             "logoutAll": "All sessions have been closed successfully",
             "twoFactorEnabled": "Two-factor authentication has been enabled successfully",
-            "twoFactorDisabled": "Two-factor authentication has been disabled successfully"
+            "twoFactorDisabled": "Two-factor authentication has been disabled successfully",
+            "unlinkProvider": "The provider has been unlinked successfully",
+            "linkProvider": "The provider has been linked successfully"
         },
         "guard": {
             "noActiveSession": "No active session found, please log in",

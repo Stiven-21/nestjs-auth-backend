@@ -16,7 +16,8 @@
             "twoFactorSMSDisabled": "Por el momento el servicio de SMS no est\u00e1 disponible",
             "twoFactorTypeNotSupported": "El tipo de autenticaci\u00f3n de dos factores no es soportado",
             "wrongReauthToken": "El token de reautenticación no es v\u00e1lido",
-            "unauthorized": "Acceso no autorizado"
+            "unauthorized": "Acceso no autorizado",
+            "linkProvider": "El proveedor ya ha sido vinculado a otro usuario"
         },
         "success": {
             "register": "Se ha enviado un correo con las instrucciones para verificar el correo",
@@ -26,7 +27,9 @@
             "logout": "Se ha cerrado la sesión correctamente",
             "logoutAll": "Se han cerrado todas las sesiones correctamente",
             "twoFactorEnabled": "Se ha habilitado la autenticaci\u00f3n de dos factores correctamente",
-            "twoFactorDisabled": "Se ha deshabilitado la autenticaci\u00f3n de dos factores correctamente"
+            "twoFactorDisabled": "Se ha deshabilitado la autenticaci\u00f3n de dos factores correctamente",
+            "unlinkProvider": "Se ha desvinculado el proveedor correctamente",
+            "linkProvider": "Se ha vinculado el proveedor correctamente"
         },
         "guard": {
             "noActiveSession": "No se ha encontrado una sesión activa, por favor inicie sesión",

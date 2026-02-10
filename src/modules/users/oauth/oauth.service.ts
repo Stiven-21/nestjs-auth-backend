@@ -4,7 +4,7 @@ import { UserAccountOAuth } from 'src/modules/users/entities/user-account-oauth.
 import { EntityManager, Repository } from 'typeorm';
 import { CreateOAuthDto } from 'src/modules/users/dto/create-oauth.dto';
 import { I18nContext } from 'nestjs-i18n';
-import { internalServerError } from 'src/common/exceptions';
+import { internalServerError, notFoundError } from 'src/common/exceptions';
 import { OAuthProviderEnum } from 'src/common/enum/user-oauth-providers.enum';
 import { UsersService } from 'src/modules/users/users.service';
 
@@ -68,6 +68,31 @@ export class OAuthService {
       });
       if (!data) return null;
       return data.user;
+    } catch (error) {
+      this.logger.error(error);
+      internalServerError({ i18n, lang: i18n.lang });
+    }
+  }
+
+  async delete(userId: number, provider: OAuthProviderEnum, i18n: I18nContext) {
+    let deleted: UserAccountOAuth | null = null;
+    try {
+      deleted = await this.oauthRepository.findOne({
+        where: {
+          user: { id: userId },
+          provider: provider,
+        },
+      });
+    } catch (error) {
+      this.logger.error(error);
+      internalServerError({ i18n, lang: i18n.lang });
+    }
+    if (!deleted) notFoundError({ i18n, lang: i18n.lang });
+    try {
+      await this.oauthRepository.delete({
+        user: { id: userId },
+        provider: provider,
+      });
     } catch (error) {
       this.logger.error(error);
       internalServerError({ i18n, lang: i18n.lang });

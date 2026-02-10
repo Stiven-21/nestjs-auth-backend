@@ -46,6 +46,7 @@ export type I18nTranslations = {
                 "twoFactorTypeNotSupported": string;
                 "wrongReauthToken": string;
                 "unauthorized": string;
+                "linkProvider": string;
             };
             "success": {
                 "register": string;
@@ -56,6 +57,8 @@ export type I18nTranslations = {
                 "logoutAll": string;
                 "twoFactorEnabled": string;
                 "twoFactorDisabled": string;
+                "unlinkProvider": string;
+                "linkProvider": string;
             };
             "guard": {
                 "noActiveSession": string;
