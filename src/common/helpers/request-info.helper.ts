@@ -1,6 +1,7 @@
 import { Request } from 'express';
 import { UAParser } from 'ua-parser-js';
 import { LocationInfo } from '../interfaces/location-info.interface';
+import net from 'net';
 
 export interface RequestClientInfo {
   ip: string;
@@ -35,7 +36,20 @@ export const getClientInfo = async (
 
 const getIPLocation = async (ip: string): Promise<LocationInfo | null> => {
   try {
-    const res = await fetch(`https://ip.guide/${ip}`);
+    if (!net.isIP(ip)) throw new Error('Invalid IP address');
+    const blockedRanges = [
+      /^127\./,
+      /^10\./,
+      /^192\.168\./,
+      /^172\.(1[6-9]|2\d|3[0-1])\./,
+      /^169\.254\./,
+    ];
+    if (blockedRanges.some((r) => r.test(ip)))
+      throw new Error('Blocked IP address');
+
+    const url = new URL('https://ip.guide/');
+    url.pathname += encodeURIComponent(ip);
+    const res = await fetch(url.toString());
     const data = await res.json();
 
     return {

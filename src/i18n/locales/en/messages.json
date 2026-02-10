@@ -29,7 +29,8 @@
             "twoFactorEnabled": "Two-factor authentication has been enabled successfully",
             "twoFactorDisabled": "Two-factor authentication has been disabled successfully",
             "unlinkProvider": "The provider has been unlinked successfully",
-            "linkProvider": "The provider has been linked successfully"
+            "linkProvider": "The provider has been linked successfully",
+            "changeEmail": "The email has been changed successfully"
         },
         "guard": {
             "noActiveSession": "No active session found, please log in",

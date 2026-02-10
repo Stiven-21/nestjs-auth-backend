@@ -21,6 +21,7 @@ import { UserEmailChangeLog } from './user-email-change-log.entity';
 import { AuthSessions } from 'src/modules/auth/entities/auth-sessions.entity';
 import { UserSecurityTwoFactorOtps } from 'src/modules/users/entities/user-security-two-factor-otps.entity';
 import { AuthReAuthToken } from 'src/modules/auth/entities/auth-reauth-token.entity';
+import { UserEmailChangeRequest } from './user-email-change-request.entity';
 
 @Entity({ name: 'users' })
 export class User {
@@ -105,4 +106,7 @@ export class User {
 
   @OneToMany(() => AuthReAuthToken, (authReAuthToken) => authReAuthToken.user)
   authReauthTokens: AuthReAuthToken[];
+
+  @OneToMany(() => UserEmailChangeRequest, (user) => user.user)
+  userEmailChangeRequests: UserEmailChangeRequest[];
 }

@@ -438,7 +438,6 @@ export class AuthService {
         }),
       });
 
-    // VERIFICAR QUE SI EL USUARIO TIENE 2FA ACTIVADO
     const userSecurity = await this.securityService.findOneByUser(user, i18n);
     if (userSecurity.twoFactorEnabled) {
       if (userSecurity.twoFactorType === TwoFactorType.EMAIL) {
@@ -945,7 +944,6 @@ export class AuthService {
     });
   }
 
-  // VERIFICAR SI ES REGISTRO CON OAUTH O ES LINK PARA VINCULAR CON OAUTH
   async handleOAuthCallback(
     req: Request,
     res: Response,
@@ -1078,7 +1076,6 @@ export class AuthService {
             'messages.auth.error.linkProvider',
           )}`,
       );
-    // You are already linked to another account
 
     const { data: user } = (await this.usersService.findOne(userId, i18n)).data;
     await this.oauthService.create({
@@ -1095,7 +1092,6 @@ export class AuthService {
           'messages.auth.success.linkProvider',
         )}`,
     );
-    // You have successfully linked your account
   }
 
   async unlinkProvider(

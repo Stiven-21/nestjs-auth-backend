@@ -31,7 +31,10 @@ import { SecurityRecoveryCodesController } from 'src/modules/users/security-reco
 import { TotpService } from 'src/modules/users/security/totp/totp.service';
 import { UserSecurityTwoFactorOtps } from 'src/modules/users/entities/user-security-two-factor-otps.entity';
 import { OtpsService } from 'src/modules/users/security/otps/otps.service';
-import { AuditLogModule } from '../audit-log/audit-log.module';
+import { AuditLogModule } from 'src/modules/audit-log/audit-log.module';
+import { UserEmailChangeRequest } from 'src/modules/users/entities/user-email-change-request.entity';
+import { EmailChangeRequestService } from './email-change-request/email-change-request.service';
+import { EmailChangeRequestController } from './email-change-request/email-change-request.controller';
 
 @Module({
   imports: [
@@ -46,6 +49,7 @@ import { AuditLogModule } from '../audit-log/audit-log.module';
       UserSecurity,
       UserSecurityRecoveryCodes,
       UserSecurityTwoFactorOtps,
+      UserEmailChangeRequest,
     ]),
     forwardRef(() => AuthModule),
     RolesModule,
@@ -60,6 +64,7 @@ import { AuditLogModule } from '../audit-log/audit-log.module';
     SecurityController,
     EmailLogChangesController,
     SecurityRecoveryCodesController,
+    EmailChangeRequestController,
   ],
   providers: [
     UsersService,
@@ -73,6 +78,7 @@ import { AuditLogModule } from '../audit-log/audit-log.module';
     SecurityRecoveryCodesService,
     TotpService,
     OtpsService,
+    EmailChangeRequestService,
   ],
   exports: [
     TypeOrmModule,

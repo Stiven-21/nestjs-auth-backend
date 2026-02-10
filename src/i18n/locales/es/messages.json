@@ -29,7 +29,8 @@
             "twoFactorEnabled": "Se ha habilitado la autenticaci\u00f3n de dos factores correctamente",
             "twoFactorDisabled": "Se ha deshabilitado la autenticaci\u00f3n de dos factores correctamente",
             "unlinkProvider": "Se ha desvinculado el proveedor correctamente",
-            "linkProvider": "Se ha vinculado el proveedor correctamente"
+            "linkProvider": "Se ha vinculado el proveedor correctamente",
+            "changeEmail": "Se ha cambiado el correo correctamente"
         },
         "guard": {
             "noActiveSession": "No se ha encontrado una sesión activa, por favor inicie sesión",

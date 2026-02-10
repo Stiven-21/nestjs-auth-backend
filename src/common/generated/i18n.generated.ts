@@ -59,6 +59,7 @@ export type I18nTranslations = {
                 "twoFactorDisabled": string;
                 "unlinkProvider": string;
                 "linkProvider": string;
+                "changeEmail": string;
             };
             "guard": {
                 "noActiveSession": string;

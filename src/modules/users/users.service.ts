@@ -18,17 +18,16 @@ import { v7 as uuidv7 } from 'uuid';
 import { TokensService } from 'src/modules/users/tokens/tokens.service';
 import { RolesService } from 'src/modules/roles/roles.service';
 import { UserStatusEnum } from 'src/common/enum/user-status.enum';
-import { MailService } from 'src/mails/mail.service';
 import { OAuthService } from 'src/modules/users/oauth/oauth.service';
 import { OAuthProviderEnum } from 'src/common/enum/user-oauth-providers.enum';
 import { getSafeSelect } from 'src/common/utils/typeorm.utils';
-import { EmailLogChangesService } from 'src/modules/users/email-log-changes/email-log-changes.service';
 import { ChangeRoleDto } from 'src/modules/users/dto/change-role.dto';
 import { Request } from 'express';
 import { AuditLogService } from 'src/modules/audit-log/audit-log.service';
 import { AuditEvent } from 'src/common/enum/audit-event.enum';
 import { getIPFromRequest } from 'src/common/helpers/request-info.helper';
 import { OAuthProfile } from 'src/common/interfaces/oauth-profile.interface';
+import { EmailChangeRequestService } from './email-change-request/email-change-request.service';
 
 @Injectable()
 export class UsersService {
@@ -40,14 +39,12 @@ export class UsersService {
     private readonly identityTypesService: IdentityTypesService,
     private readonly dynamicQueryService: DynamicQueryService,
     private readonly rolesService: RolesService,
-    private readonly mailService: MailService,
     private readonly oauthService: OAuthService,
     private readonly dataSource: DataSource,
     @Inject(forwardRef(() => TokensService))
     private readonly tokensService: TokensService,
-    @Inject(forwardRef(() => EmailLogChangesService))
-    private readonly emailLogChangesService: EmailLogChangesService,
     private readonly auditLogService: AuditLogService,
+    private readonly emailChangeRequestService: EmailChangeRequestService,
   ) {}
 
   async create(
@@ -206,36 +203,22 @@ export class UsersService {
     try {
       if (!change) return await this.usersRepository.update(id, update);
 
-      const { user, emailChange } = await this.dataSource.manager.transaction(
+      const user = await this.dataSource.manager.transaction(
         async (manager) => {
-          const user = await manager.getRepository(User).update(id, update);
-          const emailChange = await this.emailLogChangesService.changeEmail(
-            id,
+          const { email, ...restUpdate } = update;
+          await manager.getRepository(User).update(id, restUpdate);
+          const user = await manager.getRepository(User).findOneBy({ id });
+
+          await this.emailChangeRequestService.create(
+            user,
             oldEmail,
-            updateUserDto.email,
+            email,
             i18n,
             manager,
           );
 
-          return {
-            user,
-            emailChange,
-          };
+          return user;
         },
-      );
-
-      const revertLink = `${process.env.FRONTEND_URL}/auth/revert-email/${emailChange.rollbackToken}`;
-
-      await this.mailService.sendMail(
-        oldEmail,
-        'Cambio de correo electrónico',
-        'auth-email-update',
-        {
-          oldEmail,
-          newEmail: updateUserDto.email,
-          revertLink,
-        },
-        i18n,
       );
 
       return user;
@@ -480,5 +463,20 @@ export class UsersService {
         total: 1,
       },
     });
+  }
+
+  async updateEmail(
+    id: number,
+    email: string,
+    i18n: I18nContext,
+    manager?: EntityManager,
+  ) {
+    const repo = manager ? manager.getRepository(User) : this.usersRepository;
+    try {
+      return await repo.update(id, { email });
+    } catch (error) {
+      this.logger.error(error);
+      internalServerError({ i18n, lang: i18n.lang });
+    }
   }
 }
