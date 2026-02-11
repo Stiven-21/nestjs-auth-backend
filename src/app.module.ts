@@ -9,11 +9,18 @@ import { CommonModule } from 'src/shared/common/common.module';
 import { RolesModule } from 'src/modules/roles/roles.module';
 import { ThrottlerModule } from 'src/shared/throttler/thorttler.module';
 import { AuditLogModule } from 'src/modules/audit-log/audit-log.module';
+import frontendConfig from 'src/config/frontend.config';
+import { validationSchema } from 'src/config/validation.schema';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      load: [frontendConfig],
+      validationSchema,
+      validationOptions: {
+        abortEarly: true,
+      },
     }),
     TypeOrmModule.forRoot({
       type: process.env.DB_TYPE as any,

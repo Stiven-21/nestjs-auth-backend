@@ -1,7 +1,7 @@
 import { LoginDto } from 'src/modules/auth/dto/login.dto';
 import { TokensService } from 'src/modules/users/tokens/tokens.service';
 import { UserStatusEnum } from 'src/common/enum/user-status.enum';
-import { Injectable, Logger, Param } from '@nestjs/common';
+import { Inject, Injectable, Logger, Param } from '@nestjs/common';
 import { I18nContext } from 'nestjs-i18n';
 import { RegisterDto } from 'src/modules/auth/dto/register.dto';
 import { UsersService } from 'src/modules/users/users.service';
@@ -49,6 +49,8 @@ import { OAuthService } from 'src/modules/users/oauth/oauth.service';
 import { ensureDeviceId } from 'src/common/helpers/session.helper';
 import { OAuthProviderEnum } from 'src/common/enum/user-oauth-providers.enum';
 import { ResponseFactory } from 'src/common/exceptions/response.factory';
+import frontendConfig from 'src/config/frontend.config';
+import { ConfigType } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
@@ -56,6 +58,8 @@ export class AuthService {
   private isProd = process.env.NODE_ENV === 'production';
 
   constructor(
+    @Inject(frontendConfig.KEY)
+    private readonly frontend: ConfigType<typeof frontendConfig>,
     private readonly usersService: UsersService,
     private readonly securityService: SecurityService,
     private readonly tokensService: TokensService,
@@ -110,8 +114,7 @@ export class AuthService {
   async verifyEmail(@Param('token') token: string, i18n: I18nContext) {
     const email = await this.usersService.verifyEmail(token, i18n);
 
-    const loginUrl =
-      process.env.URL_FRONTEND + (process.env.PATH_LOGIN ?? '/auth/login');
+    const loginUrl = `${this.frontend.url}${this.frontend.paths.login}`;
     await this.mailService.sendMail(
       email,
       'Restablecimiento de contraseña exitoso', // Subject o asunto
@@ -159,7 +162,8 @@ export class AuthService {
       await this.tokensService.updateTokenIsUsed(token, i18n, manager);
     });
 
-    const loginUrl = process.env.URL_FRONTEND + '/auth/login';
+    const loginUrl = `${this.frontend.url}${this.frontend.paths.login}`;
+
     await this.mailService.sendMail(
       userToken.data.user.email,
       'Restablecimiento de contraseña exitoso', // Subject o asunto
@@ -771,6 +775,8 @@ export class AuthService {
       return { refreshToken, payload };
     });
 
+    const changePasswordUrl = `${this.frontend.url}${this.frontend.paths.changePassword}`;
+
     await this.mailService.sendMail(
       user.email,
       'Alerta de inicio de sesión',
@@ -780,8 +786,7 @@ export class AuthService {
         loginIp: ip,
         loginBrowser: browser,
         loginOs: os,
-        changePasswordUrl: '', // url de cambio de contraseña
-        // changePasswordUrl: process.env.CHANGE_PASSWORD_URL,
+        changePasswordUrl,
       },
       i18n,
     );
@@ -869,8 +874,8 @@ export class AuthService {
       await this.usersService.updatePassword(userId, i18n, manager);
     });
 
-    const loginUrl =
-      process.env.URL_FRONTEND + (process.env.PATH_LOGIN ?? '/auth/login');
+    const loginUrl = `${this.frontend.url}${this.frontend.paths.login}`;
+
     await this.mailService.sendMail(
       email,
       'Cambio de contraseña exitoso', // Subject o asunto
@@ -1011,7 +1016,7 @@ export class AuthService {
     });
 
     return res.redirect(
-      process.env.URL_FRONTEND + `/auth/callback?token=${refreshToken}`,
+      `${this.frontend.url}${this.frontend.paths.authCallback}?token=${refreshToken}`,
     );
   }
 
@@ -1028,10 +1033,9 @@ export class AuthService {
 
     if (oath_exist && oath_exist.id !== userId)
       res.redirect(
-        process.env.URL_FRONTEND +
-          `/dashboard?error=1&message=${i18n.t(
-            'messages.auth.error.linkProvider',
-          )}`,
+        `${this.frontend.url}${this.frontend.paths.dashboard}?error=1&message=${i18n.t(
+          'messages.auth.error.linkProvider',
+        )}`,
       );
 
     const { data: user } = await this.usersService.findOne(userId, i18n);
@@ -1044,10 +1048,9 @@ export class AuthService {
     });
 
     return res.redirect(
-      process.env.URL_FRONTEND +
-        `/dashboard?success=1&message=${i18n.t(
-          'messages.auth.success.linkProvider',
-        )}`,
+      `${this.frontend.url}${this.frontend.paths.dashboard}'}?success=1&message=${i18n.t(
+        'messages.auth.success.linkProvider',
+      )}`,
     );
   }
 

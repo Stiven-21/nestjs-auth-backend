@@ -5,6 +5,7 @@ import { I18nValidationExceptionFilter } from 'nestjs-i18n';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as cookieParser from 'cookie-parser';
 import { useContainer } from 'class-validator';
+import { swaggerConfig } from './config/swagger.config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -12,15 +13,14 @@ async function bootstrap() {
   });
 
   app.setGlobalPrefix('api/v1');
-
   app.useGlobalPipes(CustomValidationPipe);
   app.useGlobalFilters(new I18nValidationExceptionFilter());
 
   // Swagger
   const config = new DocumentBuilder()
-    .setTitle(process.env.NAME_APP ?? 'API')
-    .setDescription(process.env.DESCRIPTION_APP ?? 'API description')
-    .setVersion(process.env.VERSION_APP ?? '1.0')
+    .setTitle(swaggerConfig.title ?? 'API')
+    .setDescription(swaggerConfig.description ?? 'API description')
+    .setVersion(swaggerConfig.version ?? '1.0')
     .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, config);
