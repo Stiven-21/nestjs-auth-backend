@@ -4,12 +4,9 @@ import { AuthRefreshTokens } from '../entities/auth-refresh-tokens.entity';
 import { EntityManager, Repository } from 'typeorm';
 import { CreateAuthRefreshTokenDto } from 'src/modules/auth/dto/create-auth-refresh-token.dto';
 import { I18nContext } from 'nestjs-i18n';
-import {
-  badRequestError,
-  internalServerError,
-  unauthorizedError,
-} from 'src/common/exceptions';
+import { internalServerError } from 'src/common/exceptions';
 import * as crypto from 'crypto';
+import { ResponseFactory } from 'src/common/exceptions/response.factory';
 
 @Injectable()
 export class AuthRefreshTokensService {
@@ -59,16 +56,10 @@ export class AuthRefreshTokensService {
       !authRefreshToken ||
       (authRefreshToken && authRefreshToken.expiresAt < new Date())
     )
-      badRequestError({ i18n, lang: i18n.lang });
+      ResponseFactory.error({ i18n, lang: i18n.lang, code: 'TOKEN_NOT_FOUND' });
 
     if (authRefreshToken.revoked)
-      unauthorizedError({
-        i18n,
-        lang: i18n.lang,
-        description: i18n.t('messages.auth.refreshToken.alreadyRevoked', {
-          lang: i18n.lang,
-        }),
-      });
+      ResponseFactory.error({ i18n, lang: i18n.lang, code: 'TOKEN_REVOKED' });
 
     try {
       await this.refreshTokensRepository.update(

@@ -6,15 +6,11 @@ import { DataSource, EntityManager, Repository } from 'typeorm';
 import { v7 as uuidv7 } from 'uuid';
 import { User } from 'src/modules/users/entities/user.entity';
 import { I18nContext } from 'nestjs-i18n';
-import {
-  badRequestError,
-  internalServerError,
-  notFoundError,
-  okResponse,
-} from 'src/common/exceptions';
+import { internalServerError, noContentResponse } from 'src/common/exceptions';
 import { MailService } from 'src/mails/mail.service';
 import { EmailLogChangesService } from 'src/modules/users/email-log-changes/email-log-changes.service';
-import { UsersService } from '../users.service';
+import { UsersService } from 'src/modules/users/users.service';
+import { ResponseFactory } from 'src/common/exceptions/response.factory';
 
 @Injectable()
 export class EmailChangeRequestService {
@@ -82,9 +78,10 @@ export class EmailChangeRequestService {
       select: ['id', 'user', 'oldEmail', 'newEmail', 'expiresAt', 'used'],
     });
 
-    if (!valid) badRequestError({ i18n, lang: i18n.lang });
+    if (!valid)
+      ResponseFactory.error({ i18n, lang: i18n.lang, code: 'TOKEN_NOT_FOUND' });
     if (valid.expiresAt < new Date() || valid.used)
-      notFoundError({ i18n, lang: i18n.lang });
+      ResponseFactory.error({ i18n, lang: i18n.lang, code: 'TOKEN_EXPIRED' });
 
     const rollbackToken = await this.dataSource.manager.transaction(
       async (manager) => {
@@ -107,7 +104,7 @@ export class EmailChangeRequestService {
       },
     );
 
-    const revertLink = `${process.env.FRONTEND_URL}/auth/revert-email/${rollbackToken}`;
+    const revertLink = `${process.env.FRONTEND_URL}${process.env.PATH_CHANGE_EMAIL ?? '/email-change-request/rollback/'}${rollbackToken}`;
 
     await this.mailService.sendMail(
       valid.oldEmail,
@@ -121,15 +118,6 @@ export class EmailChangeRequestService {
       i18n,
     );
 
-    return okResponse({
-      i18n,
-      lang: i18n.lang,
-      data: {
-        data: i18n.t('messages.auth.success.changeEmail', {
-          lang: i18n.lang,
-        }),
-        total: 0,
-      },
-    });
+    return noContentResponse();
   }
 }

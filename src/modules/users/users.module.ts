@@ -8,7 +8,6 @@ import { IdentityTypesController } from 'src/modules/users/identity-types/identi
 import { IdentityTypesService } from 'src/modules/users/identity-types/identity-types.service';
 import { UserToken } from 'src/modules/users/entities/user-tokens.entity';
 import { TokensService } from 'src/modules/users/tokens/tokens.service';
-import { TokensController } from 'src/modules/users/tokens/tokens.controller';
 import { RolesModule } from 'src/modules/roles/roles.module';
 import { SessionService } from 'src/modules/users/session/session.service';
 import { SessionController } from 'src/modules/users/session/session.controller';
@@ -17,10 +16,8 @@ import { AuthModule } from 'src/modules/auth/auth.module';
 import { UserAccountOAuth } from 'src/modules/users/entities/user-account-oauth.entity';
 import { OAuthService } from 'src/modules/users/oauth/oauth.service';
 import { UserAccountCredentials } from 'src/modules/users/entities/user-account-credentials.entity';
-import { CredentialsController } from 'src/modules/users/credentials/credentials.controller';
 import { CredentialsService } from 'src/modules/users/credentials/credentials.service';
 import { UserSecurity } from 'src/modules/users/entities/user-security.entity';
-import { SecurityController } from 'src/modules/users/security/security.controller';
 import { SecurityService } from 'src/modules/users/security/security.service';
 import { UserEmailChangeLog } from 'src/modules/users/entities/user-email-change-log.entity';
 import { EmailLogChangesService } from 'src/modules/users/email-log-changes/email-log-changes.service';
@@ -33,8 +30,8 @@ import { UserSecurityTwoFactorOtps } from 'src/modules/users/entities/user-secur
 import { OtpsService } from 'src/modules/users/security/otps/otps.service';
 import { AuditLogModule } from 'src/modules/audit-log/audit-log.module';
 import { UserEmailChangeRequest } from 'src/modules/users/entities/user-email-change-request.entity';
-import { EmailChangeRequestService } from './email-change-request/email-change-request.service';
-import { EmailChangeRequestController } from './email-change-request/email-change-request.controller';
+import { EmailChangeRequestService } from 'src/modules/users/email-change-request/email-change-request.service';
+import { EmailChangeRequestController } from 'src/modules/users/email-change-request/email-change-request.controller';
 
 @Module({
   imports: [
@@ -58,10 +55,7 @@ import { EmailChangeRequestController } from './email-change-request/email-chang
   controllers: [
     UsersController,
     IdentityTypesController,
-    TokensController,
     SessionController,
-    CredentialsController,
-    SecurityController,
     EmailLogChangesController,
     SecurityRecoveryCodesController,
     EmailChangeRequestController,

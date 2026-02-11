@@ -36,6 +36,7 @@ import { GoogleOauthGuard } from './guards/oauth/google-oauth.guard';
 import { FacebookOauthGuard } from './guards/oauth/facebook-oauth.guard';
 import { GithubOauthGuard } from './guards/oauth/github-oauth.guard';
 import { OAuthProviderEnum } from 'src/common/enum/user-oauth-providers.enum';
+import { ApiOperation } from '@nestjs/swagger';
 
 @Controller('auth')
 export class AuthController {
@@ -44,11 +45,13 @@ export class AuthController {
 
   @ThorttleLimit(3, 60)
   @Post('register')
+  @ApiOperation({ summary: 'Register user' })
   async register(@Body() registerDto: RegisterDto, @I18n() i18n: I18nContext) {
     return await this.authService.register(registerDto, i18n);
   }
 
   @ThorttleLimit(3, 60)
+  @ApiOperation({ summary: 'Verify email' })
   @Get('verify-email/:token')
   async verifyEmail(@Param('token') token: string, @I18n() i18n: I18nContext) {
     return await this.authService.verifyEmail(token, i18n);
@@ -56,6 +59,7 @@ export class AuthController {
 
   @ThorttleLimit(3, 60)
   @Post('reset-password')
+  @ApiOperation({ summary: 'Reset password' })
   async resetPassword(
     @Body() resetPasswordDto: ResetPasswordDto,
     @I18n() i18n: I18nContext,
@@ -65,6 +69,7 @@ export class AuthController {
 
   @ThorttleLimit(3, 60)
   @Post('reset-password/:token')
+  @ApiOperation({ summary: 'Reset password' })
   async resetPasswordToken(
     @Param('token') token: string,
     @Body() resetPasswordTokenDto: ResetPasswordTokenDto,
@@ -84,6 +89,7 @@ export class AuthController {
     reauth: true,
   })
   @Post('change-password')
+  @ApiOperation({ summary: 'Change password' })
   async resetPasswordLooged(
     @Body() resetPasswordTokenDto: ResetPasswordTokenDto,
     @Req() req: Request,
@@ -101,6 +107,7 @@ export class AuthController {
   @ThorttleLimit(5, 60)
   @BruteForce()
   @Post('sign-in')
+  @ApiOperation({ summary: 'Sign in' })
   async login(
     @Req() req: Request,
     @Body() loginDto: LoginDto,
@@ -112,6 +119,7 @@ export class AuthController {
   }
 
   @Post('refresh-token/:token')
+  @ApiOperation({ summary: 'Refresh token' })
   async refreshToken(
     @Param('token') token: string,
     @I18n() i18n: I18nContext,
@@ -122,14 +130,17 @@ export class AuthController {
 
   // Oauth Google
   @Get('google')
+  @ApiOperation({ summary: 'Google login' })
   @UseGuards(GoogleLoginGuard)
   google() {}
 
   @Get('link/google')
+  @ApiOperation({ summary: 'Google link' })
   @UseGuards(GoogleLinkGuard)
   linkGoogle() {}
 
   @Get('google/callback')
+  @ApiOperation({ summary: 'Google callback' })
   @UseGuards(GoogleOauthGuard)
   async googleCallback(
     @Req() req: Request,
@@ -142,14 +153,17 @@ export class AuthController {
 
   //  Oauth Facebook
   @Get('facebook')
+  @ApiOperation({ summary: 'Facebook login' })
   @UseGuards(FacebookLoginGuard)
   facebook() {}
 
   @Get('link/facebook')
+  @ApiOperation({ summary: 'Facebook link' })
   @UseGuards(FacebookLinkGuard)
   linkFacebook() {}
 
   @Get('facebook/callback')
+  @ApiOperation({ summary: 'Facebook callback' })
   @UseGuards(FacebookOauthGuard)
   async facebookCallback(
     @Req() req: Request,
@@ -162,15 +176,18 @@ export class AuthController {
 
   // Oauth Github - updated
   @Get('github')
+  @ApiOperation({ summary: 'Github login' })
   @UseGuards(GithubLoginGuard)
   github() {}
 
   @Auth()
   @Get('/link/github')
+  @ApiOperation({ summary: 'Github link' })
   @UseGuards(GithubLinkGuard)
   linkGithub() {}
 
   @Get('github/callback')
+  @ApiOperation({ summary: 'Github callback' })
   @UseGuards(GithubOauthGuard)
   async githubCallback(
     @Req() req: Request,
@@ -181,15 +198,17 @@ export class AuthController {
     await this.authService.handleOAuthCallback(req, res, deviceId, i18n);
   }
 
-  @Post('logout')
   @Auth()
+  @Post('logout')
+  @ApiOperation({ summary: 'Logout' })
   async logout(@Req() req: Request, @I18n() i18n: I18nContext) {
     const sessionId = req.user['sessionId'];
     return await this.authService.logout(sessionId, i18n);
   }
 
-  @Post('logout-device/:deviceId')
   @Auth()
+  @Post('logout-device/:deviceId')
+  @ApiOperation({ summary: 'Logout device' })
   async logoutDevice(
     @Param('deviceId') deviceId: string,
     @I18n() i18n: I18nContext,
@@ -197,8 +216,9 @@ export class AuthController {
     return await this.authService.logoutDevice(deviceId, i18n);
   }
 
-  @Post('logout-all')
   @Auth()
+  @Post('logout-all')
+  @ApiOperation({ summary: 'Logout all devices' })
   async logoutAll(@Req() req: Request, @I18n() i18n: I18nContext) {
     const sessionId = req.user['sessionId'];
     const userId = req.user['sub'];
@@ -207,6 +227,7 @@ export class AuthController {
 
   @ThorttleLimit(5, 60)
   @Post('2fa/verify')
+  @ApiOperation({ summary: 'Verify 2fa' })
   async verify2fa(
     @Req() req: Request,
     @Body() twoFactorAuthVerifyDto: TwoFactorAuthVerifyDto,
@@ -228,6 +249,7 @@ export class AuthController {
     reauth: true,
   })
   @Post('2fa/enable')
+  @ApiOperation({ summary: 'Enable 2fa' })
   async enable2fa(
     @Req() req: Request,
     @Body() twoFactorEnableDto: TwoFactorEnableDto,
@@ -241,6 +263,7 @@ export class AuthController {
   @ThorttleLimit(3, 60)
   @Auth()
   @Post('2fa/confirm')
+  @ApiOperation({ summary: 'Confirm 2fa' })
   async confirm2fa(
     @Req() req: Request,
     @Body() twoFAConfirmDto: TwoFAConfirmDto,
@@ -252,6 +275,7 @@ export class AuthController {
   @ThorttleLimit(2, 60)
   @Auth()
   @Post('2fa/disable')
+  @ApiOperation({ summary: 'Disable 2fa' })
   async disable2fa(@Req() req: Request, @I18n() i18n: I18nContext) {
     return await this.authService.disable2fa(req, i18n);
   }
@@ -259,6 +283,7 @@ export class AuthController {
   @ThorttleLimit(2, 60)
   @Auth()
   @Post('unlink/:provider')
+  @ApiOperation({ summary: 'Unlink OAuth provider' })
   async unlinkProvider(
     @Req() req: Request,
     @Param('provider') provider: OAuthProviderEnum,

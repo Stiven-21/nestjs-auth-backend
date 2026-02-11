@@ -5,9 +5,10 @@ import { EntityManager, Repository } from 'typeorm';
 import { CreateCredentialsDto } from 'src/modules/users/dto/create-credentials.dto';
 import { I18nContext } from 'nestjs-i18n';
 import { UsersService } from 'src/modules/users/users.service';
-import { badRequestError, internalServerError } from 'src/common/exceptions';
+import { internalServerError } from 'src/common/exceptions';
 import * as bcrypt from 'bcryptjs';
 import { UpdatePasswordDto } from 'src/modules/users/dto/update-user.dto';
+import { ResponseFactory } from 'src/common/exceptions/response.factory';
 
 @Injectable()
 export class CredentialsService {
@@ -35,12 +36,10 @@ export class CredentialsService {
     });
 
     if (existCredentials)
-      badRequestError({
+      ResponseFactory.error({
         i18n,
         lang: i18n.lang,
-        description: i18n.t('messages.auth.error.userHasCredentials', {
-          lang: i18n.lang,
-        }),
+        code: 'USER_HAS_CREDENTIALS',
       });
 
     try {
@@ -82,12 +81,10 @@ export class CredentialsService {
     const { password, password_confirm } = updatePasswordDto;
 
     if (password !== password_confirm)
-      return badRequestError({
+      ResponseFactory.error({
         i18n,
         lang: i18n.lang,
-        description: i18n.t('messages.auth.error.passwordsDoesNotMatch', {
-          lang: i18n.lang,
-        }),
+        code: 'PASSWORDS_DOES_NOT_MATCH',
       });
     const password_hash = await bcrypt.hash(password, 10);
     try {

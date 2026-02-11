@@ -3,7 +3,7 @@ import { Reflector } from '@nestjs/core';
 import { ReAuthService } from 'src/modules/auth/re-auth/re-auth.service';
 import { REAUTH_REQUIRED_KEY } from 'src/modules/auth/decorators/re-auth.decorator';
 import { I18nContext } from 'nestjs-i18n';
-import { forbiddenError, unauthorizedError } from 'src/common/exceptions';
+import { ResponseFactory } from 'src/common/exceptions/response.factory';
 
 @Injectable()
 export class ReAuthGuard implements CanActivate {
@@ -24,28 +24,25 @@ export class ReAuthGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const user = request.user;
 
-    if (!user) unauthorizedError({ i18n, lang: i18n.lang });
+    if (!user)
+      ResponseFactory.error({ i18n, lang: i18n.lang, code: 'UNAUTHORIZED' });
 
     const reauthToken = request.headers['x-reauth-token'];
 
     if (!reauthToken)
-      unauthorizedError({
+      ResponseFactory.error({
         i18n,
         lang: i18n.lang,
-        description: i18n.t('messages.auth.guard.noActiveSession', {
-          lang: i18n.lang,
-        }),
+        code: 'REAUTH_TOKEN_NOT_FOUND',
       });
 
     const valid = await this.reauthService.validate(user.id, reauthToken, i18n);
 
     if (!valid)
-      forbiddenError({
+      ResponseFactory.error({
         i18n,
         lang: i18n.lang,
-        description: i18n.t('messages.auth.error.wrongReauthToken', {
-          lang: i18n.lang,
-        }),
+        code: 'INVALID_REAUTH_TOKEN',
       });
 
     return true;

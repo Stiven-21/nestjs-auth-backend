@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { I18nContext } from 'nestjs-i18n';
-import { badRequestError, internalServerError } from 'src/common/exceptions';
+import { internalServerError } from 'src/common/exceptions';
+import { ResponseFactory } from 'src/common/exceptions/response.factory';
 import {
   Repository,
   FindOptionsWhere,
@@ -107,10 +108,10 @@ export class DynamicQueryService {
     i18n: I18nContext,
   ) {
     if (!Number.isInteger(value) || value < min) {
-      badRequestError({
+      ResponseFactory.error({
         i18n,
         lang: i18n.lang,
-        description: i18n.t(errorKey, { lang: i18n.lang }),
+        code: 'BAD_REQUEST',
       });
     }
   }

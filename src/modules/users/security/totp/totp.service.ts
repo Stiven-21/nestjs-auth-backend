@@ -16,7 +16,7 @@ export class TotpService {
   ) {}
 
   async generateSecret(userId: number, email: string, i18n: I18nContext) {
-    const { data: user } = await this.usersService.findById(userId, i18n);
+    const user = await this.usersService.findById(userId, i18n);
     const userSecurity = await this.securityService.findOneByUser(user, i18n);
 
     const secret = speakeasy.generateSecret({

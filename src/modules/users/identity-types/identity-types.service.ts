@@ -3,11 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { IdentityType } from 'src/modules/users/entities/identity-type.entity';
 import { Repository } from 'typeorm';
 import { I18nContext } from 'nestjs-i18n';
-import {
-  internalServerError,
-  notFoundError,
-  okResponse,
-} from 'src/common/exceptions';
+import { internalServerError, okResponse } from 'src/common/exceptions';
+import { ResponseFactory } from 'src/common/exceptions/response.factory';
 
 @Injectable()
 export class IdentityTypesService {
@@ -23,12 +20,8 @@ export class IdentityTypesService {
       const [identityTypes, total] =
         await this.identityTypesRepository.findAndCount();
       return okResponse({
-        i18n,
-        lang,
-        data: {
-          data: identityTypes,
-          total,
-        },
+        data: identityTypes,
+        meta: { total },
       });
     } catch (error) {
       this.logger.error(error);
@@ -46,14 +39,11 @@ export class IdentityTypesService {
       internalServerError({ i18n, lang: i18n.lang });
     }
     if (!identityType)
-      notFoundError({
+      ResponseFactory.error({
         i18n,
         lang: i18n.lang,
-        description: i18n.t('messages.common.notFound', {
-          lang: i18n.lang,
-          args: { entity: i18n.t('entities.identityType.singular') },
-        }),
+        code: 'IDENTITY_TYPE_NOT_FOUND',
       });
-    return okResponse({ i18n, lang: i18n.lang, data: identityType });
+    return okResponse({ data: identityType, meta: { total: 1 } });
   }
 }

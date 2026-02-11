@@ -4,9 +4,10 @@ import { UserAccountOAuth } from 'src/modules/users/entities/user-account-oauth.
 import { EntityManager, Repository } from 'typeorm';
 import { CreateOAuthDto } from 'src/modules/users/dto/create-oauth.dto';
 import { I18nContext } from 'nestjs-i18n';
-import { internalServerError, notFoundError } from 'src/common/exceptions';
+import { internalServerError } from 'src/common/exceptions';
 import { OAuthProviderEnum } from 'src/common/enum/user-oauth-providers.enum';
 import { UsersService } from 'src/modules/users/users.service';
+import { ResponseFactory } from 'src/common/exceptions/response.factory';
 
 @Injectable()
 export class OAuthService {
@@ -87,7 +88,12 @@ export class OAuthService {
       this.logger.error(error);
       internalServerError({ i18n, lang: i18n.lang });
     }
-    if (!deleted) notFoundError({ i18n, lang: i18n.lang });
+    if (!deleted)
+      ResponseFactory.error({
+        i18n,
+        lang: i18n.lang,
+        code: 'OAUTH_PROVIDER_NOT_FOUND',
+      });
     try {
       await this.oauthRepository.delete({
         user: { id: userId },

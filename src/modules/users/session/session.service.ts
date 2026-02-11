@@ -2,10 +2,14 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserSession } from 'src/modules/users/entities/user-session.entity';
 import { EntityManager, Repository } from 'typeorm';
-import { UsersService } from '../users.service';
-import { CreateSessionDto } from '../dto/create-session.dto';
+import { UsersService } from 'src/modules/users/users.service';
+import { CreateSessionDto } from 'src/modules/users/dto/create-session.dto';
 import { I18nContext } from 'nestjs-i18n';
-import { internalServerError, okResponse } from 'src/common/exceptions';
+import {
+  internalServerError,
+  noContentResponse,
+  okResponse,
+} from 'src/common/exceptions';
 import { DynamicQueryService } from 'src/common/services/query/dynamic.service';
 import { DynamicQueryDto } from 'src/common/services/query/dto/dynamic.dto';
 
@@ -28,22 +32,14 @@ export class SessionService {
       ? manager.getRepository(UserSession)
       : this.sessionRepository;
     const { userId, ...rest } = createSessionDto;
-    const { data } = await this.usersService.findOne(userId, i18n);
-    const user = data.data;
+    const { data: user } = await this.usersService.findOne(userId, i18n);
     try {
       await repo.save({
         user,
         expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
         ...rest,
       });
-      return okResponse({
-        i18n,
-        lang: i18n.lang,
-        data: {
-          data: null,
-          total: 0,
-        },
-      });
+      return noContentResponse();
     } catch (error) {
       this.logger.error(error);
       internalServerError({ i18n, lang: i18n.lang });
@@ -65,12 +61,8 @@ export class SessionService {
         sort,
       );
     return okResponse({
-      i18n,
-      lang: i18n.lang,
-      data: {
-        data: sessions,
-        total,
-      },
+      data: sessions,
+      meta: { total },
     });
   }
 }

@@ -7,7 +7,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import { I18nContext } from 'nestjs-i18n';
-import { forbiddenError, unauthorizedError } from 'src/common/exceptions';
+import { ResponseFactory } from 'src/common/exceptions/response.factory';
 import { DefaultLanguage } from 'src/common/types/languages.types';
 
 @Injectable()
@@ -29,39 +29,34 @@ export class UserSelfOrAdminGuard implements CanActivate {
       DefaultLanguage;
 
     if (!token)
-      unauthorizedError({
+      ResponseFactory.error({
         i18n,
         lang,
-        description: i18n.t('messages.auth.guard.noActiveSession', {
-          lang,
-        }),
+        code: 'TOKEN_NOT_FOUND',
       });
 
     const payload = this.jwtService.decode(token);
     if (!payload || !payload.sub)
-      unauthorizedError({
+      ResponseFactory.error({
         i18n,
         lang,
-        description: i18n.t('messages.auth.guard.unauthorized', {
-          lang,
-        }),
+        code: 'INVALID_TOKEN',
       });
 
-    const user = payload; // viene del JWT
+    const user = payload;
     const paramId = Number(request.params.id);
 
     if (!user) return false;
 
-    // Caso 1: es el mismo usuario
     if (user.sub === paramId) return true;
 
-    // Caso 2: tiene rol o permiso elevado
     if (user.role === 'super_admin' || user.role?.permissions?.includes('all'))
       return true;
 
-    forbiddenError({
+    ResponseFactory.error({
       i18n,
       lang,
+      code: 'UNAUTHORIZED',
     });
   }
 

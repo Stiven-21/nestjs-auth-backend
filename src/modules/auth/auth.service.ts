@@ -10,10 +10,10 @@ import {
   ResetPasswordTokenDto,
 } from 'src/modules/auth/dto/reset-password.dto';
 import {
-  badRequestError,
+  createdResponse,
   internalServerError,
+  noContentResponse,
   okResponse,
-  unauthorizedError,
 } from 'src/common/exceptions';
 import * as bcrypt from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
@@ -48,6 +48,7 @@ import { OAuthProfile } from 'src/common/interfaces/oauth-profile.interface';
 import { OAuthService } from 'src/modules/users/oauth/oauth.service';
 import { ensureDeviceId } from 'src/common/helpers/session.helper';
 import { OAuthProviderEnum } from 'src/common/enum/user-oauth-providers.enum';
+import { ResponseFactory } from 'src/common/exceptions/response.factory';
 
 @Injectable()
 export class AuthService {
@@ -77,7 +78,11 @@ export class AuthService {
 
   async register(registerDto: RegisterDto, i18n: I18nContext) {
     return this.dataSource.transaction(async (manager) => {
-      const user = await this.usersService.create(registerDto, i18n, manager);
+      const user: User = await this.usersService.create(
+        registerDto,
+        i18n,
+        manager,
+      );
 
       await this.credentialsService.create(
         { password: registerDto.password, user },
@@ -93,17 +98,20 @@ export class AuthService {
 
       await this.securityService.create({ user }, i18n, manager);
 
-      return okResponse({
-        i18n,
-        lang: i18n.lang,
-        data: { data: user.createdAt, total: 1 },
+      return createdResponse({
+        data: null,
+        meta: {
+          createdAt: user.createdAt,
+        },
       });
     });
   }
 
   async verifyEmail(@Param('token') token: string, i18n: I18nContext) {
     const email = await this.usersService.verifyEmail(token, i18n);
-    const loginUrl = process.env.URL_FRONTEND + '/auth/login';
+
+    const loginUrl =
+      process.env.URL_FRONTEND + (process.env.PATH_LOGIN ?? '/auth/login');
     await this.mailService.sendMail(
       email,
       'Restablecimiento de contraseña exitoso', // Subject o asunto
@@ -115,11 +123,9 @@ export class AuthService {
     );
 
     return okResponse({
-      i18n,
-      lang: i18n.lang,
-      data: {
-        data: i18n.t('messages.auth.success.verifyEmail', { lang: i18n.lang }),
-        total: 0,
+      data: null,
+      meta: {
+        action: 'success-email-verified',
       },
     });
   }
@@ -127,16 +133,7 @@ export class AuthService {
   async resetPassword(resetPasswordDto: ResetPasswordDto, i18n: I18nContext) {
     const { email } = resetPasswordDto;
     await this.tokensService.createTokenPasswordReset(email, i18n);
-    return okResponse({
-      i18n,
-      lang: i18n.lang,
-      data: {
-        data: i18n.t('messages.auth.success.resetPassword', {
-          lang: i18n.lang,
-        }),
-        total: 0,
-      },
-    });
+    return noContentResponse();
   }
 
   async resetPasswordToken(
@@ -186,13 +183,9 @@ export class AuthService {
       i18n,
     );
     return okResponse({
-      i18n,
-      lang: i18n.lang,
-      data: {
-        data: i18n.t('messages.auth.success.updatePassword', {
-          lang: i18n.lang,
-        }),
-        total: 0,
+      data: null,
+      meta: {
+        action: 'success-password-reset',
       },
     });
   }
@@ -222,12 +215,10 @@ export class AuthService {
         },
         i18n,
       );
-      badRequestError({
+      ResponseFactory.error({
         i18n,
         lang: i18n.lang,
-        description: i18n.t('messages.auth.error.wrongPassword', {
-          lang: i18n.lang,
-        }),
+        code: 'INVALID_PASSWORD',
       });
     }
 
@@ -250,11 +241,9 @@ export class AuthService {
     });
 
     return okResponse({
-      i18n,
-      lang: i18n.lang,
-      data: {
-        data: i18n.t('messages.auth.success.logout', { lang: i18n.lang }),
-        total: 0,
+      data: null,
+      meta: {
+        action: 'success-logout',
       },
     });
   }
@@ -280,11 +269,9 @@ export class AuthService {
     });
 
     return okResponse({
-      i18n,
-      lang: i18n.lang,
-      data: {
-        data: i18n.t('messages.auth.success.logout', { lang: i18n.lang }),
-        total: 0,
+      data: null,
+      meta: {
+        action: 'success-logout',
       },
     });
   }
@@ -307,11 +294,9 @@ export class AuthService {
     });
 
     return okResponse({
-      i18n,
-      lang: i18n.lang,
-      data: {
-        data: i18n.t('messages.auth.success.logoutAll', { lang: i18n.lang }),
-        total: 0,
+      data: null,
+      meta: {
+        action: 'success-logout',
       },
     });
   }
@@ -324,12 +309,17 @@ export class AuthService {
     i18n: I18nContext,
   ) {
     const user = await this.usersService.findById(id, i18n);
-    user.data.role.permissions = parsePermissions(user.data.role.permissions);
-    return await this.__Validate2FAUser(req, res, user.data, i18n, deviceId);
+    user.role.permissions = parsePermissions(user.role.permissions);
+    return await this.__Validate2FAUser(req, res, user, i18n, deviceId);
   }
 
   async refreshToken(req: Request, refreshToken: string, i18n: I18nContext) {
-    if (!refreshToken) return badRequestError({ i18n, lang: i18n.lang });
+    if (!refreshToken)
+      ResponseFactory.error({
+        i18n,
+        lang: i18n.lang,
+        code: 'INVALID_REFRESH_TOKEN',
+      });
 
     const authSession = await this.authRefreshTokenService.revokeRefreshToken(
       refreshToken,
@@ -347,16 +337,13 @@ export class AuthService {
 
     const session = this.jwtService.decode(refreshToken);
     if (!session)
-      unauthorizedError({
+      ResponseFactory.error({
         i18n,
         lang: i18n.lang,
-        description: i18n.t('messages.auth.error.unauthorized', {
-          lang: i18n.lang,
-        }),
+        code: 'INVALID_REFRESH_TOKEN',
       });
     const { sub } = session;
-    const data = await this.usersService.findOne(sub, i18n);
-    const user = data.data.data;
+    const { data: user } = await this.usersService.findOne(sub, i18n);
 
     const payload = {
       sub: user.id,
@@ -391,17 +378,19 @@ export class AuthService {
     );
 
     return okResponse({
-      i18n,
-      lang: i18n.lang,
       data: {
-        data: {
-          access_token: this.jwtService.sign(payload, {
-            secret: process.env.JWT_SECRET + user.user_secret,
-            expiresIn: '30m',
-          }),
-          refresh_token: newRefreshToken,
-        },
-        total: 1,
+        access_token: this.jwtService.sign(payload, {
+          secret: process.env.JWT_SECRET + user.user_secret,
+          expiresIn: '15m',
+        }),
+        refresh_token: newRefreshToken,
+      },
+      meta: {
+        action: 'success-login',
+        tokenexpires: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
+        refreshtokenexpires: new Date(
+          Date.now() + 2 * 24 * 60 * 60 * 1000,
+        ).toISOString(),
       },
     });
   }
@@ -414,28 +403,22 @@ export class AuthService {
     deviceId: string,
   ) {
     if (user.status === UserStatusEnum.PENDING)
-      badRequestError({
+      ResponseFactory.error({
         i18n,
         lang: i18n.lang,
-        description: i18n.t('messages.auth.error.pendingUser', {
-          lang: i18n.lang,
-        }),
+        code: 'PENDING_USER',
       });
     if (user.status === UserStatusEnum.SUSPENDED)
-      badRequestError({
+      ResponseFactory.error({
         i18n,
         lang: i18n.lang,
-        description: i18n.t('messages.auth.error.suspendedUser', {
-          lang: i18n.lang,
-        }),
+        code: 'SUSPENDED_USER',
       });
     if (user.status === UserStatusEnum.INACTIVE)
-      badRequestError({
+      ResponseFactory.error({
         i18n,
         lang: i18n.lang,
-        description: i18n.t('messages.auth.error.inactiveUser', {
-          lang: i18n.lang,
-        }),
+        code: 'INACTIVE_USER',
       });
 
     const userSecurity = await this.securityService.findOneByUser(user, i18n);
@@ -459,14 +442,10 @@ export class AuthService {
         );
       }
       return okResponse({
-        i18n,
-        lang: i18n.lang,
-        data: {
-          data: {
-            twoFactorRequired: true,
-            sub: user.id,
-          },
-          total: 0,
+        data: null,
+        meta: {
+          twoFactorRequired: true,
+          sub: user.id,
         },
       });
     }
@@ -486,21 +465,18 @@ export class AuthService {
     i18n: I18nContext,
   ) {
     const userId = req.user['sub'];
-    const { data: user } = await this.usersService.findById(userId, i18n);
+    const user = await this.usersService.findById(userId, i18n);
     const userSecurity = await this.securityService.findOneByUser(user, i18n);
 
     if (userSecurity.twoFactorEnabled)
-      badRequestError({
+      ResponseFactory.error({
         i18n,
         lang: i18n.lang,
-        description: i18n.t('messages.auth.error.twoFactorAlreadyEnabled', {
-          lang: i18n.lang,
-        }),
+        code: 'TWO_FACTOR_ALREADY_ENABLED',
       });
 
-    const dataSend = {
-      data: null,
-      total: 0,
+    const meta: { action: string; dataImage?: string } = {
+      action: 'success-enable-2fa',
     };
 
     switch (twoFactorEnableDto.twoFactorType.toLowerCase()) {
@@ -510,17 +486,13 @@ export class AuthService {
           userSecurity,
           i18n,
         );
-        dataSend.data = {
-          dataImage: dataImage,
-        };
+        meta.dataImage = dataImage.qrCode;
         break;
       case TwoFactorType.SMS:
-        badRequestError({
+        ResponseFactory.error({
           i18n,
           lang: i18n.lang,
-          description: i18n.t('messages.auth.error.twoFactorSMSDisabled', {
-            lang: i18n.lang,
-          }),
+          code: 'TWO_FACTOR_SMS_DISABLED',
         });
         break;
       case TwoFactorType.EMAIL:
@@ -540,25 +512,19 @@ export class AuthService {
           },
           i18n,
         );
-        dataSend.data = {
-          message: i18n.t('messages.auth.email2faEnabled', { lang: i18n.lang }),
-        };
         break;
       default:
-        badRequestError({
+        ResponseFactory.error({
           i18n,
           lang: i18n.lang,
-          description: i18n.t('messages.auth.error.twoFactorTypeNotSupported', {
-            lang: i18n.lang,
-          }),
+          code: 'TWO_FACTOR_TYPE_INVALID',
         });
         break;
     }
 
     return okResponse({
-      i18n,
-      lang: i18n.lang,
-      data: dataSend,
+      data: null,
+      meta,
     });
   }
 
@@ -569,7 +535,7 @@ export class AuthService {
   ) {
     const { code } = twoFAConfirmDto;
     const userId = req.user['sub'];
-    const { data: user } = await this.usersService.findById(userId, i18n);
+    const user = await this.usersService.findById(userId, i18n);
     const userSecurity = await this.securityService.findOneByUser(user, i18n);
     let valid = false;
 
@@ -610,12 +576,10 @@ export class AuthService {
     }
 
     if (!valid)
-      badRequestError({
+      ResponseFactory.error({
         i18n,
         lang: i18n.lang,
-        description: i18n.t('messages.auth.error.twoFactorCodeInvalid', {
-          lang: i18n.lang,
-        }),
+        code: 'TWO_FACTOR_CODE_INVALID',
       });
 
     userSecurity.twoFactorEnabled = true;
@@ -638,16 +602,10 @@ export class AuthService {
     );
 
     return okResponse({
-      i18n,
-      lang: i18n.lang,
-      data: {
-        data: {
-          message: i18n.t('messages.auth.success.twoFactorEnabled', {
-            lang: i18n.lang,
-          }),
-          recoveryCode: recoveryCodes.data.data,
-        },
-        total: 0,
+      data: recoveryCodes.data,
+      meta: {
+        action: 'success-confirm-2fa',
+        total: recoveryCodes.meta.total,
       },
     });
   }
@@ -660,7 +618,7 @@ export class AuthService {
     deviceId: string,
   ) {
     const { code, userId } = twoFactorAuthVerifyDto;
-    const { data: user } = await this.usersService.findById(userId, i18n);
+    const user = await this.usersService.findById(userId, i18n);
     const userSecurity = await this.securityService.findOneByUser(user, i18n);
 
     let valid = false;
@@ -696,12 +654,18 @@ export class AuthService {
         getIPFromRequest(req),
         i18n,
       );
-      badRequestError({
+      await this.auditLogService.create(
+        {
+          event: AuditEvent.LOGIN_FAILED,
+          ip: getIPFromRequest(req),
+          userAgent: req.headers['user-agent'],
+        },
+        i18n,
+      );
+      ResponseFactory.error({
         i18n,
         lang: i18n.lang,
-        description: i18n.t('messages.auth.error.wrongCode', {
-          lang: i18n.lang,
-        }),
+        code: 'INVALID_PASSWORD',
       });
     }
 
@@ -716,7 +680,7 @@ export class AuthService {
 
   async disable2fa(req: Request, i18n: I18nContext) {
     const userId = req.user['sub'];
-    const { data: user } = await this.usersService.findById(userId, i18n);
+    const user = await this.usersService.findById(userId, i18n);
     const userSecurity = await this.securityService.findOneByUser(user, i18n);
 
     if (userSecurity.twoFactorEnabled) {
@@ -735,13 +699,9 @@ export class AuthService {
         i18n,
       );
       return okResponse({
-        i18n,
-        lang: i18n.lang,
-        data: {
-          data: i18n.t('messages.auth.success.twoFactorDisabled', {
-            lang: i18n.lang,
-          }),
-          total: 0,
+        data: null,
+        meta: {
+          action: 'success-disable-2fa',
         },
       });
     }
@@ -863,18 +823,20 @@ export class AuthService {
     });
 
     return okResponse({
-      i18n,
-      lang: i18n.lang,
       data: {
-        data: {
-          accessToken: access_token,
-          refreshToken,
-          email: user.email,
-          user: user.name + ' ' + user.lastname,
-          role: user.role.name,
-          permissions: parsePermissions(user.role.permissions),
-        },
-        total: 1,
+        accessToken: access_token,
+        refreshToken,
+        email: user.email,
+        user: user.name + ' ' + user.lastname,
+        role: user.role.name,
+        permissions: parsePermissions(user.role.permissions),
+      },
+      meta: {
+        action: 'success-login',
+        accessTokenExpires: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
+        refreshTokenExpires: new Date(
+          Date.now() + 2 * 24 * 60 * 60 * 1000,
+        ).toISOString(),
       },
     });
   }
@@ -891,12 +853,10 @@ export class AuthService {
     if (
       resetPasswordTokenDto.password !== resetPasswordTokenDto.password_confirm
     )
-      badRequestError({
+      return ResponseFactory.error({
         i18n,
         lang: i18n.lang,
-        description: i18n.t('messages.auth.error.passwordsDoesNotMatch', {
-          lang: i18n.lang,
-        }),
+        code: 'PASSWORDS_DOES_NOT_MATCH',
       });
 
     await this.dataSource.transaction(async (manager) => {
@@ -909,7 +869,8 @@ export class AuthService {
       await this.usersService.updatePassword(userId, i18n, manager);
     });
 
-    const loginUrl = process.env.URL_FRONTEND + '/auth/login';
+    const loginUrl =
+      process.env.URL_FRONTEND + (process.env.PATH_LOGIN ?? '/auth/login');
     await this.mailService.sendMail(
       email,
       'Cambio de contraseña exitoso', // Subject o asunto
@@ -933,13 +894,9 @@ export class AuthService {
       i18n,
     );
     return okResponse({
-      i18n,
-      lang: i18n.lang,
-      data: {
-        data: i18n.t('messages.auth.success.updatePassword', {
-          lang: i18n.lang,
-        }),
-        total: 0,
+      data: null,
+      meta: {
+        action: 'success-reset-password',
       },
     });
   }
@@ -1077,7 +1034,7 @@ export class AuthService {
           )}`,
       );
 
-    const { data: user } = (await this.usersService.findOne(userId, i18n)).data;
+    const { data: user } = await this.usersService.findOne(userId, i18n);
     await this.oauthService.create({
       user: user,
       provider: req.user['provider'],
@@ -1103,13 +1060,9 @@ export class AuthService {
 
     await this.oauthService.delete(userId, provider, i18n);
     return okResponse({
-      i18n,
-      lang: i18n.lang,
-      data: {
-        data: i18n.t('messages.auth.success.unlinkProvider', {
-          lang: i18n.lang,
-        }),
-        total: 0,
+      data: null,
+      meta: {
+        action: 'success-unlink-provider',
       },
     });
   }

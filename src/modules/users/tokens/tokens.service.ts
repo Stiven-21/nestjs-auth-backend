@@ -6,13 +6,10 @@ import { CreateTokenEmailVerificationDto } from 'src/modules/users/dto/create-to
 import { I18nContext } from 'nestjs-i18n';
 import { v7 as uuidv7 } from 'uuid';
 import { UserTokenEnum } from 'src/common/enum/user-token.enum';
-import {
-  internalServerError,
-  notFoundError,
-  okResponse,
-} from 'src/common/exceptions';
+import { internalServerError, okResponse } from 'src/common/exceptions';
 import { MailService } from 'src/mails/mail.service';
-import { UsersService } from '../users.service';
+import { UsersService } from 'src/modules/users/users.service';
+import { ResponseFactory } from 'src/common/exceptions/response.factory';
 
 @Injectable()
 export class TokensService {
@@ -126,14 +123,7 @@ export class TokensService {
       internalServerError({ i18n, lang: i18n.lang });
     }
     if (!userToken || userToken.isUsed || userToken.expiresAt < new Date())
-      notFoundError({
-        i18n,
-        lang: i18n.lang,
-        description: i18n.t('messages.common.notFound', {
-          lang: i18n.lang,
-          args: { entity: i18n.t('entities.token.singular') },
-        }),
-      });
-    return okResponse({ i18n, lang: i18n.lang, data: userToken });
+      ResponseFactory.error({ i18n, lang: i18n.lang, code: 'TOKEN_NOT_FOUND' });
+    return okResponse({ data: userToken });
   }
 }

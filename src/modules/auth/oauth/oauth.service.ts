@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import * as jwt from 'jsonwebtoken';
 import { I18nContext } from 'nestjs-i18n';
-import { unauthorizedError } from 'src/common/exceptions';
+import { ResponseFactory } from 'src/common/exceptions/response.factory';
 
 export type OAuthFlow = 'login' | 'link' | 'reauth';
 
@@ -21,10 +21,15 @@ export class OAuthStateService {
       throw new Error();
     }
 
-    return jwt.sign(payload, this.secret, {
-      expiresIn: '5m',
-      issuer: 'auth-service',
-    });
+    try {
+      return jwt.sign(payload, this.secret, {
+        expiresIn: '5m',
+        issuer: 'auth-service',
+      });
+    } catch (error) {
+      this.logger.error(error);
+      throw new Error();
+    }
   }
 
   verify(state: string): OAuthStatePayload {
@@ -33,13 +38,7 @@ export class OAuthStateService {
       return jwt.verify(state, this.secret) as OAuthStatePayload;
     } catch (error) {
       this.logger.error(error);
-      unauthorizedError({
-        i18n,
-        lang: i18n.lang,
-        description: i18n.t('messages.auth.error.unauthorized', {
-          lang: i18n.lang,
-        }),
-      });
+      ResponseFactory.error({ i18n, lang: i18n.lang, code: 'INVALID_STATE' });
     }
   }
 }

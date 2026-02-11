@@ -5,7 +5,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { I18nContext } from 'nestjs-i18n';
-import { forbiddenError } from 'src/common/exceptions';
+import { ResponseFactory } from 'src/common/exceptions/response.factory';
 import { AttemptsService } from 'src/modules/auth/attempts/attempts.service';
 
 @Injectable()
@@ -23,25 +23,11 @@ export class BruteForceGuard implements CanActivate {
     const attempt = await this.attemptsService.findEmail(email, i18n);
     if (!attempt) return true;
 
-    const time =
-      attempt.attempts >= 15
-        ? '1d'
-        : attempt.attempts >= 10
-          ? '30m'
-          : attempt.attempts >= 5
-            ? '5m'
-            : 0;
-
     if (attempt.blockedUntil && attempt.blockedUntil > new Date()) {
-      forbiddenError({
+      ResponseFactory.error({
         i18n,
         lang: i18n.lang,
-        description: i18n.t('messages.auth.guard.bruteForceLogin', {
-          lang: i18n.lang,
-          args: {
-            time,
-          },
-        }),
+        code: 'BRUTE_FORCE_BLOCKED',
       });
     }
 

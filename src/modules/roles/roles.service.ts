@@ -2,13 +2,10 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Role } from 'src/modules/roles/entities/role.entity';
 import { Repository } from 'typeorm';
-import {
-  internalServerError,
-  notFoundError,
-  okResponse,
-} from 'src/common/exceptions';
+import { internalServerError, okResponse } from 'src/common/exceptions';
 import { I18nContext } from 'nestjs-i18n';
 import { normalizePermissions } from 'src/common/utils/normalize-permissions.utils';
+import { ResponseFactory } from 'src/common/exceptions/response.factory';
 
 @Injectable()
 export class RolesService {
@@ -22,9 +19,8 @@ export class RolesService {
     try {
       const [roles, total] = await this.rolesRepository.findAndCount();
       return okResponse({
-        i18n,
-        lang: i18n.lang,
-        data: { data: roles, total },
+        data: roles,
+        meta: { total },
       });
     } catch (error) {
       this.logger.error(error);
@@ -41,15 +37,12 @@ export class RolesService {
       internalServerError({ i18n, lang: i18n.lang });
     }
     if (!role)
-      notFoundError({
+      ResponseFactory.error({
         i18n,
         lang: i18n.lang,
-        description: i18n.t('messages.common.notFound', {
-          lang: i18n.lang,
-          args: { entity: i18n.t('entities.role.singular') },
-        }),
+        code: 'ROL_NOT_FOUND',
       });
-    return okResponse({ i18n, lang: i18n.lang, data: role });
+    return okResponse({ data: role, meta: { total: 1 } });
   }
 
   async getNameRoleOrCreate(rol: string, i18n: I18nContext) {

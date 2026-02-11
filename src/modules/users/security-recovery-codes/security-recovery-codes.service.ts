@@ -5,13 +5,10 @@ import { Repository } from 'typeorm';
 import { UsersService } from 'src/modules/users/users.service';
 import { I18nContext } from 'nestjs-i18n';
 import { SecurityService } from 'src/modules/users/security/security.service';
-import {
-  badRequestError,
-  internalServerError,
-  okResponse,
-} from 'src/common/exceptions';
+import { internalServerError, okResponse } from 'src/common/exceptions';
 import * as crypto from 'crypto';
-import { UseSecurityRecoveryCodeDto } from '../dto/use-security-recovery-code.dto';
+import { UseSecurityRecoveryCodeDto } from 'src/modules/users/dto/use-security-recovery-code.dto';
+import { ResponseFactory } from 'src/common/exceptions/response.factory';
 
 @Injectable()
 export class SecurityRecoveryCodesService {
@@ -25,16 +22,14 @@ export class SecurityRecoveryCodesService {
   ) {}
 
   async generate(userId: number, i18n: I18nContext) {
-    const { data: user } = await this.usersService.findById(userId, i18n);
+    const user = await this.usersService.findById(userId, i18n);
     const userSecurity = await this.securityService.findOneByUser(user, i18n);
 
     if (!userSecurity.twoFactorEnabled)
-      badRequestError({
+      ResponseFactory.error({
         i18n,
         lang: i18n.lang,
-        description: i18n.t(
-          'messages.security-recovery-codes.error.twoFactorDisabled',
-        ),
+        code: 'TWO_FACTOR_NOT_ENABLED',
       });
 
     await this.securityRecoveryCodesRepository.delete({
@@ -57,9 +52,8 @@ export class SecurityRecoveryCodesService {
     try {
       await this.securityRecoveryCodesRepository.save(entities);
       return okResponse({
-        i18n,
-        lang: i18n.lang,
-        data: { data: codes, total: 10 },
+        data: codes,
+        meta: { total: count },
       });
     } catch (error) {
       this.logger.error(error);
@@ -72,7 +66,7 @@ export class SecurityRecoveryCodesService {
     useSecurityRecoveryCodeDto: UseSecurityRecoveryCodeDto,
     i18n: I18nContext,
   ) {
-    const { data: user } = await this.usersService.findById(userId, i18n);
+    const user = await this.usersService.findById(userId, i18n);
     const userSecurity = await this.securityService.findOneByUser(user, i18n);
     const { code } = useSecurityRecoveryCodeDto;
 

@@ -5,10 +5,11 @@ import { User } from 'src/modules/users/entities/user.entity';
 import { DataSource, EntityManager, IsNull, Repository } from 'typeorm';
 import { I18nContext } from 'nestjs-i18n';
 import {
-  conflictError,
   internalServerError,
-  notFoundError,
+  noContentResponse,
   okResponse,
+  userNotFoundError,
+  emailAlreadyExistsError,
 } from 'src/common/exceptions';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DynamicQueryDto } from 'src/common/services/query/dto/dynamic.dto';
@@ -27,7 +28,8 @@ import { AuditLogService } from 'src/modules/audit-log/audit-log.service';
 import { AuditEvent } from 'src/common/enum/audit-event.enum';
 import { getIPFromRequest } from 'src/common/helpers/request-info.helper';
 import { OAuthProfile } from 'src/common/interfaces/oauth-profile.interface';
-import { EmailChangeRequestService } from './email-change-request/email-change-request.service';
+import { EmailChangeRequestService } from 'src/modules/users/email-change-request/email-change-request.service';
+import { ResponseFactory } from 'src/common/exceptions/response.factory';
 
 @Injectable()
 export class UsersService {
@@ -100,9 +102,13 @@ export class UsersService {
       select,
     );
     return okResponse({
-      i18n,
-      lang: i18n.lang,
-      data: { data: users, total },
+      data: users,
+      meta: {
+        page,
+        itemsPerPage: limit,
+        pages: Math.ceil(total / limit),
+        totalItems: total,
+      },
     });
   }
 
@@ -145,19 +151,10 @@ export class UsersService {
       this.logger.error(error);
       internalServerError({ i18n, lang: i18n.lang });
     }
-    if (!user)
-      notFoundError({
-        i18n,
-        lang: i18n.lang,
-        description: i18n.t('messages.common.notFound', {
-          lang: i18n.lang,
-          args: { entity: i18n.t('entities.users.singular') },
-        }),
-      });
+    if (!user) userNotFoundError({ i18n, lang: i18n.lang });
     return okResponse({
-      i18n,
-      lang: i18n.lang,
-      data: { data: user, total: 1 },
+      data: user,
+      meta: { total: 1 },
     });
   }
 
@@ -179,15 +176,7 @@ export class UsersService {
       this.logger.error(error);
       internalServerError({ i18n, lang: i18n.lang });
     }
-    if (!user)
-      notFoundError({
-        i18n,
-        lang: i18n.lang,
-        description: i18n.t('messages.auth.error.userNotFound', {
-          lang: i18n.lang,
-          args: { entity: i18n.t('entities.users.singular') },
-        }),
-      });
+    if (!user) userNotFoundError({ i18n, lang: i18n.lang });
     const { userAccountCredentials, ...rest } = user;
     return { ...rest, password: userAccountCredentials.password };
   }
@@ -195,7 +184,7 @@ export class UsersService {
   async update(id: number, updateUserDto: UpdateUserDto, i18n: I18nContext) {
     const update = await this.__ValidateAndCreateUser(updateUserDto, i18n, id);
     const { change, oldEmail } = await this.__ValidateChangeEmail(
-      (await this.findOne(id, i18n)).data.data,
+      (await this.findOne(id, i18n)).data,
       i18n,
       update.email,
       id,
@@ -245,11 +234,7 @@ export class UsersService {
     this.findOne(id, i18n);
     try {
       await this.usersRepository.softDelete(id);
-      return okResponse({
-        i18n,
-        lang: i18n.lang,
-        data: { data: null, total: 0 },
-      });
+      return noContentResponse();
     } catch (error) {
       this.logger.error(error);
       internalServerError({ i18n, lang: i18n.lang });
@@ -347,13 +332,10 @@ export class UsersService {
   ) {
     const valUser = await this.usersRepository.findOneBy({ email: newEmail });
     if (valUser && (!id || valUser.id !== id))
-      conflictError({
+      emailAlreadyExistsError({
         i18n,
         lang: i18n.lang,
-        description: i18n.t('messages.auth.error.userEmailAlreadyExists', {
-          lang: i18n.lang,
-          args: { email: newEmail },
-        }),
+        args: { email: newEmail },
       });
 
     if (user.email === newEmail) return { change: false };
@@ -376,24 +358,15 @@ export class UsersService {
 
     const user = await this.usersRepository.findOneBy({ email });
     if (user && (!id || user.id !== id))
-      conflictError({
-        i18n,
-        lang: i18n.lang,
-        description: i18n.t('messages.auth.error.userEmailAlreadyExists', {
-          lang: i18n.lang,
-          args: { email },
-        }),
-      });
+      emailAlreadyExistsError({ i18n, lang: i18n.lang, args: { email } });
 
     const userDocument = await this.usersRepository.findOneBy({ document });
     if (userDocument && (!id || userDocument.id !== id))
-      conflictError({
+      ResponseFactory.error({
         i18n,
         lang: i18n.lang,
-        description: i18n.t('messages.auth.error.documentAlreadyExists', {
-          lang: i18n.lang,
-          args: { document },
-        }),
+        code: 'DOCUMENT_EXISTS',
+        args: { document },
       });
 
     return {
@@ -410,7 +383,7 @@ export class UsersService {
     changeRoleDto: ChangeRoleDto,
     i18n: I18nContext,
   ) {
-    const { data: user } = (await this.findOne(userId, i18n)).data;
+    const { data: user } = await this.findOne(userId, i18n);
     const { data: role } = await this.rolesService.findOne(
       changeRoleDto.roleId,
       i18n,
@@ -435,14 +408,7 @@ export class UsersService {
         },
         i18n,
       );
-      return okResponse({
-        i18n,
-        lang: i18n.lang,
-        data: {
-          data: null,
-          total: 1,
-        },
-      });
+      return noContentResponse();
     } catch (error) {
       this.logger.error(error);
       internalServerError({ i18n, lang: i18n.lang });
@@ -450,18 +416,14 @@ export class UsersService {
   }
 
   async me(req: Request, i18n: I18nContext) {
-    const { data: user } = (await this.findOne(req.user['sub'], i18n)).data;
+    const { data: user } = await this.findOne(req.user['sub'], i18n);
     const oauthactive = await this.oauthService.findAllOAuthWithUser(
       req.user['sub'],
       i18n,
     );
     return okResponse({
-      i18n,
-      lang: i18n.lang,
-      data: {
-        data: { ...user, oauth: oauthactive },
-        total: 1,
-      },
+      data: { ...user, oauth: oauthactive },
+      meta: { total: 1 },
     });
   }
 

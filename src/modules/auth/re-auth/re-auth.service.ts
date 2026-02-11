@@ -1,11 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { I18nContext } from 'nestjs-i18n';
-import {
-  internalServerError,
-  okResponse,
-  unauthorizedError,
-} from 'src/common/exceptions';
+import { internalServerError, okResponse } from 'src/common/exceptions';
+import { ResponseFactory } from 'src/common/exceptions/response.factory';
 import { hashValue } from 'src/common/utils/hash.utils';
 import { AuthReAuthToken } from 'src/modules/auth/entities/auth-reauth-token.entity';
 import { CredentialsService } from 'src/modules/users/credentials/credentials.service';
@@ -36,13 +33,12 @@ export class ReAuthService {
     }
 
     if (!isValid)
-      unauthorizedError({
+      ResponseFactory.error({
         i18n,
         lang: i18n.lang,
-        description: i18n.t('messages.auth.error.wrongPassword', {
-          lang: i18n.lang,
-        }),
+        code: 'INVALID_PASSWORD',
       });
+
     const token = uuidv7();
 
     try {
@@ -55,11 +51,13 @@ export class ReAuthService {
       internalServerError({ i18n, lang: i18n.lang });
     }
 
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+
     try {
       await this.reAuthTokenRepository.save({
         token: hashValue(token),
         user: { id: userId },
-        expiresAt: new Date(Date.now() + 5 * 60 * 1000),
+        expiresAt,
       });
     } catch (error) {
       this.logger.error(error);
@@ -67,9 +65,10 @@ export class ReAuthService {
     }
 
     return okResponse({
-      i18n,
-      lang: i18n.lang,
-      data: { data: token, total: 1 },
+      data: token,
+      meta: {
+        reAuthTokenExpiresIn: expiresAt,
+      },
     });
   }
 
@@ -102,22 +101,18 @@ export class ReAuthService {
       (reAuthToken.expiresAt && reAuthToken.expiresAt < new Date()) ||
       reAuthToken.revoked
     )
-      unauthorizedError({
+      ResponseFactory.error({
         i18n,
         lang: i18n.lang,
-        description: i18n.t('messages.auth.reauth.invalidReauthToken', {
-          lang: i18n.lang,
-        }),
+        code: 'INVALID_REAUTH_TOKEN',
       });
 
     const isTokenValid = hashValue(token) === reAuthToken.token;
     if (!isTokenValid)
-      unauthorizedError({
+      ResponseFactory.error({
         i18n,
         lang: i18n.lang,
-        description: i18n.t('messages.auth.reauth.invalidReauthToken', {
-          lang: i18n.lang,
-        }),
+        code: 'INVALID_REAUTH_TOKEN',
       });
 
     try {

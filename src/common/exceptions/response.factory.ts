@@ -1,45 +1,34 @@
-import { HttpException } from '@nestjs/common';
+import { HttpException, HttpStatus } from '@nestjs/common';
 import {
   SuccessResponseOptions,
   ErrorResponseOptions,
 } from 'src/common/interfaces/response.interfaces';
+import { ErrorHttpStatusMap } from 'src/common/enum/errors/error-http-status.map';
 
 export class ResponseFactory {
-  static success({
-    i18n,
-    lang,
-    code,
-    description,
-    data,
-    args = {},
-  }: SuccessResponseOptions) {
+  static success<T>({ data, meta = null }: SuccessResponseOptions<T>) {
     return {
-      statusCode: code,
-      message: i18n.t(`status.${code}.message`, { lang, args }),
-      description:
-        description || i18n.t(`status.${code}.description`, { lang, args }),
+      success: true,
       data,
+      meta,
+      error: null,
     };
   }
 
-  static error({
-    i18n,
-    lang,
-    code,
-    args = {},
-    description,
-  }: ErrorResponseOptions) {
-    const message = i18n.t(`status.${code}.message`, { lang, args });
-    const desc =
-      description || i18n.t(`status.${code}.description`, { lang, args });
+  static error({ i18n, lang, code, args = {} }: ErrorResponseOptions) {
+    const message = i18n.t(`errors.${code}`, { lang, args });
+
     throw new HttpException(
       {
-        statusCode: code,
-        message,
-        description: desc,
+        success: false,
+        data: null,
+        meta: null,
+        error: {
+          code,
+          message,
+        },
       },
-      code,
-      { cause: new Error() },
+      ErrorHttpStatusMap[code] ?? HttpStatus.INTERNAL_SERVER_ERROR,
     );
   }
 }

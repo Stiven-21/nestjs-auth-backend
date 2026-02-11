@@ -1,6 +1,6 @@
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { I18nContext } from 'nestjs-i18n';
-import { forbiddenError } from 'src/common/exceptions';
+import { ResponseFactory } from 'src/common/exceptions/response.factory';
 import { DefaultLanguage } from 'src/common/types/languages.types';
 import { User } from 'src/modules/users/entities/user.entity';
 
@@ -43,10 +43,10 @@ export class SuperadminGuard implements CanActivate {
     // Se verifica que el objeto user exista y que contenga un objeto role válido.
     if (!user || !user.role || typeof user.role.name !== 'string') {
       // Mensaje general si falta autenticación o información crítica.
-      forbiddenError({
+      ResponseFactory.error({
         i18n,
         lang,
-        description: i18n.t('messages.auth.guard.noActiveSession', { lang }),
+        code: 'UNAUTHORIZED',
       });
     }
 
@@ -54,11 +54,10 @@ export class SuperadminGuard implements CanActivate {
     const isSuperadmin = user.role.name === this.SUPER_ADMIN_ROLE;
 
     if (!isSuperadmin) {
-      // Mensaje específico si el usuario está autenticado pero no tiene el rol correcto.
-      forbiddenError({
+      ResponseFactory.error({
         i18n,
         lang,
-        description: i18n.t('messages.auth.guard.deniedOnlyAdmin', { lang }),
+        code: 'FORBIDDEN_ACTION',
       });
     }
 

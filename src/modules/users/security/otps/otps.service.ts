@@ -3,13 +3,14 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { UserSecurityTwoFactorOtps } from 'src/modules/users/entities/user-security-two-factor-otps.entity';
 import { Repository } from 'typeorm';
 import * as crypto from 'crypto';
-import { User } from '../../entities/user.entity';
+import { User } from 'src/modules/users/entities/user.entity';
 import { TwoFactorOtpsType } from 'src/common/enum/two-factor-otps.enum';
 import { I18nContext } from 'nestjs-i18n';
-import { internalServerError, unauthorizedError } from 'src/common/exceptions';
-import { UserSecurity } from '../../entities/user-security.entity';
+import { internalServerError } from 'src/common/exceptions';
+import { UserSecurity } from 'src/modules/users/entities/user-security.entity';
 import { TwoFactorType } from 'src/common/enum/two-factor-type.enum';
-import { SecurityService } from '../security.service';
+import { SecurityService } from 'src/modules/users/security/security.service';
+import { ResponseFactory } from 'src/common/exceptions/response.factory';
 
 @Injectable()
 export class OtpsService {
@@ -77,12 +78,10 @@ export class OtpsService {
     otp.failedAttempts++;
     if (otp.failedAttempts >= 5) {
       await this.userSecurityTwoFactorOtpsRepository.save(otp);
-      unauthorizedError({
+      ResponseFactory.error({
         i18n,
         lang: i18n.lang,
-        description: i18n.t('messages.auth.twoFactorOtps.blocked', {
-          lang: i18n.lang,
-        }),
+        code: 'OTP_FAILED_ATTEMPTS',
       });
     }
     const hashCode = crypto.createHash('sha256').update(code).digest('hex');

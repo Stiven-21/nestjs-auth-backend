@@ -16,12 +16,14 @@ import { UsersService } from 'src/modules/users/users.service';
 import { Auth } from 'src/modules/auth/decorators/auth.decorator';
 import { ChangeRoleDto } from 'src/modules/users/dto/change-role.dto';
 import { Request } from 'express';
+import { ApiOperation } from '@nestjs/swagger';
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get()
+  @ApiOperation({ summary: 'Find all users' })
   @Auth('users:read', {
     superadminOnly: true,
   })
@@ -30,6 +32,7 @@ export class UsersController {
   }
 
   @Get(':id')
+  @ApiOperation({ summary: 'Find user by id' })
   @Auth('users:read:id', {
     superadminOnly: true,
   })
@@ -38,6 +41,7 @@ export class UsersController {
   }
 
   @Patch(':id')
+  @ApiOperation({ summary: 'Update user by id' })
   @Auth('users:update:id', {
     allowSelf: true,
   })
@@ -50,6 +54,7 @@ export class UsersController {
   }
 
   @Delete(':id')
+  @ApiOperation({ summary: 'Delete user by id' })
   @Auth('users:delete:id', {
     allowSelf: true,
   })
@@ -58,6 +63,7 @@ export class UsersController {
   }
 
   @Post('change-role/:userId')
+  @ApiOperation({ summary: 'Change user role' })
   @Auth('users:update:id:role', {
     superadminOnly: true,
   })
@@ -71,6 +77,7 @@ export class UsersController {
   }
 
   @Get('profile/me')
+  @ApiOperation({ summary: 'Get user profile' })
   @Auth()
   async me(@Req() req: Request, @I18n() i18n: I18nContext) {
     return await this.usersService.me(req, i18n);

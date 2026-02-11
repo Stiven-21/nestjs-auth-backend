@@ -1,7 +1,7 @@
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { I18nContext } from 'nestjs-i18n';
-import { forbiddenError } from 'src/common/exceptions';
+import { ResponseFactory } from 'src/common/exceptions/response.factory';
 import { DefaultLanguage } from 'src/common/types/languages.types';
 
 /**
@@ -60,10 +60,10 @@ export class PermissionGuard implements CanActivate {
     // Nota: Se asume que un AuthGuard (como JwtAuthGuard) se ejecutó previamente
     // y adjuntó el objeto 'user' a la solicitud.
     if (!user || !user.role || typeof user.role.name !== 'string') {
-      forbiddenError({
+      ResponseFactory.error({
         i18n,
         lang,
-        description: i18n.t('messages.auth.guard.noActiveSession', { lang }),
+        code: 'UNAUTHORIZED',
       });
     }
 
@@ -86,12 +86,10 @@ export class PermissionGuard implements CanActivate {
     );
 
     if (!hasAllRequiredPermissions) {
-      forbiddenError({
+      ResponseFactory.error({
         i18n,
         lang,
-        description: i18n.t('messages.auth.guard.deniedForPermission', {
-          lang,
-        }),
+        code: 'INSUFFICIENT_PERMISSIONS',
       });
     }
 

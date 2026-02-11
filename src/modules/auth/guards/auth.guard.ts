@@ -7,7 +7,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import { I18nContext } from 'nestjs-i18n';
-import { unauthorizedError } from 'src/common/exceptions';
+import { ResponseFactory } from 'src/common/exceptions/response.factory';
 import { DefaultLanguage } from 'src/common/types/languages.types';
 import { UsersService } from 'src/modules/users/users.service';
 
@@ -32,22 +32,18 @@ export class AuthGuard implements CanActivate {
       DefaultLanguage;
 
     if (!token)
-      unauthorizedError({
+      ResponseFactory.error({
         i18n,
         lang,
-        description: i18n.t('messages.auth.guard.noActiveSession', {
-          lang,
-        }),
+        code: 'TOKEN_NOT_FOUND',
       });
 
     const payload = this.jwtService.decode(token);
     if (!payload || !payload.sub)
-      unauthorizedError({
+      ResponseFactory.error({
         i18n,
         lang,
-        description: i18n.t('messages.auth.guard.unauthorized', {
-          lang,
-        }),
+        code: 'INVALID_TOKEN',
       });
     const user_secret = await this.usersService.getUserSecret(
       payload.sub,
@@ -55,12 +51,10 @@ export class AuthGuard implements CanActivate {
     );
 
     if (!user_secret)
-      unauthorizedError({
+      ResponseFactory.error({
         i18n,
         lang,
-        description: i18n.t('messages.auth.guard.noActiveSession', {
-          lang,
-        }),
+        code: 'USER_NOT_FOUND',
       });
 
     try {
@@ -70,12 +64,10 @@ export class AuthGuard implements CanActivate {
       request.user = payload;
     } catch (error) {
       this.logger.error(error);
-      unauthorizedError({
+      ResponseFactory.error({
         i18n,
         lang,
-        description: i18n.t('messages.auth.guard.noActiveSession', {
-          lang,
-        }),
+        code: 'INVALID_TOKEN',
       });
     }
 
