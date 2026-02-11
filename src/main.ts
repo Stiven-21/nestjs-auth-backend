@@ -34,6 +34,10 @@ async function bootstrap() {
   app.use(cookieParser());
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
 
-  await app.listen(process.env.APP_PORT || 8080);
+  const port = process.env.APP_PORT || 3000;
+
+  console.error('🚀 Starting on port:', port);
+
+  await app.listen(port, '0.0.0.0');
 }
 bootstrap();

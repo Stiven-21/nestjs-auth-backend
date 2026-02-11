@@ -15,22 +15,34 @@ import {
 import * as path from 'path';
 import { DefaultLanguage } from 'src/common/types/languages.types';
 
+const isProd = process.env.NODE_ENV === 'production';
+
 @Module({
   imports: [
     NestI18nModule.forRoot({
       fallbackLanguage: DefaultLanguage,
       loader: I18nJsonLoader,
       loaderOptions: {
-        path: path.join(process.cwd(), 'src', 'i18n', 'locales'),
-        watch: true,
+        path: isProd
+          ? path.join(process.cwd(), 'dist', 'i18n', 'locales')
+          : path.join(process.cwd(), 'src', 'i18n', 'locales'),
+        watch: !isProd,
       },
-      typesOutputPath: path.join(
-        process.cwd(),
-        'src',
-        'common',
-        'generated',
-        'i18n.generated.ts',
-      ),
+      typesOutputPath: isProd
+        ? path.join(
+            process.cwd(),
+            'dist',
+            'common',
+            'generated',
+            'i18n.generated.ts',
+          )
+        : path.join(
+            process.cwd(),
+            'src',
+            'common',
+            'generated',
+            'i18n.generated.ts',
+          ),
       resolvers: [
         { use: HeaderResolver, options: ['x-custom-lang'] },
         AcceptLanguageResolver,
