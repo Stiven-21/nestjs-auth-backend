@@ -1,7 +1,7 @@
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { I18nContext } from 'nestjs-i18n';
+import { DEFAULT_LANGUAGE } from 'src/common/constants/i18n.constants';
 import { ResponseFactory } from 'src/common/exceptions/response.factory';
-import { DefaultLanguage } from 'src/common/types/languages.types';
 import { User } from 'src/modules/users/entities/user.entity';
 
 /**
@@ -37,7 +37,7 @@ export class SuperadminGuard implements CanActivate {
       request.headers['accept-language'] ||
       request.headers['x-language'] ||
       request.headers['x-custom-lang'] ||
-      DefaultLanguage;
+      DEFAULT_LANGUAGE;
 
     // 1. Validación de Autenticación y Existencia de Rol
     // Se verifica que el objeto user exista y que contenga un objeto role válido.

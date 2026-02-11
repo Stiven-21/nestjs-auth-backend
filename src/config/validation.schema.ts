@@ -1,4 +1,8 @@
 import * as Joi from 'joi';
+import {
+  DEFAULT_LANGUAGE,
+  SUPPORTED_LANGUAGES,
+} from 'src/common/constants/i18n.constants';
 
 export const validationSchema = Joi.object({
   // ===============================
@@ -22,6 +26,13 @@ export const validationSchema = Joi.object({
   DB_PASSWORD: Joi.string().required(),
   DB_DATABASE: Joi.string().required(),
   DB_SSL: Joi.boolean().default(false),
+
+  // ===============================
+  // LANGUAGE
+  // ===============================
+  I18N_FALLBACK_LANGUAGE: Joi.string()
+    .valid(...SUPPORTED_LANGUAGES)
+    .default(DEFAULT_LANGUAGE),
 
   // ===============================
   // JWT

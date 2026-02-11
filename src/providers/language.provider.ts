@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { DefaultLanguage } from 'src/common/types/languages.types';
+import { DEFAULT_LANGUAGE } from 'src/common/constants/i18n.constants';
 
 @Injectable()
 export class LanguageProvider {
-  private currentLanguage: string = DefaultLanguage;
+  private currentLanguage: string = DEFAULT_LANGUAGE;
 
   getCurrentLanguage(): string {
     return this.currentLanguage;

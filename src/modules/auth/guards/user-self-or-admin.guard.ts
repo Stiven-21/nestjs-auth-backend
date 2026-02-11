@@ -7,8 +7,8 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import { I18nContext } from 'nestjs-i18n';
+import { DEFAULT_LANGUAGE } from 'src/common/constants/i18n.constants';
 import { ResponseFactory } from 'src/common/exceptions/response.factory';
-import { DefaultLanguage } from 'src/common/types/languages.types';
 
 @Injectable()
 export class UserSelfOrAdminGuard implements CanActivate {
@@ -26,7 +26,7 @@ export class UserSelfOrAdminGuard implements CanActivate {
       request.headers['accept-language'] ||
       request.headers['x-language'] ||
       request.headers['x-custom-lang'] ||
-      DefaultLanguage;
+      DEFAULT_LANGUAGE;
 
     if (!token)
       ResponseFactory.error({

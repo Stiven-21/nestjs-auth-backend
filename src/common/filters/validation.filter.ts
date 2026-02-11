@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { I18nService } from 'nestjs-i18n';
 import { Response } from 'express';
-import { DefaultLanguage } from 'src/common/types/languages.types';
+import { DEFAULT_LANGUAGE } from 'src/common/constants/i18n.constants';
 
 @Catch(BadRequestException)
 export class ValidationFilter implements ExceptionFilter {
@@ -23,7 +23,7 @@ export class ValidationFilter implements ExceptionFilter {
       req['language'] ||
       req.headers?.['x-custom-lang'] ||
       req.headers?.['accept-language'] ||
-      DefaultLanguage;
+      DEFAULT_LANGUAGE;
 
     if (this.isValidationError(exceptionResponse['message'])) {
       const translatedErrors = this.translateErrors(

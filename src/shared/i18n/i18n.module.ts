@@ -4,7 +4,6 @@ import {
   NestModule,
   RequestMethod,
 } from '@nestjs/common';
-import { I18nMiddleware } from 'src/middlewares/i18n.middleware';
 import { LanguageProvider } from 'src/providers/language.provider';
 import {
   I18nModule as NestI18nModule,
@@ -13,14 +12,17 @@ import {
   HeaderResolver,
 } from 'nestjs-i18n';
 import * as path from 'path';
-import { DefaultLanguage } from 'src/common/types/languages.types';
+import { DEFAULT_LANGUAGE } from 'src/common/constants/i18n.constants';
+import { I18nMiddleware } from 'src/middlewares/i18n.middleware';
 
 const isProd = process.env.NODE_ENV === 'production';
+const isI18nEnabled = process.env.I18N_ENABLED === 'true';
+const defaultLanguage = process.env.I18N_FALLBACK_LANGUAGE || 'en';
 
 @Module({
   imports: [
     NestI18nModule.forRoot({
-      fallbackLanguage: DefaultLanguage,
+      fallbackLanguage: defaultLanguage || DEFAULT_LANGUAGE,
       loader: I18nJsonLoader,
       loaderOptions: {
         path: isProd
@@ -43,10 +45,17 @@ const isProd = process.env.NODE_ENV === 'production';
             'generated',
             'i18n.generated.ts',
           ),
-      resolvers: [
-        { use: HeaderResolver, options: ['x-custom-lang'] },
-        AcceptLanguageResolver,
-      ],
+      resolvers: isI18nEnabled
+        ? [
+            { use: HeaderResolver, options: ['x-custom-lang'] },
+            AcceptLanguageResolver,
+          ]
+        : [
+            {
+              use: HeaderResolver,
+              options: ['x-force-lang'],
+            },
+          ],
     }),
   ],
   providers: [LanguageProvider],

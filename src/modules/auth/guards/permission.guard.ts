@@ -1,8 +1,8 @@
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { I18nContext } from 'nestjs-i18n';
+import { DEFAULT_LANGUAGE } from 'src/common/constants/i18n.constants';
 import { ResponseFactory } from 'src/common/exceptions/response.factory';
-import { DefaultLanguage } from 'src/common/types/languages.types';
 
 /**
  * @description
@@ -41,7 +41,7 @@ export class PermissionGuard implements CanActivate {
       request.headers['accept-language'] ||
       request.headers['x-language'] ||
       request.headers['x-custom-lang'] ||
-      DefaultLanguage;
+      DEFAULT_LANGUAGE;
     // 1. Obtener los permisos requeridos definidos en el manejador de ruta
     const requiredPermissions = this.reflector.get<string[]>(
       'permissions', // Clave del decorador. Asegúrate que coincida con tu decorador.
