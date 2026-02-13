@@ -11,6 +11,8 @@ import { ThrottlerModule } from 'src/shared/throttler/thorttler.module';
 import { AuditLogModule } from 'src/modules/audit-log/audit-log.module';
 import frontendConfig from 'src/config/frontend.config';
 import { validationSchema } from 'src/config/validation.schema';
+import { AppController } from 'src/app.controller';
+import { AppService } from 'src/app.service';
 
 @Module({
   imports: [
@@ -50,7 +52,7 @@ import { validationSchema } from 'src/config/validation.schema';
     RolesModule,
     AuditLogModule,
   ],
-  controllers: [],
-  providers: [],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule {}

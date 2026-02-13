@@ -6,8 +6,8 @@ import { ThrottlerModule as NestThrottlerModule } from '@nestjs/throttler';
     NestThrottlerModule.forRoot({
       throttlers: [
         {
-          ttl: 60000,
-          limit: 20,
+          ttl: Number(process.env.THROTTLER_TTL) || 60,
+          limit: Number(process.env.THROTTLER_LIMIT) || 10,
         },
       ],
     }),

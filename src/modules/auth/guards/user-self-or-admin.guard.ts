@@ -4,6 +4,7 @@ import {
   Injectable,
   Logger,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import { I18nContext } from 'nestjs-i18n';
@@ -14,7 +15,10 @@ import { ResponseFactory } from 'src/common/exceptions/response.factory';
 export class UserSelfOrAdminGuard implements CanActivate {
   private readonly logger = new Logger(UserSelfOrAdminGuard.name);
 
-  constructor(private readonly jwtService: JwtService) {}
+  constructor(
+    private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
+  ) {}
 
   canActivate(context: ExecutionContext): boolean {
     const request = context.switchToHttp().getRequest();
@@ -26,6 +30,7 @@ export class UserSelfOrAdminGuard implements CanActivate {
       request.headers['accept-language'] ||
       request.headers['x-language'] ||
       request.headers['x-custom-lang'] ||
+      this.configService.get('I18N_FALLBACK_LANGUAGE') ||
       DEFAULT_LANGUAGE;
 
     if (!token)

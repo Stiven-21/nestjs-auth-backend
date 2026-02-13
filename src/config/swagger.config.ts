@@ -1,13 +1,22 @@
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
-const packageJson = JSON.parse(
+export const packageJson = JSON.parse(
   readFileSync(join(process.cwd(), 'package.json'), 'utf-8'),
 );
 
 export const swaggerConfig = {
-  title: 'NestAuth',
+  title: 'NestAuth API',
   description:
-    'NestAuth es un proyecto open-source que provee un sistema de autenticación modular, extensible y reutilizable, construido con NestJS. Está diseñado como una base sólida para cualquier tipo de aplicación (web, mobile, SaaS, eCommerce, APIs internas), permitiendo integrar autenticación segura y escalable sin acoplarse a un dominio específico.El proyecto implementa autenticación local (email/contraseña), OAuth con múltiples proveedores, gestión avanzada de usuarios, roles, permisos, sesiones y envío de correos transaccionales con plantillas. Incluye internacionalización (i18n), validación estandarizada y respuestas uniformes para facilitar su consumo desde cualquier frontend.',
+    'API de autenticación y gestión de usuarios modular y escalable. NestAuth provee una base sólida para aplicaciones modernas, integrando autenticación local, OAuth (Google, Facebook, GitHub), gestión avanzada de roles/permisos (RBAC), sesiones concurrentes, autenticación de dos factores (2FA) y auditoría completa de eventos. Diseñado para ser agnóstico al dominio y fácilmente integrable con cualquier frontend.',
   version: packageJson.version,
+  contact: {
+    name: 'Soporte NestAuth',
+    url: 'https://github.com/Stiven-21/nestjs-auth-backend',
+    email: 'support@nestauth.com',
+  },
+  license: {
+    name: 'MIT',
+    url: 'https://opensource.org/licenses/MIT',
+  },
 };

@@ -6,10 +6,12 @@ import {
   IsString,
   MaxLength,
 } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
 import { IsValidPassword } from 'src/common/decorators/isValidPassword.decorator';
 import { tm } from 'src/common/helpers/i18n.helper';
 
 export class CreateUserDto {
+  @ApiProperty({ example: 'John', description: 'Nombre del usuario' })
   @IsNotEmpty({
     message: tm('validator.isNotEmpty'),
   })
@@ -23,6 +25,7 @@ export class CreateUserDto {
   })
   name: string;
 
+  @ApiProperty({ example: 'Doe', description: 'Apellido del usuario' })
   @IsNotEmpty({
     message: tm('validator.isNotEmpty'),
   })
@@ -36,6 +39,10 @@ export class CreateUserDto {
   })
   lastname: string;
 
+  @ApiProperty({
+    example: 1,
+    description: 'ID del tipo de documento (Cédula, Pasaporte, etc.)',
+  })
   @IsNotEmpty({
     message: tm('validator.isNotEmpty'),
   })
@@ -47,6 +54,7 @@ export class CreateUserDto {
   })
   documentTypeId: number;
 
+  @ApiProperty({ example: '1234567890', description: 'Número de documento' })
   @IsNotEmpty({
     message: tm('validator.isNotEmpty'),
   })
@@ -60,6 +68,10 @@ export class CreateUserDto {
   })
   document: string;
 
+  @ApiProperty({
+    example: 'john.doe@example.com',
+    description: 'Correo electrónico único',
+  })
   @IsNotEmpty({
     message: tm('validator.isNotEmpty'),
   })
@@ -74,6 +86,10 @@ export class CreateUserDto {
   @Transform(({ value }) => value.toString().toLowerCase().trim())
   email: string;
 
+  @ApiProperty({
+    example: 'P@ssw0rd123!',
+    description: 'Contraseña segura del usuario',
+  })
   @IsNotEmpty({
     message: tm('validator.isNotEmpty'),
   })

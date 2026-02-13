@@ -1,4 +1,4 @@
-import { OmitType, PartialType } from '@nestjs/swagger';
+import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger';
 import { CreateUserDto } from './create-user.dto';
 import { IsNotEmpty, IsString, MaxLength } from 'class-validator';
 import { tm } from 'src/common/helpers/i18n.helper';
@@ -6,11 +6,13 @@ import { tm } from 'src/common/helpers/i18n.helper';
 export class CreateGithubProfileDto extends PartialType(
   OmitType(CreateUserDto, ['documentTypeId', 'document']),
 ) {
+  @ApiProperty({ example: '123456', description: 'Github id' })
   @IsNotEmpty({
     message: tm('validator.isNotEmpty'),
   })
   githubId: string;
 
+  @ApiProperty({ example: 'http://avatar.url', description: 'User avatar url' })
   @IsNotEmpty({
     message: tm('validator.isNotEmpty'),
   })

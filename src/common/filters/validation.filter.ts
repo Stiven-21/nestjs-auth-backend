@@ -7,10 +7,14 @@ import {
 import { I18nService } from 'nestjs-i18n';
 import { Response } from 'express';
 import { DEFAULT_LANGUAGE } from 'src/common/constants/i18n.constants';
+import { ConfigService } from '@nestjs/config';
 
 @Catch(BadRequestException)
 export class ValidationFilter implements ExceptionFilter {
-  constructor(private readonly i18n: I18nService) {}
+  constructor(
+    private readonly i18n: I18nService,
+    private readonly configService: ConfigService,
+  ) {}
 
   catch(exception: BadRequestException, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
@@ -23,6 +27,7 @@ export class ValidationFilter implements ExceptionFilter {
       req['language'] ||
       req.headers?.['x-custom-lang'] ||
       req.headers?.['accept-language'] ||
+      this.configService.get('I18N_FALLBACK_LANGUAGE') ||
       DEFAULT_LANGUAGE;
 
     if (this.isValidationError(exceptionResponse['message'])) {

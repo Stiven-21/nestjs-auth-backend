@@ -18,193 +18,221 @@
 
 </div>
 
-**NEST AUTH** es un servidor de autenticación de código abierto, modular y extensible, construido con **NestJS**. Está diseñado como una implementación de referencia profesional y una base sólida para plataformas SaaS, proyectos de comercio electrónico y APIs modernas que requieren una autenticación segura y escalable.
+**NEST AUTH** is an open-source, modular, and extensible authentication server built with **NestJS**. It is designed as a professional reference implementation and a solid foundation for SaaS platforms, e-commerce projects, and modern APIs requiring secure and scalable authentication.
 
-> 🎯 **Objetivo:** Proporcionar un sistema de autenticación completo, claro y mantenible, listo para producción y fácil de extender.
+> 🎯 **Goal:** To provide a complete, clear, and maintainable authentication system, production-ready and easy to extend.
 
 ---
 
-## 📌 Información General
+## 📌 General Information
 
-- **Proyecto:** NEST AUTH
-- **Tipo:** Backend / Servidor de Autenticación
-- **Estado:** Beta
-- **Versión Actual:** `v0.5.0`
+- **Project:** NEST AUTH
+- **Type:** Backend / Authentication Server
+- **Status:** Beta
+- **Current Version:** `v0.5.0`
 - **Framework:** NestJS
-- **Lenguaje:** TypeScript
-- **Licencia:** MIT
-- **Prefijo Global API:** `/api/v1`
+- **Language:** TypeScript
+- **License:** MIT
+- **Global API Prefix:** `/api/v1`
 
 ---
 
-## ✨ Características Principales
+## ✨ Key Features
 
-- 🔑 **Autenticación JWT:** Gestión de Access y Refresh Tokens con rotación.
-- 🔐 **Login Local:** Registro e inicio de sesión con correo y contraseña.
-- 🌐 **Autenticación OAuth:** Integración con Google, Facebook y GitHub.
-- 👤 **Gestión de Usuarios:** Perfiles completos y control de credenciales.
-- 🛂 **Roles y Permisos:** Sistema RBAC (Role-Based Access Control) con Guards personalizados.
-- 🧩 **Arquitectura Modular:** Código desacoplado y fácil de mantener.
-- 🌍 **Internacionalización (i18n):** Soporte nativo para Español e Inglés.
-- 📧 **Envío de Correos:** Plantillas dinámicas con Handlebars.
-- 🗂️ **Gestión de Sesiones:** Control detallado de dispositivos y sesiones por usuario.
-- 📚 **Documentación Automática:** Integración total con Swagger.
-
----
-
-## 🧠 Filosofía del Proyecto
-
-NEST AUTH no es solo un boilerplate. Es una **implementación de referencia** que busca:
-
-- Servir como una base técnica confiable para productos del mundo real.
-- Mostrar las mejores prácticas de NestJS.
-- Permitir una extensibilidad modular limpia.
-- Mantener límites claros entre autenticación, autorización y lógica de dominio.
+- 🔑 **JWT Authentication:** Access and Refresh Token management with rotation and advanced security.
+- 🔐 **Local Login:** Secure registration and login with credential hashing.
+- 🌐 **OAuth Authentication:** Modular integration with Google, Facebook, and GitHub.
+- 👤 **User Management:** Full profiles, change auditing, and credential control.
+- 🛂 **Roles & Permissions:** RBAC (Role-Based Access Control) system with granular Guards.
+- 🧩 **Modular Architecture:** Layer-based design (API, Application, Domain, Infrastructure) for maximum maintainability.
+- 🌍 **Internationalization (i18n):** Native and dynamic support for Spanish and English.
+- 📧 **Mail Delivery:** Transactional notification system using SMTP and Handlebars templates.
+- 🗂️ **Session Management:** Detailed control of devices, active sessions, and per-user security.
+- 📚 **Automated Documentation:** Full integration with Swagger (OpenAPI).
 
 ---
 
-## 🏗️ Arquitectura de Alto Nivel
+## 🏗️ Architecture & Design
 
-El sistema se organiza en módulos desacoplados:
+The project follows a clean layered architecture to ensure separation of concerns:
 
-- `auth` → Autenticación, login, tokens, OAuth, 2FA.
-- `users` → Gestión de usuarios, perfiles y credenciales.
-- `roles` → Control de roles y permisos granulares.
-- `sessions` → Gestión de sesiones activas del usuario.
-- `mails` → Entrega de correos y plantillas.
+- **API Layer:** Controllers in `src/modules/*` handling incoming requests.
+- **Application Layer:** Services and use cases containing business logic.
+- **Domain Layer:** Entities, DTOs, and repositories defining the data model.
+- **Infrastructure Layer:** Mail, i18n, TypeORM configurations, and shared services.
 
-* `i18n` → Lógica de internacionalización.
-
----
-
-## 🔐 Autenticación JWT y Seguridad
-
-- **Tokens:** Access Token + Refresh Token.
-- **Estrategia de Firma por Usuario:** Se utiliza un `JWT_SECRET` combinado con un `user_secret` único. Esto permite invalidar todas las sesiones de un usuario específico instantáneamente si es necesario, sin afectar a los demás.
-- **Re-autenticación:** Para acciones críticas (como habilitar 2FA o cambiar contraseña), el sistema requiere un flujo de re-autenticación que genera un token temporal de alta seguridad.
+For more details, see the [Architecture Guide](docs/ARCHITECTURE.md).
 
 ---
 
-## 🌐 OAuth & Credenciales Múltiples
+## 🐳 Docker Deployment
 
-NEST AUTH permite que un mismo usuario tenga múltiples métodos de autenticación vinculados a su cuenta.
+Run the complete environment (API + PostgreSQL) quickly and in isolation:
 
-### Proveedores Soportados
+### Requirements
 
-- Google
-- Facebook
-- GitHub
+- Docker Engine 24+
+- Docker Compose v2+
 
-### Modelo de Credenciales
+### Quick Start
 
-Un usuario puede registrarse con correo/contraseña y posteriormente vincular sus cuentas de redes sociales, permitiendo una experiencia de usuario flexible y moderna.
+1. Configure your `.env` (ensure `DB_HOST=db`).
+2. Start the containers:
+   ```bash
+   pnpm docker:up
+   ```
+   _Or directly with:_ `docker compose up --build -d`
+
+For more information, see the [Docker Guide](docs/docker.md).
 
 ---
 
-## 📦 Estándar de Respuestas
+## 📧 Mail Configuration
 
-Todas las respuestas de la API siguen un formato consistente para facilitar la integración con el frontend.
+The system uses SMTP for critical features such as account verification and password recovery.
 
-### Respuesta de Éxito
+**Required Variables:**
+
+- `MAIL_HOST`, `MAIL_PORT`, `MAIL_USER`, `MAIL_PASSWORD`, `DEFAULT_REMITTER_MAIL`.
+
+> ⚠️ **Note:** The system will fail to start if any mail configuration is missing, ensuring security features are always available.
+
+See the [Mail Configuration Guide](docs/mail.md) for examples (Gmail, etc.).
+
+---
+
+## 🌐 OAuth & Account Linking
+
+NEST AUTH allows multiple authentication methods linked to a single identity.
+
+- **Providers:** Google, Facebook, GitHub.
+- **Security:** `state` validation via `OAUTH_STATE_SECRET` to prevent CSRF attacks.
+- **Flexibility:** Securely link OAuth providers to existing accounts.
+
+Implementation details in the [OAuth Guide](docs/oauth.md).
+
+---
+
+## ⚙️ Environment Variables
+
+The system is highly configurable. Below are the main variables:
+
+| Variable             | Description                              |
+| :------------------- | :--------------------------------------- |
+| `APP_PORT`           | API Port (default 8000)                  |
+| `URL_FRONTEND`       | Frontend base URL for redirects and CORS |
+| `DB_*`               | PostgreSQL connection settings           |
+| `JWT_SECRET`         | Secret for Access Tokens                 |
+| `JWT_REFRESH_SECRET` | Secret for Refresh Tokens                |
+| `OAUTH_STATE_SECRET` | Secret for OAuth flow validation         |
+
+For an exhaustive list and detailed explanations, check the [Environment Variables Guide](docs/environment.md).
+
+---
+
+## 📡 Key Endpoints
+
+### Authentication & Security
+
+- `POST /auth/register`: User registration.
+- `POST /auth/sign-in`: Login with device detection.
+- `POST /auth/refresh-token`: Session renewal.
+- `POST /auth/2fa/enable`: Two-factor authentication management.
+
+### Profile & Sessions
+
+- `GET /users/profile/me`: Authenticated user data.
+- `POST /auth/logout-device/:deviceId`: Remote session termination.
+- `POST /auth/logout-all`: Invalidate all active sessions.
+
+---
+
+## 🚀 API Usage Examples
+
+### User Registration
+
+`POST /api/v1/auth/register`
+
+**Request:**
 
 ```json
 {
-  "statusCode": 200,
-  "message": "OK",
-  "description": "La operación se completó exitosamente.",
+  "name": "John",
+  "lastname": "Doe",
+  "documentTypeId": 1,
+  "document": "123456789",
+  "email": "john.doe@example.com",
+  "password": "Password123!"
+}
+```
+
+**Response:**
+
+```json
+{
+  "success": true,
   "data": {
-    "data": { ... },
-    "total": 1
-  }
+    "id": 1,
+    "email": "john.doe@example.com",
+    "name": "John",
+    "lastname": "Doe"
+  },
+  "meta": null,
+  "error": null
 }
 ```
 
-### Respuesta de Error
+### User Login (Sign-in)
+
+`POST /api/v1/auth/sign-in`
+
+**Request:**
 
 ```json
 {
-  "statusCode": 400,
-  "message": "Bad Request",
-  "description": "Los datos proporcionados no son válidos."
+  "email": "user@test.com",
+  "password": "Password123!"
 }
 ```
 
-_El sistema traduce automáticamente los campos `message` y `description` según el idioma del cliente._
+**Response:**
 
----
-
-## 📡 Endpoints Importantes
-
-### Autenticación
-
-- `POST /auth/register`: Registro de nuevos usuarios.
-- `POST /auth/sign-in`: Inicio de sesión (soporta detección de dispositivos).
-- `POST /auth/refresh-token`: Generación de un nuevo Access Token.
-- `POST /auth/re-auth`: Validación de contraseña para acciones sensibles.
-
-### Seguridad y 2FA
-
-- `POST /auth/2fa/enable`: Iniciar activación de 2FA.
-- `POST /auth/2fa/verify`: Verificación de código TOTP durante el login.
-
-### Gestión de Usuarios y Sesiones
-
-- `GET /users/profile/me`: Información del usuario actual.
-- `POST /auth/logout-device/:deviceId`: Cierre de sesión en un dispositivo específico.
-- `POST /auth/logout-all`: Cierre de todas las sesiones activas.
-
----
-
-## ⚙️ Variables de Entorno
-
-Configura tu archivo `.env` basándote en lo siguiente:
-
-```ini
-APP_PORT=8080
-NAME_APP=NEST AUTH
-
-# Base de Datos
-DB_TYPE=postgres
-DB_HOST=localhost
-DB_PORT=5432
-DB_USERNAME=postgres
-DB_PASSWORD=postgres
-DB_DATABASE=openauth
-
-# Seguridad JWT
-JWT_SECRET=tu_secreto_aqui
-JWT_REFRESH_SECRET=tu_otro_secreto_aqui
-
-# Configuración Regional
-DEFAULT_LOCALE=es
+```json
+{
+  "success": true,
+  "data": {
+    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "email": "user@test.com",
+    "user": "user",
+    "role": "admin",
+    "permissions": ["all"]
+  },
+  "meta": null,
+  "error": null
+}
 ```
 
 ---
 
-## 📚 Documentación
+## 📚 Additional Documentation
 
-NEST AUTH proporciona documentación estructurada para facilitar el uso y mantenimiento:
-
-- 🏗️ **Arquitectura** — [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
+- 🏗️ **Detailed Architecture** — [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
+- 🐳 **Docker Guide** — [`docs/docker.md`](docs/docker.md)
+- 📧 **Mail Configuration** — [`docs/mail.md`](docs/mail.md)
+- 🔑 **OAuth Guide** — [`docs/oauth.md`](docs/oauth.md)
 - 📜 **Changelog** — [`CHANGELOG.md`](CHANGELOG.md)
-- 📚 **Swagger UI** — Accesible en `/api/docs` tras iniciar el servidor.
+- 📚 **Swagger UI** — Accessible at `/api/docs` after starting the server.
 
 ---
 
-## 🤝 Contribuciones y Comunidad
+## 🤝 Contributions
 
-¡Las contribuciones son bienvenidas! Puedes ayudar mediante:
-
-- Reporte de Issues.
-- Pull Requests con nuevas funcionalidades o correcciones.
-- Revisión de seguridad.
-- Mejoras en la documentación.
-
-Por favor, revisa [`CONTRIBUTING.md`](CONTRIBUTING.md) antes de enviar cambios.
+Contributions are welcome! Please review [`CONTRIBUTING.md`](CONTRIBUTING.md) before getting started.
 
 ---
 
-## 👨‍💻 Autor
+## 👨‍💻 Author
 
 <p align="center">
   <img src="https://avatars.githubusercontent.com/u/61439523?s=96&v=4" width="120" style="border-radius:50%" />
@@ -225,6 +253,6 @@ Por favor, revisa [`CONTRIBUTING.md`](CONTRIBUTING.md) antes de enviar cambios.
 
 ---
 
-## 📄 Licencia
+## 📄 License
 
-Este proyecto está bajo la licencia **MIT**. Consulta el archivo [LICENSE](LICENSE) para más detalles.
+This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for details.

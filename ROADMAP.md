@@ -75,7 +75,7 @@ This roadmap outlines the planned evolution of **NEST AUTH**, a robust, reusable
 
 ---
 
-## ⏳ v0.6.0 — Developer Experience & Documentation
+## ✅ v0.6.0 — Developer Experience & Documentation
 
 - Final Swagger / OpenAPI and consolidated endpoints
 - Example requests / responses for integration

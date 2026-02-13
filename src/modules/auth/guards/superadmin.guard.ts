@@ -1,4 +1,5 @@
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { I18nContext } from 'nestjs-i18n';
 import { DEFAULT_LANGUAGE } from 'src/common/constants/i18n.constants';
 import { ResponseFactory } from 'src/common/exceptions/response.factory';
@@ -16,6 +17,7 @@ import { User } from 'src/modules/users/entities/user.entity';
 export class SuperadminGuard implements CanActivate {
   // Constante para el rol que tiene acceso exclusivo
   private readonly SUPER_ADMIN_ROLE = 'super_admin';
+  constructor(private readonly configService: ConfigService) {}
 
   /**
    * @description
@@ -37,6 +39,7 @@ export class SuperadminGuard implements CanActivate {
       request.headers['accept-language'] ||
       request.headers['x-language'] ||
       request.headers['x-custom-lang'] ||
+      this.configService.get('I18N_FALLBACK_LANGUAGE') ||
       DEFAULT_LANGUAGE;
 
     // 1. Validación de Autenticación y Existencia de Rol
@@ -57,7 +60,7 @@ export class SuperadminGuard implements CanActivate {
       ResponseFactory.error({
         i18n,
         lang,
-        code: 'FORBIDDEN_ACTION',
+        code: 'INSUFICIENT_PERMISSIONS',
       });
     }
 

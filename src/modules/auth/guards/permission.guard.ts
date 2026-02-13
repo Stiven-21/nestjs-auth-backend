@@ -1,4 +1,5 @@
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Reflector } from '@nestjs/core';
 import { I18nContext } from 'nestjs-i18n';
 import { DEFAULT_LANGUAGE } from 'src/common/constants/i18n.constants';
@@ -19,11 +20,14 @@ import { ResponseFactory } from 'src/common/exceptions/response.factory';
 @Injectable()
 export class PermissionGuard implements CanActivate {
   // Constante para el rol con acceso total
-  private readonly SUPER_ADMIN_ROLE = 'super_administrador';
+  private readonly SUPER_ADMIN_ROLE = 'super_admin';
   // Constante para el permiso que concede acceso total
   private readonly ALL_PERMISSION = 'all';
 
-  constructor(private reflector: Reflector) {}
+  constructor(
+    private reflector: Reflector,
+    private readonly configService: ConfigService,
+  ) {}
 
   /**
    * @description
@@ -41,6 +45,7 @@ export class PermissionGuard implements CanActivate {
       request.headers['accept-language'] ||
       request.headers['x-language'] ||
       request.headers['x-custom-lang'] ||
+      this.configService.get('I18N_FALLBACK_LANGUAGE') ||
       DEFAULT_LANGUAGE;
     // 1. Obtener los permisos requeridos definidos en el manejador de ruta
     const requiredPermissions = this.reflector.get<string[]>(
@@ -89,7 +94,7 @@ export class PermissionGuard implements CanActivate {
       ResponseFactory.error({
         i18n,
         lang,
-        code: 'INSUFFICIENT_PERMISSIONS',
+        code: 'INSUFICIENT_PERMISSIONS',
       });
     }
 

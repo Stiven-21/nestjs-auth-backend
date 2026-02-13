@@ -5,7 +5,7 @@ import { ReAuthService } from 'src/modules/auth/re-auth/re-auth.service';
 import { ReAuthDto } from 'src/modules/auth/dto/re-auth.dto';
 import { Auth } from 'src/modules/auth/decorators/auth.decorator';
 import { ThorttleLimit } from 'src/common/decorators/throttle.decorator';
-import { ApiOperation } from '@nestjs/swagger';
+import { ApiOkResponse, ApiOperation } from '@nestjs/swagger';
 
 @Controller('auth/re-auth')
 export class ReAuthController {
@@ -15,6 +15,7 @@ export class ReAuthController {
   @ThorttleLimit(5, 60)
   @Post()
   @ApiOperation({ summary: 'Re-authenticate' })
+  @ApiOkResponse({ description: 'Re-authenticated' })
   async reauthenticate(
     @Req() req: Request,
     @Body() reauthDto: ReAuthDto,

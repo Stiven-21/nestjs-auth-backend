@@ -3,7 +3,7 @@ import { SessionService } from './session.service';
 import { I18n, I18nContext } from 'nestjs-i18n';
 import { DynamicQueryDto } from 'src/common/services/query/dto/dynamic.dto';
 import { Auth } from 'src/modules/auth/decorators/auth.decorator';
-import { ApiOperation } from '@nestjs/swagger';
+import { ApiOkResponse, ApiOperation } from '@nestjs/swagger';
 
 @Controller('sessions')
 export class SessionController {
@@ -11,6 +11,7 @@ export class SessionController {
 
   @Get(':userId')
   @ApiOperation({ summary: 'Find sessions by user id' })
+  @ApiOkResponse({ description: 'Sessions found' })
   @Auth()
   async findByUserId(
     @Param('userId') id: number,

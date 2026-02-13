@@ -1,5 +1,5 @@
 import { Controller, Post, Req } from '@nestjs/common';
-import { ApiOperation } from '@nestjs/swagger';
+import { ApiOkResponse, ApiOperation } from '@nestjs/swagger';
 import { Request } from 'express';
 import { I18n, I18nContext } from 'nestjs-i18n';
 import { Auth } from 'src/modules/auth/decorators/auth.decorator';
@@ -13,6 +13,7 @@ export class SecurityRecoveryCodesController {
 
   @Auth()
   @ApiOperation({ summary: 'Generate security recovery codes' })
+  @ApiOkResponse({ description: 'Security recovery codes generated' })
   @Post('generate')
   async generate(@Req() req: Request, @I18n() i18n: I18nContext) {
     const userId = req.user['sub'];

@@ -4,6 +4,7 @@ import {
   Injectable,
   Logger,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import { I18nContext } from 'nestjs-i18n';
@@ -17,6 +18,7 @@ export class AuthGuard implements CanActivate {
   constructor(
     private readonly jwtService: JwtService,
     private readonly usersService: UsersService,
+    private readonly configService: ConfigService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -29,6 +31,7 @@ export class AuthGuard implements CanActivate {
       request.headers['accept-language'] ||
       request.headers['x-language'] ||
       request.headers['x-custom-lang'] ||
+      this.configService.get('I18N_FALLBACK_LANGUAGE') ||
       DEFAULT_LANGUAGE;
 
     if (!token)

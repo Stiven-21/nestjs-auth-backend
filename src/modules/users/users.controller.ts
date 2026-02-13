@@ -16,14 +16,21 @@ import { UsersService } from 'src/modules/users/users.service';
 import { Auth } from 'src/modules/auth/decorators/auth.decorator';
 import { ChangeRoleDto } from 'src/modules/users/dto/change-role.dto';
 import { Request } from 'express';
-import { ApiOperation } from '@nestjs/swagger';
+import {
+  ApiNotFoundResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 
+@ApiTags('Users')
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get()
-  @ApiOperation({ summary: 'Find all users' })
+  @ApiOperation({ summary: 'Obtener lista de usuarios (Paginado)' })
+  @ApiOkResponse({ description: 'Lista de usuarios recuperada exitosamente' })
   @Auth('users:read', {
     superadminOnly: true,
   })
@@ -33,6 +40,8 @@ export class UsersController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Find user by id' })
+  @ApiOkResponse({ description: 'User found successfully' })
+  @ApiNotFoundResponse({ description: 'User not found' })
   @Auth('users:read:id', {
     superadminOnly: true,
   })
@@ -42,6 +51,7 @@ export class UsersController {
 
   @Patch(':id')
   @ApiOperation({ summary: 'Update user by id' })
+  @ApiOkResponse({ description: 'User updated successfully' })
   @Auth('users:update:id', {
     allowSelf: true,
   })
@@ -55,6 +65,7 @@ export class UsersController {
 
   @Delete(':id')
   @ApiOperation({ summary: 'Delete user by id' })
+  @ApiOkResponse({ description: 'User deleted successfully' })
   @Auth('users:delete:id', {
     allowSelf: true,
   })
@@ -64,6 +75,7 @@ export class UsersController {
 
   @Post('change-role/:userId')
   @ApiOperation({ summary: 'Change user role' })
+  @ApiOkResponse({ description: 'User role changed successfully' })
   @Auth('users:update:id:role', {
     superadminOnly: true,
   })
@@ -77,7 +89,8 @@ export class UsersController {
   }
 
   @Get('profile/me')
-  @ApiOperation({ summary: 'Get user profile' })
+  @ApiOperation({ summary: 'Obtener perfil del usuario autenticado' })
+  @ApiOkResponse({ description: 'Perfil recuperado exitosamente' })
   @Auth()
   async me(@Req() req: Request, @I18n() i18n: I18nContext) {
     return await this.usersService.me(req, i18n);
