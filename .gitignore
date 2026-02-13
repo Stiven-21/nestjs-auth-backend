@@ -41,4 +41,10 @@ lerna-debug.log*
 .env.test
 .env.production
 
+# Database
+*.sqlite
+*.db
+*.db-journal
+
+
 web/*

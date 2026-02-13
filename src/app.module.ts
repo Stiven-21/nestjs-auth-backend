@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { I18nModule } from 'src/shared/i18n/i18n.module';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { MailsModule } from 'src/mails/mail.module';
 import { AuthModule } from 'src/modules/auth/auth.module';
@@ -13,6 +13,7 @@ import frontendConfig from 'src/config/frontend.config';
 import { validationSchema } from 'src/config/validation.schema';
 import { AppController } from 'src/app.controller';
 import { AppService } from 'src/app.service';
+import { createDataSourceOptions } from 'src/database/data-source.factory';
 
 @Module({
   imports: [
@@ -24,24 +25,10 @@ import { AppService } from 'src/app.service';
         abortEarly: true,
       },
     }),
-    TypeOrmModule.forRoot({
-      type: process.env.DB_TYPE as any,
-      host: process.env.DB_HOST,
-      port: parseInt(process.env.DB_PORT),
-      username: process.env.DB_USERNAME,
-      password: process.env.DB_PASSWORD,
-      database: process.env.DB_DATABASE,
-      autoLoadEntities: true,
-      synchronize: true,
-      ssl: process.env.DB_SSL === 'true',
-      extra: {
-        ssl:
-          process.env.DB_SSL === 'true'
-            ? {
-                rejectUnauthorized: false,
-              }
-            : null,
-      },
+    TypeOrmModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) =>
+        createDataSourceOptions(configService),
     }),
     ThrottlerModule,
     MailsModule,
