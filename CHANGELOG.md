@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.4.1](https://github.com/Stiven-21/nestjs-auth-backend/compare/v0.4.0...v0.4.1) (2026-02-13)
+
+
+### 📚 Documentation
+
+* **.md:** documented environmental variables ([41099d5](https://github.com/Stiven-21/nestjs-auth-backend/commit/41099d5ac16439087f6c2b73e2f13f560db618d3))
+
+
+### 🐛 Bug Fixes
+
+* **i18n:** language optional ([058e99e](https://github.com/Stiven-21/nestjs-auth-backend/commit/058e99e1979d5404eb30117403fdba07a6138115))
+
+
+### 🚀 Features
+
+* add Docker and docker-compose configuration for local development ([a806fb2](https://github.com/Stiven-21/nestjs-auth-backend/commit/a806fb207e076339a7d259f7e95d7e505c98b4b1))
+* add request/response examples in docs/examples and standardize JSON responses ([bf8f25c](https://github.com/Stiven-21/nestjs-auth-backend/commit/bf8f25c30a752b848b61877bf01382a21a8b4d85))
+* **i18n:** optional & configurable i18n (disabled by default), Dockerized, Swagger, JSON std ([7106203](https://github.com/Stiven-21/nestjs-auth-backend/commit/710620394f94e6b79458cebbe5147f1dd3401baf))
+
 ## [0.4.0](https://github.com/Stiven-21/nestjs-auth-backend/compare/v0.2.0-nestjs-auth-backend-beta...v0.4.0) (2026-02-10)
 
 
