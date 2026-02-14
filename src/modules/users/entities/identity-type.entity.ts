@@ -6,7 +6,7 @@ export class IdentityType {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ unique: true, nullable: false, length: 20 })
+  @Column({ unique: true, nullable: false, length: 50 })
   name: string;
 
   @Column({ unique: true, nullable: false, length: 5 })

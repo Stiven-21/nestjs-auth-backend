@@ -65,6 +65,63 @@ For more details, see the [Architecture Guide](docs/ARCHITECTURE.md).
 
 ---
 
+## 🗄️ Database & Migrations
+
+This project uses **TypeORM** for database management and follows a strict migration-based workflow.
+
+### PostgreSQL (Default)
+
+By default, the project is configured to use **PostgreSQL**. The required driver (`pg`) is already installed and pre-configured in the environment.
+
+### Core Principles
+
+- `synchronize: true` is disabled to ensure production safety.
+- All schema changes must be managed through migration files.
+
+### Key Commands
+
+- **Generate Migration:** `pnpm migration:generate src/database/migrations/Name`
+- **Run Migrations:** `pnpm migration:run`
+- **Revert Migration:** `pnpm migration:revert`
+
+For a detailed guide, see [Database Migrations](docs/database-migrations.md).
+
+---
+
+## 🌱 Database Seeders
+
+Seeders are used to populate the database with initial or required data, such as default roles and an initial super admin user. They are **idempotent** and safe to re-run.
+
+### How to Run Seeders
+
+1.  **Run Migrations first:** `pnpm migration:run`
+2.  **Configure Environment:** Set `SUPER_ADMIN_EMAIL` and `SUPER_ADMIN_PASSWORD` in your `.env`.
+3.  **Execute Seeders:** `pnpm seed`
+
+For a detailed guide, see [Database Seeders Documentation](docs/seeders.md).
+
+---
+
+## 🔄 Switching Database Engine (e.g., to MySQL)
+
+If you need to use a different database engine, follow these steps:
+
+1.  **Uninstall PostgreSQL driver:**
+    ```bash
+    pnpm remove pg
+    ```
+2.  **Install the new driver (e.g., MySQL):**
+    ```bash
+    pnpm add mysql2
+    ```
+3.  **Update `.env`:** Change `DB_TYPE` to `mysql` and adjust `DB_PORT` (usually `3306`).
+4.  **Review Configuration:**
+    - Check `src/database/data-source.ts` to ensure the `type` is correctly picked up from `process.env.DB_TYPE`.
+    - Update `src/config/validation.schema.ts` if there are specific Joi validation constraints for `DB_TYPE`.
+5.  **Re-generate Migrations:** Since SQL syntax varies between engines, you should clear existing migrations and generate new ones for your specific engine.
+
+---
+
 ## 🐳 Docker Deployment
 
 Run the complete environment (API + PostgreSQL) quickly and in isolation:
@@ -121,7 +178,8 @@ The system is highly configurable. Below are the main variables:
 | :------------------- | :--------------------------------------- |
 | `APP_PORT`           | API Port (default 8000)                  |
 | `URL_FRONTEND`       | Frontend base URL for redirects and CORS |
-| `DB_*`               | PostgreSQL connection settings           |
+| `DB_TYPE`            | Database type (default: `postgres`)      |
+| `DB_*`               | Database connection settings             |
 | `JWT_SECRET`         | Secret for Access Tokens                 |
 | `JWT_REFRESH_SECRET` | Secret for Refresh Tokens                |
 | `OAUTH_STATE_SECRET` | Secret for OAuth flow validation         |
@@ -218,6 +276,8 @@ For an exhaustive list and detailed explanations, check the [Environment Variabl
 ## 📚 Additional Documentation
 
 - 🏗️ **Detailed Architecture** — [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
+- 🗄️ **Database Migrations** — [`docs/database-migrations.md`](docs/database-migrations.md)
+- 🌱 **Database Seeders** — [`docs/seeders.md`](docs/seeders.md)
 - 🐳 **Docker Guide** — [`docs/docker.md`](docs/docker.md)
 - 📧 **Mail Configuration** — [`docs/mail.md`](docs/mail.md)
 - 🔑 **OAuth Guide** — [`docs/oauth.md`](docs/oauth.md)
