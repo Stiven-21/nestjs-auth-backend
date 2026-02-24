@@ -1,10 +1,12 @@
 import { Transform } from 'class-transformer';
 import {
+  IsEmail,
   IsNotEmpty,
   IsNumber,
   IsPositive,
   IsString,
   MaxLength,
+  MinLength,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsValidPassword } from 'src/common/decorators/isValidPassword.decorator';
@@ -84,6 +86,12 @@ export class CreateUserDto {
     }),
   })
   @Transform(({ value }) => value.toString().toLowerCase().trim())
+  @IsEmail({}, { message: tm('validator.isEmail') })
+  @MinLength(5, {
+    message: tm('validator.isMinLength', {
+      min: 5,
+    }),
+  })
   email: string;
 
   @ApiProperty({
@@ -97,6 +105,6 @@ export class CreateUserDto {
     message: tm('validator.isString'),
   })
   @Transform(({ value }) => value.toString().trim())
-  @IsValidPassword({ message: tm('validator.isPassword') })
+  @IsValidPassword({ message: tm('validator.isValidPassword') })
   password: string;
 }

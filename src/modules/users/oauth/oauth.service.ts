@@ -104,4 +104,18 @@ export class OAuthService {
       internalServerError({ i18n, lang: i18n.lang });
     }
   }
+
+  async findProviderWithUserId(userId: number, i18n: I18nContext) {
+    try {
+      const data = await this.oauthRepository.find({
+        where: {
+          user: { id: userId },
+        },
+      });
+      return data;
+    } catch (error) {
+      this.logger.error(error);
+      internalServerError({ i18n, lang: i18n.lang });
+    }
+  }
 }

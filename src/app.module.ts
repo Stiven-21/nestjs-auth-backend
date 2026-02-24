@@ -14,6 +14,7 @@ import { validationSchema } from 'src/config/validation.schema';
 import { AppController } from 'src/app.controller';
 import { AppService } from 'src/app.service';
 import { createDataSourceOptions } from 'src/database/data-source.factory';
+import { LoggerModule } from 'nestjs-pino';
 
 @Module({
   imports: [
@@ -29,6 +30,26 @@ import { createDataSourceOptions } from 'src/database/data-source.factory';
       inject: [ConfigService],
       useFactory: (configService: ConfigService) =>
         createDataSourceOptions(configService),
+    }),
+    LoggerModule.forRoot({
+      pinoHttp: {
+        level: process.env.LOG_LEVEL || 'info',
+        transport:
+          process.env.NODE_ENV !== 'production'
+            ? {
+                target: 'pino-pretty',
+                options: {
+                  colorize: true,
+                  singleLine: false,
+                  translateTime: 'HH:MM:ss',
+                  ignore: 'pid,hostname',
+                },
+              }
+            : undefined,
+        customProps: () => ({
+          context: 'HTTP',
+        }),
+      },
     }),
     ThrottlerModule,
     MailsModule,

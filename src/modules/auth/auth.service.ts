@@ -1,7 +1,7 @@
 import { LoginDto } from 'src/modules/auth/dto/login.dto';
 import { TokensService } from 'src/modules/users/tokens/tokens.service';
 import { UserStatusEnum } from 'src/common/enum/user-status.enum';
-import { Inject, Injectable, Logger, Param } from '@nestjs/common';
+import { Inject, Injectable, Param } from '@nestjs/common';
 import { I18nContext } from 'nestjs-i18n';
 import { RegisterDto } from 'src/modules/auth/dto/register.dto';
 import { UsersService } from 'src/modules/users/users.service';
@@ -42,7 +42,6 @@ import { AttemptsService } from 'src/modules/auth/attempts/attempts.service';
 import { AuditLogService } from 'src/modules/audit-log/audit-log.service';
 import { AuditEvent } from 'src/common/enum/audit-event.enum';
 import { parsePermissions } from 'src/common/utils/normalize-permissions.utils';
-import { ReAuthService } from 'src/modules/auth/re-auth/re-auth.service';
 import { OAuthStateService } from 'src/modules/auth/oauth/oauth.service';
 import { OAuthProfile } from 'src/common/interfaces/oauth-profile.interface';
 import { OAuthService } from 'src/modules/users/oauth/oauth.service';
@@ -51,10 +50,10 @@ import { OAuthProviderEnum } from 'src/common/enum/user-oauth-providers.enum';
 import { ResponseFactory } from 'src/common/exceptions/response.factory';
 import frontendConfig from 'src/config/frontend.config';
 import { ConfigType } from '@nestjs/config';
+import { PinoLogger } from 'nestjs-pino';
 
 @Injectable()
 export class AuthService {
-  private readonly logger = new Logger(AuthService.name);
   private isProd = process.env.NODE_ENV === 'production';
 
   constructor(
@@ -75,10 +74,12 @@ export class AuthService {
     private readonly totpService: TotpService,
     private readonly otpsService: OtpsService,
     private readonly auditLogService: AuditLogService,
-    private readonly reauthService: ReAuthService,
     private readonly oauthService: OAuthService,
     private readonly oauthStateService: OAuthStateService,
-  ) {}
+    private readonly logger: PinoLogger,
+  ) {
+    this.logger.setContext(AuthService.name);
+  }
 
   async register(registerDto: RegisterDto, i18n: I18nContext) {
     return this.dataSource.transaction(async (manager) => {
@@ -105,6 +106,7 @@ export class AuthService {
       return createdResponse({
         data: null,
         meta: {
+          action: 'SUCCESS_REGISTER',
           createdAt: user.createdAt,
         },
       });
@@ -858,7 +860,7 @@ export class AuthService {
     if (
       resetPasswordTokenDto.password !== resetPasswordTokenDto.password_confirm
     )
-      return ResponseFactory.error({
+      ResponseFactory.error({
         i18n,
         lang: i18n.lang,
         code: 'PASSWORDS_DOES_NOT_MATCH',
@@ -914,7 +916,7 @@ export class AuthService {
   ) {
     const state = req.query.state;
     const payload = this.oauthStateService.verify(state as string);
-    this.logger.log(payload);
+    this.logger.debug(payload);
 
     switch (payload.flow) {
       case 'login':
@@ -1048,7 +1050,7 @@ export class AuthService {
     });
 
     return res.redirect(
-      `${this.frontend.url}${this.frontend.paths.dashboard}'}?success=1&message=${i18n.t(
+      `${this.frontend.url}${this.frontend.paths.dashboard}?success=1&message=${i18n.t(
         'messages.auth.success.linkProvider',
       )}`,
     );
@@ -1060,6 +1062,25 @@ export class AuthService {
     i18n: I18nContext,
   ) {
     const userId: number = req.user['sub'];
+
+    // Validar que el usuario tenga mas de un provider
+    const listPrividerUser = await this.oauthService.findAllOAuthWithUser(
+      userId,
+      i18n,
+    );
+
+    if (listPrividerUser.length <= 1) {
+      const credentialUser =
+        await this.credentialsService.findCredentialsOfUser(userId, i18n);
+
+      if (!credentialUser) {
+        return ResponseFactory.error({
+          i18n,
+          lang: i18n.lang,
+          code: 'ERROR_UNLINK_PROVIDER_NO_CREDENTIALS',
+        });
+      }
+    }
 
     await this.oauthService.delete(userId, provider, i18n);
     return okResponse({

@@ -120,4 +120,15 @@ export class CredentialsService {
     if (!isMatch) return false;
     return true;
   }
+
+  async findCredentialsOfUser(userId: number, i18n: I18nContext) {
+    try {
+      return await this.credentialsRepository.findOne({
+        where: { user: { id: userId } },
+      });
+    } catch (error) {
+      this.logger.error(error);
+      internalServerError({ i18n, lang: i18n.lang });
+    }
+  }
 }

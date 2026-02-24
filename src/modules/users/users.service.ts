@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable, Logger, Param } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, Param } from '@nestjs/common';
 import { CreateUserDto } from 'src/modules/users/dto/create-user.dto';
 import { UpdateUserDto } from 'src/modules/users/dto/update-user.dto';
 import { User } from 'src/modules/users/entities/user.entity';
@@ -30,11 +30,10 @@ import { getIPFromRequest } from 'src/common/helpers/request-info.helper';
 import { OAuthProfile } from 'src/common/interfaces/oauth-profile.interface';
 import { EmailChangeRequestService } from 'src/modules/users/email-change-request/email-change-request.service';
 import { ResponseFactory } from 'src/common/exceptions/response.factory';
+import { PinoLogger } from 'nestjs-pino';
 
 @Injectable()
 export class UsersService {
-  private readonly logger = new Logger(UsersService.name);
-
   constructor(
     @InjectRepository(User)
     private readonly usersRepository: Repository<User>,
@@ -47,7 +46,10 @@ export class UsersService {
     private readonly tokensService: TokensService,
     private readonly auditLogService: AuditLogService,
     private readonly emailChangeRequestService: EmailChangeRequestService,
-  ) {}
+    private readonly logger: PinoLogger,
+  ) {
+    this.logger.setContext(UsersService.name);
+  }
 
   async create(
     createUserDto: CreateUserDto,
@@ -176,7 +178,14 @@ export class UsersService {
       this.logger.error(error);
       internalServerError({ i18n, lang: i18n.lang });
     }
-    if (!user) userNotFoundError({ i18n, lang: i18n.lang });
+    if (!user) {
+      this.logger.error({
+        event: 'SEARCH_USER_BY_EMAIL',
+        email,
+        error: 'USER NOT FOUND',
+      });
+      userNotFoundError({ i18n, lang: i18n.lang });
+    }
     const { userAccountCredentials, ...rest } = user;
     return { ...rest, password: userAccountCredentials.password };
   }

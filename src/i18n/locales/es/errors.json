@@ -16,6 +16,7 @@
     "TWO_FACTOR_TYPE_INVALID": "El tipo de autenticación de dos factores no es soportado",
     "TWO_FACTOR_CODE_INVALID": "El c\u00f3digo de autenticaci\u00f3n de dos factores no es v\u00e1lido",
     "REAUTH_TOKEN_NOT_FOUND": "El token de reautenticación no fue encontrado",
+    "ERROR_UNLINK_PROVIDER_NO_CREDENTIALS": "Ha ocurrido un error al eliminar el proveedor de OAuth, el usuario no tiene ninguna credencial",
 
     "OAUTH_LOGIN_REQUIRED": "La autenticación de OAuth es requerida",
     "OAUTH_PROVIDER_NOT_FOUND": "El proveedor de OAuth no fue encontrado",

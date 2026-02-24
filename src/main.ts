@@ -5,9 +5,9 @@ import { I18nValidationExceptionFilter } from 'nestjs-i18n';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import * as cookieParser from 'cookie-parser';
 import { useContainer } from 'class-validator';
-import { packageJson, swaggerConfig } from './config/swagger.config';
-import { Logger } from '@nestjs/common';
+import { swaggerConfig } from './config/swagger.config';
 import { SUPPORTED_LANGUAGES } from './common/constants/i18n.constants';
+import { Logger } from 'nestjs-pino';
 
 /**
  * Bootstraps and starts the NestJS application.
@@ -20,16 +20,15 @@ async function bootstrap() {
    * - Production: only errors and warnings
    */
   const app = await NestFactory.create(AppModule, {
-    logger:
-      process.env.NODE_ENV !== 'production'
-        ? ['error', 'warn', 'log', 'verbose', 'debug']
-        : ['error', 'warn'],
+    bufferLogs: true,
   });
 
   /**
    * Create application logger instance
    */
-  const logger = new Logger(process.env.APP_NAME);
+
+  app.useLogger(app.get(Logger));
+  // const logger = new Logger(process.env.APP_NAME);
 
   /**
    * Set global API prefix for versioning.
@@ -143,10 +142,10 @@ async function bootstrap() {
   /**
    * Log runtime application information.
    */
-  logger.log(`🚀 App running on: ${await app.getUrl()}`);
-  logger.log(`📦 Version: ${packageJson.version}`);
-  logger.log(`🌎 Environment: ${process.env.NODE_ENV}`);
-  logger.log(`🧠 PID: ${process.pid}`);
+  // logger.log(`🚀 App running on: ${await app.getUrl()}`);
+  // logger.log(`📦 Version: ${packageJson.version}`);
+  // logger.log(`🌎 Environment: ${process.env.NODE_ENV}`);
+  // logger.log(`🧠 PID: ${process.pid}`);
 }
 
 /**

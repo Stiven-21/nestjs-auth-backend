@@ -45,6 +45,7 @@ export type I18nTranslations = {
         "TWO_FACTOR_TYPE_INVALID": string;
         "TWO_FACTOR_CODE_INVALID": string;
         "REAUTH_TOKEN_NOT_FOUND": string;
+        "ERROR_UNLINK_PROVIDER_NO_CREDENTIALS": string;
         "OAUTH_LOGIN_REQUIRED": string;
         "OAUTH_PROVIDER_NOT_FOUND": string;
         "OAUTH_PROVIDER_DISABLED": string;

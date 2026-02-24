@@ -16,6 +16,7 @@
     "TWO_FACTOR_TYPE_INVALID": "The two-factor authentication type is not supported",
     "TWO_FACTOR_CODE_INVALID": "The two-factor authentication code is not valid",
     "REAUTH_TOKEN_NOT_FOUND": "Reauthentication token not found",
+    "ERROR_UNLINK_PROVIDER_NO_CREDENTIALS": "An error occurred while removing the OAuth provider; the user has no credentials.",
 
     "OAUTH_LOGIN_REQUIRED": "OAuth login required",
     "OAUTH_PROVIDER_NOT_FOUND": "OAuth provider not found",
