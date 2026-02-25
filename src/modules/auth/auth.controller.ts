@@ -32,9 +32,9 @@ import { GoogleLoginGuard } from 'src/modules/auth/guards/oauth/google/google-lo
 import { GoogleLinkGuard } from 'src/modules/auth/guards/oauth/google/login-link.guard';
 import { FacebookLoginGuard } from 'src/modules/auth/guards/oauth/facebook/facebook-login.guard';
 import { FacebookLinkGuard } from 'src/modules/auth/guards/oauth/facebook/facebook-link.guard';
-import { GoogleOauthGuard } from './guards/oauth/google-oauth.guard';
-import { FacebookOauthGuard } from './guards/oauth/facebook-oauth.guard';
-import { GithubOauthGuard } from './guards/oauth/github-oauth.guard';
+import { GoogleOauthGuard } from 'src/modules/auth/guards/oauth/google-oauth.guard';
+import { FacebookOauthGuard } from 'src/modules/auth/guards/oauth/facebook-oauth.guard';
+import { GithubOauthGuard } from 'src/modules/auth/guards/oauth/github-oauth.guard';
 import { OAuthProviderEnum } from 'src/common/enum/user-oauth-providers.enum';
 import {
   ApiBadRequestResponse,
@@ -63,7 +63,7 @@ export class AuthController {
   @ThorttleLimit(3, 60)
   @ApiOperation({ summary: 'Verify email' })
   @ApiOkResponse({ description: 'Email verified successfully' })
-  @Get('verify-email/:token')
+  @Post('verify-email/:token')
   async verifyEmail(@Param('token') token: string, @I18n() i18n: I18nContext) {
     return await this.authService.verifyEmail(token, i18n);
   }

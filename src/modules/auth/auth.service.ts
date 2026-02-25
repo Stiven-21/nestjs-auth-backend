@@ -119,7 +119,7 @@ export class AuthService {
     const loginUrl = `${this.frontend.url}${this.frontend.paths.login}`;
     await this.mailService.sendMail(
       email,
-      'Restablecimiento de contraseña exitoso', // Subject o asunto
+      'Activación de cuenta', // Subject o asunto
       'auth-activation-success', // Plantilla o template
       {
         loginUrl,
@@ -130,7 +130,7 @@ export class AuthService {
     return okResponse({
       data: null,
       meta: {
-        action: 'success-email-verified',
+        action: 'SUCCESS_EMAIL_VERIFICATION',
       },
     });
   }

@@ -122,6 +122,7 @@ export class TokensService {
       this.logger.error(error);
       internalServerError({ i18n, lang: i18n.lang });
     }
+    this.logger.error(userToken);
     if (!userToken || userToken.isUsed || userToken.expiresAt < new Date())
       ResponseFactory.error({ i18n, lang: i18n.lang, code: 'TOKEN_NOT_FOUND' });
     return okResponse({ data: userToken });
