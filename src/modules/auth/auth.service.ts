@@ -189,7 +189,7 @@ export class AuthService {
     return okResponse({
       data: null,
       meta: {
-        action: 'success-password-reset',
+        action: 'SUCCESS_PASSWORD_RESET',
       },
     });
   }
@@ -247,7 +247,7 @@ export class AuthService {
     return okResponse({
       data: null,
       meta: {
-        action: 'success-logout',
+        action: 'SUCCESS_LOGOUT',
       },
     });
   }
@@ -275,7 +275,7 @@ export class AuthService {
     return okResponse({
       data: null,
       meta: {
-        action: 'success-logout',
+        action: 'SUCCESS_LOGOUT_DEVICE',
       },
     });
   }
@@ -300,7 +300,7 @@ export class AuthService {
     return okResponse({
       data: null,
       meta: {
-        action: 'success-logout',
+        action: 'SUCCESS_LOGOUT_ALL',
       },
     });
   }
@@ -390,7 +390,7 @@ export class AuthService {
         refresh_token: newRefreshToken,
       },
       meta: {
-        action: 'success-login',
+        action: 'SUCCESS_REFRESH_TOKEN',
         tokenexpires: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
         refreshtokenexpires: new Date(
           Date.now() + 2 * 24 * 60 * 60 * 1000,
@@ -445,11 +445,20 @@ export class AuthService {
           i18n,
         );
       }
+
+      const payload_2fa = {
+        sub: user.id,
+      };
+
+      const tempToken = this.jwtService.sign(payload_2fa, {
+        secret: process.env.JWT_2FA_SECRET,
+        expiresIn: '5m',
+      });
       return okResponse({
         data: null,
         meta: {
           twoFactorRequired: true,
-          sub: user.id,
+          tempToken,
         },
       });
     }
@@ -608,7 +617,7 @@ export class AuthService {
     return okResponse({
       data: recoveryCodes.data,
       meta: {
-        action: 'success-confirm-2fa',
+        action: 'SUCCESS_TWO_FACTOR_CONFIRM',
         total: recoveryCodes.meta.total,
       },
     });
@@ -621,7 +630,12 @@ export class AuthService {
     i18n: I18nContext,
     deviceId: string,
   ) {
-    const { code, userId } = twoFactorAuthVerifyDto;
+    const { code, tempToken } = twoFactorAuthVerifyDto;
+    const payload_2fa = await this.jwtService.verifyAsync(tempToken, {
+      secret: process.env.JWT_2FA_SECRET,
+    });
+    const userId = payload_2fa.sub;
+
     const user = await this.usersService.findById(userId, i18n);
     const userSecurity = await this.securityService.findOneByUser(user, i18n);
 
@@ -875,7 +889,7 @@ export class AuthService {
     return okResponse({
       data: null,
       meta: {
-        action: 'success-reset-password',
+        action: 'SUCCESS_PASSWORD_CHANGED',
       },
     });
   }
@@ -1058,7 +1072,7 @@ export class AuthService {
     return okResponse({
       data: null,
       meta: {
-        action: 'success-unlink-provider',
+        action: 'SUCCESS_UNLINK_PROVIDER',
       },
     });
   }
