@@ -31,6 +31,7 @@ import { OAuthProfile } from 'src/common/interfaces/oauth-profile.interface';
 import { EmailChangeRequestService } from 'src/modules/users/email-change-request/email-change-request.service';
 import { ResponseFactory } from 'src/common/exceptions/response.factory';
 import { PinoLogger } from 'nestjs-pino';
+import { SecurityService } from 'src/modules/users/security/security.service';
 
 @Injectable()
 export class UsersService {
@@ -47,6 +48,7 @@ export class UsersService {
     private readonly auditLogService: AuditLogService,
     private readonly emailChangeRequestService: EmailChangeRequestService,
     private readonly logger: PinoLogger,
+    private readonly userSecurityService: SecurityService,
   ) {
     this.logger.setContext(UsersService.name);
   }
@@ -426,12 +428,19 @@ export class UsersService {
 
   async me(req: Request, i18n: I18nContext) {
     const { data: user } = await this.findOne(req.user['sub'], i18n);
+    delete user.user_secret;
     const oauthactive = await this.oauthService.findAllOAuthWithUser(
       req.user['sub'],
       i18n,
     );
+    const { twoFactorEnabled, twoFactorType } =
+      await this.userSecurityService.findOneByUser(user, i18n);
     return okResponse({
-      data: { ...user, oauth: oauthactive },
+      data: {
+        ...user,
+        oauth: oauthactive,
+        security: { twoFactorEnabled, twoFactorType },
+      },
       meta: { total: 1 },
     });
   }

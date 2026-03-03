@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserToken } from 'src/modules/users/entities/user-tokens.entity';
 import { EntityManager, Repository } from 'typeorm';
@@ -10,16 +10,23 @@ import { internalServerError, okResponse } from 'src/common/exceptions';
 import { MailService } from 'src/mails/mail.service';
 import { UsersService } from 'src/modules/users/users.service';
 import { ResponseFactory } from 'src/common/exceptions/response.factory';
+import { PinoLogger } from 'nestjs-pino';
+import frontendConfig from 'src/config/frontend.config';
+import { ConfigType } from '@nestjs/config';
 
 @Injectable()
 export class TokensService {
-  private readonly logger = new Logger(TokensService.name);
   constructor(
+    @Inject(frontendConfig.KEY)
+    private readonly frontend: ConfigType<typeof frontendConfig>,
     @InjectRepository(UserToken)
     private readonly tokensRepository: Repository<UserToken>,
     private readonly usersService: UsersService,
     private readonly mailService: MailService,
-  ) {}
+    private readonly logger: PinoLogger,
+  ) {
+    this.logger.setContext(TokensService.name);
+  }
 
   async createTokenEmailVerification(
     createTokenDto: CreateTokenEmailVerificationDto,
@@ -76,7 +83,7 @@ export class TokensService {
       internalServerError({ i18n, lang: i18n.lang });
     }
 
-    const passwordResetUrl = `${process.env.URL_FRONTEND}/auth/reset-password/${token}`;
+    const passwordResetUrl = `${this.frontend.url}${this.frontend.paths.resetPassword}${token}`;
     await this.mailService.sendMail(
       email,
       'Restablecimiento de contraseña', // Subject o asunto
@@ -84,6 +91,13 @@ export class TokensService {
       { passwordResetUrl },
       i18n,
     );
+
+    return okResponse({
+      data: null,
+      meta: {
+        action: 'SUCCESS_PASSWORD_RESET',
+      },
+    });
   }
 
   async updateTokenIsUsed(

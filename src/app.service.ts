@@ -5,13 +5,14 @@ import {
 } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { packageJson } from './config/swagger.config';
-import { okResponse } from './common/exceptions';
+import { internalServerError, okResponse } from './common/exceptions';
 import {
   DEFAULT_LANGUAGE,
   SUPPORTED_LANGUAGES,
 } from './common/constants/i18n.constants';
 import { ConfigService } from '@nestjs/config';
 import { I18nContext } from 'nestjs-i18n';
+import { TwoFactorType } from './common/enum/two-factor-type.enum';
 
 @Injectable()
 export class AppService {
@@ -65,6 +66,16 @@ export class AppService {
     }
 
     return okResponse({ data: response, meta });
+  }
+
+  async get2faType(i18n: I18nContext) {
+    try {
+      const types = Object.values(TwoFactorType);
+      return okResponse({ data: types, meta: { limit: 'SMS_DISABLE' } });
+    } catch (error) {
+      this.logger.error(error);
+      internalServerError({ i18n, lang: i18n.lang });
+    }
   }
 
   private async checkDatabase(): Promise<'up' | 'down'> {

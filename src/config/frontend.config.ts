@@ -5,6 +5,7 @@ export default registerAs('frontend', () => ({
 
   paths: {
     login: process.env.FRONTEND_LOGIN_PATH || '/auth/login',
+    resetPassword: process.env.FRONTEND_RESET_PASSWORD_PATH || '/auth/reset/',
     dashboard: process.env.FRONTEND_DASHBOARD_PATH || '/dashboard',
     changePassword:
       process.env.FRONTEND_CHANGE_PASSWORD_PATH || '/profile/change-password',

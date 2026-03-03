@@ -39,7 +39,7 @@ export class SecurityRecoveryCodesService {
     const count = 10;
 
     const codes = Array.from({ length: count }, () =>
-      crypto.randomBytes(4).toString('hex').toUpperCase(),
+      crypto.randomBytes(3).toString('hex').toUpperCase(),
     );
 
     const entities = codes.map((code) => {

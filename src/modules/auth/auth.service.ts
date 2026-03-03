@@ -12,7 +12,6 @@ import {
 import {
   createdResponse,
   internalServerError,
-  noContentResponse,
   okResponse,
 } from 'src/common/exceptions';
 import * as bcrypt from 'bcryptjs';
@@ -137,8 +136,7 @@ export class AuthService {
 
   async resetPassword(resetPasswordDto: ResetPasswordDto, i18n: I18nContext) {
     const { email } = resetPasswordDto;
-    await this.tokensService.createTokenPasswordReset(email, i18n);
-    return noContentResponse();
+    return await this.tokensService.createTokenPasswordReset(email, i18n);
   }
 
   async resetPasswordToken(
@@ -482,7 +480,7 @@ export class AuthService {
       });
 
     const meta: { action: string; dataImage?: string } = {
-      action: 'success-enable-2fa',
+      action: 'SUCCESS_TWO_FACTOR_ENABLE',
     };
 
     switch (twoFactorEnableDto.twoFactorType.toLowerCase()) {
@@ -671,7 +669,7 @@ export class AuthService {
       ResponseFactory.error({
         i18n,
         lang: i18n.lang,
-        code: 'INVALID_PASSWORD',
+        code: 'INVALID_CODE',
       });
     }
 
@@ -707,7 +705,7 @@ export class AuthService {
       return okResponse({
         data: null,
         meta: {
-          action: 'success-disable-2fa',
+          action: 'SUCCESS_DISABLE_2FA',
         },
       });
     }
@@ -723,9 +721,8 @@ export class AuthService {
     const { ip, userAgent, browser, os, device, location } =
       await getClientInfo(req);
 
-    const { refreshToken, payload } = await this.dataSource.transaction<{
+    const { refreshToken } = await this.dataSource.transaction<{
       refreshToken: string;
-      payload: any;
     }>(async (manager) => {
       await this.sessionService.create(
         {
@@ -774,7 +771,7 @@ export class AuthService {
         manager,
       );
 
-      return { refreshToken, payload };
+      return { refreshToken };
     });
 
     const changePasswordUrl = `${this.frontend.url}${this.frontend.paths.changePassword}`;
@@ -810,37 +807,12 @@ export class AuthService {
       i18n,
     );
 
-    const access_token = this.jwtService.sign(payload, {
-      secret: process.env.JWT_SECRET + user.user_secret,
-      expiresIn: '30m',
-    });
-
-    res.cookie('access_token', access_token, {
-      httpOnly: true,
-      secure: this.isProd,
-      sameSite: this.isProd ? 'none' : 'lax',
-      maxAge: 15 * 60 * 1000,
-    });
-
-    res.cookie('refresh_token', refreshToken, {
-      httpOnly: true,
-      secure: this.isProd,
-      sameSite: this.isProd ? 'none' : 'lax',
-      maxAge: 2 * 24 * 60 * 60 * 1000, // 2 days
-    });
-
     return okResponse({
       data: {
-        accessToken: access_token,
         refreshToken,
-        email: user.email,
-        user: user.name + ' ' + user.lastname,
-        role: user.role.name,
-        permissions: parsePermissions(user.role.permissions),
       },
       meta: {
-        action: 'success-login',
-        accessTokenExpires: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
+        action: 'SUCCESS_LOGIN',
         refreshTokenExpires: new Date(
           Date.now() + 2 * 24 * 60 * 60 * 1000,
         ).toISOString(),

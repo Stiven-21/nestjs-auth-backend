@@ -12,4 +12,9 @@ export class AppController {
   async health(@I18n() i18n: I18nContext) {
     return await this.appService.getHealthStatus(i18n);
   }
+
+  @Get('2fa-types')
+  async get2faType(@I18n() i18n: I18nContext) {
+    return await this.appService.get2faType(i18n);
+  }
 }

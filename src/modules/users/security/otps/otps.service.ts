@@ -23,7 +23,7 @@ export class OtpsService {
   ) {}
 
   private async generateCode() {
-    return crypto.randomBytes(4).toString('hex').toUpperCase();
+    return crypto.randomBytes(3).toString('hex').toUpperCase();
   }
 
   async createOtp(user: User, type: TwoFactorOtpsType, i18n: I18nContext) {
