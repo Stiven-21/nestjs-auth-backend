@@ -32,6 +32,7 @@ import { AuditLogModule } from 'src/modules/audit-log/audit-log.module';
 import { UserEmailChangeRequest } from 'src/modules/users/entities/user-email-change-request.entity';
 import { EmailChangeRequestService } from 'src/modules/users/email-change-request/email-change-request.service';
 import { EmailChangeRequestController } from 'src/modules/users/email-change-request/email-change-request.controller';
+import { TokensController } from './tokens/tokens.controller';
 
 @Module({
   imports: [
@@ -59,6 +60,7 @@ import { EmailChangeRequestController } from 'src/modules/users/email-change-req
     EmailLogChangesController,
     SecurityRecoveryCodesController,
     EmailChangeRequestController,
+    TokensController,
   ],
   providers: [
     UsersService,

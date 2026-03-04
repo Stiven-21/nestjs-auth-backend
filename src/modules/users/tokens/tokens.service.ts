@@ -100,6 +100,24 @@ export class TokensService {
     });
   }
 
+  async verifyToken(token: string, i18n: I18nContext) {
+    try {
+      const userToken = await this.tokensRepository.findOne({
+        where: { token, isUsed: false, type: UserTokenEnum.PASSWORD_RESET },
+      });
+      return okResponse({
+        data: null,
+        meta: {
+          isTokenValid:
+            userToken && userToken.expiresAt > new Date() ? true : false,
+        },
+      });
+    } catch (error) {
+      this.logger.error(error);
+      internalServerError({ i18n, lang: i18n.lang });
+    }
+  }
+
   async updateTokenIsUsed(
     token: string,
     i18n: I18nContext,
