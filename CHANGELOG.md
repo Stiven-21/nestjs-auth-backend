@@ -2,6 +2,33 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.5.0](https://github.com/Stiven-21/nestjs-auth-backend/compare/v0.4.1...v0.5.0) (2026-03-24)
+
+
+### ⚠ BREAKING CHANGES
+
+* **test:** unit + e2e tests
+
+### 🐛 Bug Fixes
+
+* correction in auth and user modules ([af105d1](https://github.com/Stiven-21/nestjs-auth-backend/commit/af105d171e74eeb70be9b3ffff5d7de7927ddf85))
+* the bug that allowed deleting all oauth entries and leaving no login credentials has been fixed ([a5c8175](https://github.com/Stiven-21/nestjs-auth-backend/commit/a5c8175af9fc5be53438b98cf677eae506e78d3b))
+* **user:** a controller for user tokens is added to check if the password recovery token exists ([95c724e](https://github.com/Stiven-21/nestjs-auth-backend/commit/95c724e452e9f0056f45b7df77f19cc5f5846df4))
+
+
+### 🛠 Refactor
+
+* **common:** refactoring in dynamic.service.ts to fix vulnerabilities ([15ea06f](https://github.com/Stiven-21/nestjs-auth-backend/commit/15ea06f2d0539acbe5af0e9a159f4b0f6775a8fa))
+
+
+### 🚀 Features
+
+* **database:** implement version-controlled database migration ([ae353a0](https://github.com/Stiven-21/nestjs-auth-backend/commit/ae353a0dee36c1c7e81c13586b59eab02e0a1d65))
+* feat: refactor login & 2FA; me() returns OAuth creds; tests for user, roles, identity, auth ([71bac4f](https://github.com/Stiven-21/nestjs-auth-backend/commit/71bac4f25e6cf1f50c9018d76c7212161b7cd2f2))
+* integrate development seeds and add seeder documentation ([0f47c99](https://github.com/Stiven-21/nestjs-auth-backend/commit/0f47c99c94fa57684e56e78b9e83caf516de616c))
+* restructuring in 2FA to not return the user ID, instead returning a temporary token ([e3404af](https://github.com/Stiven-21/nestjs-auth-backend/commit/e3404affeb2deb2c0cdbb2652037f09f87d15fa3))
+* **test:** unit + e2e tests ([22a448a](https://github.com/Stiven-21/nestjs-auth-backend/commit/22a448a4534cc94887ad3243437c8265c3ef41ee))
+
 ### [0.4.1](https://github.com/Stiven-21/nestjs-auth-backend/compare/v0.4.0...v0.4.1) (2026-02-13)
 
 
