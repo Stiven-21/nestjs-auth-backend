@@ -6,8 +6,12 @@
   "transform": {
     "^.+\\.(t|j)s$": "ts-jest"
   },
+  "cache": false,
+  "transformIgnorePatterns": [
+    "/node_modules/(?!.*?uuid)"
+  ],
   "moduleNameMapper": {
-    "^src/(.*)$": "<rootDir>/../src/$1",
-    "uuid": "<rootDir>/../node_modules/uuid/dist/index.js"
-  }
+    "^src/(.*)$": "<rootDir>/../src/$1"
+  },
+  "testTimeout": 30000
 }

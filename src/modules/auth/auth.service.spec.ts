@@ -26,6 +26,17 @@ jest.mock('bcryptjs');
 jest.mock('uuid', () => ({
   v7: jest.fn().mockReturnValue('mocked-uuid'),
 }));
+jest.mock('src/common/helpers/request-info.helper', () => ({
+  getClientInfo: jest.fn().mockResolvedValue({
+    ip: '127.0.0.1',
+    userAgent: 'mock-ua',
+    browser: 'mock-browser',
+    os: 'mock-os',
+    device: 'mock-device',
+    location: null,
+  }),
+  getIPFromRequest: jest.fn().mockReturnValue('127.0.0.1'),
+}));
 
 describe('AuthService', () => {
   let service: AuthService;
@@ -197,6 +208,7 @@ describe('AuthService', () => {
       });
       mockJwtService.sign.mockReturnValue('mock_token');
       mockAuthSessionsService.createAuthSession.mockResolvedValue({ id: 1 });
+      mockAuthRefreshTokensService.createRefreshToken.mockResolvedValue({});
 
       const result = await service.login(
         req,
@@ -207,7 +219,8 @@ describe('AuthService', () => {
       );
 
       expect(result.success).toBe(true);
-      expect(res.cookie).toHaveBeenCalled();
+      // El refreshToken se retorna en el body (no en cookie) para el login normal
+      expect(result.data).toHaveProperty('refreshToken');
     });
 
     it('should throw error on invalid password', async () => {

@@ -6,6 +6,8 @@ import { UsersService } from 'src/modules/users/users.service';
 import { MailService } from 'src/mails/mail.service';
 import { I18nContext } from 'nestjs-i18n';
 import { UserTokenEnum } from 'src/common/enum/user-token.enum';
+import { PinoLogger } from 'nestjs-pino';
+import frontendConfig from 'src/config/frontend.config';
 
 // Mock de uuid para evitar errores de ESM en Jest
 jest.mock('uuid', () => ({
@@ -29,6 +31,25 @@ describe('TokensService', () => {
     sendMail: jest.fn(),
   };
 
+  const mockPinoLogger = {
+    setContext: jest.fn(),
+    error: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+  };
+
+  const mockFrontendConfig = {
+    url: 'http://localhost:3000',
+    paths: {
+      login: '/auth/login',
+      resetPassword: '/auth/reset/',
+      dashboard: '/dashboard',
+      changePassword: '/profile/change-password',
+      emailRollback: '/email-change-request/rollback/',
+      authCallback: '/auth/callback',
+    },
+  };
+
   const mockI18n = {
     t: jest.fn().mockReturnValue('translated text'),
     lang: 'es',
@@ -49,6 +70,14 @@ describe('TokensService', () => {
         {
           provide: MailService,
           useValue: mockMailService,
+        },
+        {
+          provide: PinoLogger,
+          useValue: mockPinoLogger,
+        },
+        {
+          provide: frontendConfig.KEY,
+          useValue: mockFrontendConfig,
         },
       ],
     }).compile();
